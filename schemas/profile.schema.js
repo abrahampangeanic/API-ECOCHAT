@@ -10,15 +10,15 @@ const password =  Joi.string();
 // const role =  Joi.string();
 const language =  Joi.string();
 
-const getCustomerSchema = Joi.object({
+const getProfileSchema = Joi.object({
   id: id.required(),
 });
 
-const createCustomerSchema = Joi.object({
+const createProfileSchema = Joi.object({
   name: name.required(),
   lastName: lastName.required(),
-  phone: phone.required(),
-  // language: language.required(),
+  //  phone: phone.required(),
+  language: language.required(),
   user: Joi.object({
     email: email.required(),
     password: password.required(),
@@ -26,12 +26,12 @@ const createCustomerSchema = Joi.object({
   })
 });
 
-const updateCustomerSchema = Joi.object({
+const updateProfileSchema = Joi.object({
   name,
   lastName,
-  phone,
+  //phone,
   language,
   userId
 });
 
-module.exports = { getCustomerSchema, createCustomerSchema, updateCustomerSchema };
+module.exports = { getProfileSchema, createProfileSchema, updateProfileSchema };

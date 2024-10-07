@@ -1,13 +1,14 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
+const { v4: uuidv4 } = require('uuid'); 
 
 const DOCUMENT_TABLE = 'documents';
 
 const DocumentSchema =  {
   id: {
     allowNull: false,
-    autoIncrement: true,
     primaryKey: true,
-    type: DataTypes.INTEGER
+    defaultValue: uuidv4,
+    type: DataTypes.UUID,  
   },
   url: {
     allowNull: false,
@@ -28,16 +29,17 @@ const DocumentSchema =  {
     allowNull: true,
     type: DataTypes.STRING,
     field: 'state',
+    defaultValue: 'pending',
+  },
+  sourceId: {
+    allowNull: false,
+    type: DataTypes.INTEGER,
   },
   createdAt: {
     allowNull: false,
     type: DataTypes.DATE,
     field: 'created_at',
     defaultValue: Sequelize.NOW,
-  },
-  sourceId: {
-    allowNull: false,
-    type: DataTypes.INTEGER,
   },
 }
 

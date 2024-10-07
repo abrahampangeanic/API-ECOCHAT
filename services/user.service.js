@@ -26,7 +26,7 @@ class UserService {
   async findByEmail(email) {
     const rta = await models.User.findOne({
       where: { email },
-      // include: [ 'suscription']
+      include: [ 'apikey']
     });
     return rta;
   }
@@ -40,12 +40,11 @@ class UserService {
 
   async findOne(id) {
     const user = await models.User.findByPk(id, {
-      include: ['profile', 
-        'instances', ]
+      include: ['profile', 'instances', 'apikey']
     });
-    if (!user) {
-      throw boom.notFound('user not found');
-    }
+
+    if (!user)  throw boom.notFound('user not found');
+    
     return user;
   }
 

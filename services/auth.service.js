@@ -46,7 +46,8 @@ class AuthService {
   signToken(user) {
     const payload = {
       sub: user.id,
-      role: user.role
+      role: user.role,
+      apikey: user.apikey.key,
     }
     const api_token = jwt.sign(payload, config.jwtSecret);
     return {

@@ -1,7 +1,9 @@
 const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
+const FormData = require('form-data');
 const fs = require('fs');
+const axios = require('axios');
 
 const SourceService = require('../services/source.service');
 const service = new SourceService();
@@ -89,7 +91,33 @@ router.post('/file',
               sourceId: source.id,
             };
             
-            await documentServ.create(documentInfo);
+            const document = await documentServ.create(documentInfo);
+
+            const callback = `http://192.168.100.143:3000/api/v1/documents/callback/${document.id}`;
+            console.log('Callback URL:', callback);
+
+            const form = new FormData();
+            form.append('id', document.id);
+            form.append('file', fs.createReadStream(filePath)); // El primer argumento es el nombre del campo en la API de destino
+            form.append('include_page_breaks', 'true');
+            form.append('callback_url', callback);
+
+            const urlExtractor = 'https://api-priv.pangeanic.com/module/text-extractor/process';
+
+            try {
+              // Hacer la solicitud POST con Axios
+              const response = await axios.post(urlExtractor, form, {
+                headers: {
+                  ...form.getHeaders() // Es necesario incluir los encabezados de 'multipart/form-data'
+                }
+              });
+          
+              // Manejar la respuesta de la API
+              console.log('Response data:', response.data);
+
+            } catch (error) {
+              console.error('Error al enviar el archivo al Extractor:', error.response ? error.response.data : error.message);
+            }
 
           });
         });

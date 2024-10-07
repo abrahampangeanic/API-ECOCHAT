@@ -1,23 +1,23 @@
 const express = require('express');
 const passport = require('passport');
 
-const AuthService = require('./../services/auth.service');
-const CustomerService = require('../services/customers.service');
+const AuthService = require('../services/auth.service');
+const ProfileService = require('../services/profile.service');
 
 const validationHandler = require('../middlewares/validator.handler');
-const { createCustomerSchema, getCustomerSchema, updateCustomerSchema} = require('../schemas/customer.schema');
+const { createProfileSchema, getProfileSchema, updateProfileSchema} = require('../schemas/profile.schema');
 
 const router = express.Router({ mergeParams: true });
-const service = new CustomerService();
+const service = new ProfileService();
 const auth = new AuthService();
 
 router.post('/',
-  validationHandler(createCustomerSchema, 'body'),
+  validationHandler(createProfileSchema, 'body'),
   async (req, res, next) => {
     try {
       const body = req.body;
-      const customer = await service.create(body);
-      const api_token =  auth.signToken(customer.user);
+      const profile = await service.create(body);
+      const api_token =  auth.signToken(profile.user);
       res.status(201).json(api_token);
     } catch (error) {
       next(error);
@@ -27,13 +27,13 @@ router.post('/',
 
 router.patch('/',
   passport.authenticate('jwt', {session: false}),
-  validationHandler(updateCustomerSchema, 'body'),
+  validationHandler(updateProfileSchema, 'body'),
   async (req, res, next) => {
     try {
       const body = req.body;
       body.id = req.user.sub;
-      const customer = await service.update( body);
-      res.status(201).json(customer);
+      const profile = await service.update( body);
+      res.status(201).json(profile);
     } catch (error) {
       next(error);
     }
@@ -41,7 +41,7 @@ router.patch('/',
 );
 
 router.delete('/:id',
-  validationHandler(getCustomerSchema, 'params'),
+  validationHandler(getProfileSchema, 'params'),
   async (req, res, next) => {
     try {
       const { id } = req.params;

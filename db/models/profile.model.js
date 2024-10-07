@@ -1,8 +1,8 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const CUSTOMER_TABLE = 'customers';
+const PROFILE_TABLE = 'profiles';
 
-const CustomerSchema =  {
+const ProfileSchema =  {
   id: {
     allowNull: false,
     autoIncrement: true,
@@ -27,14 +27,7 @@ const CustomerSchema =  {
     type: DataTypes.STRING,
     field: 'language',
   },
-  createdAt: {
-    allowNull: false,
-    type: DataTypes.DATE,
-    field: 'created_at',
-    defaultValue: Sequelize.NOW,
-  },
   userId: {
-    field: 'user_id',
     allowNull: false,
     type: DataTypes.INTEGER,
     unique: true,
@@ -46,7 +39,7 @@ const CustomerSchema =  {
   },
 }
 
-class Customer extends Model {
+class Profile extends Model {
 
   static associate(models) {
     this.belongsTo(models.User, {as: 'user'});
@@ -55,11 +48,11 @@ class Customer extends Model {
   static config(sequelize) {
     return {
       sequelize,
-      tableName: CUSTOMER_TABLE,
-      modelName: 'Customer',
+      tableName: PROFILE_TABLE,
+      modelName: 'Profile',
       timestamps: false
     }
   }
 }
 
-module.exports = { Customer, CustomerSchema, CUSTOMER_TABLE };
+module.exports = { Profile, ProfileSchema, PROFILE_TABLE };

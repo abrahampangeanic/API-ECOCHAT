@@ -1,10 +1,13 @@
 const boom = require('@hapi/boom');
 const bcrypt = require('bcrypt');
-const { models } = require('../libs/sequelize');  
+const { models } = require('../libs/sequelize');
+const ApiKeyService = require('./apikey.service');
+const apikeyService = new ApiKeyService();
+
 const NotificationService = require('./notification.service');
 const notification = new NotificationService();
 
-class CustomerService {
+class ProfileService {
 
   async create(data) {
 
@@ -14,36 +17,35 @@ class CustomerService {
     const hash = await bcrypt.hash(data.user.password, 10);
     const newData = {
       ...data,
-      language: "es",
       user: {
         ...data.user,
         password: hash,
         role: 'Business'
       }
     }
-    const newCustomer = await models.Customer.create(newData, {
+    const newProfile = await models.Profile.create(newData, {
       include: ['user']
     });
-    delete newCustomer.dataValues.user.dataValues.password;
 
-    await notification.sendRegister(data.user.email);
+    await apikeyService.create({userId: newProfile.userId , expiresAt: null });
 
-    return newCustomer;
+    delete newProfile.dataValues.user.dataValues.password;
+    return newProfile;
   }
 
   async find() {
-    const rta = await models.Customer.findAll({
+    const rta = await models.Profile.findAll({
       include: ['user']
     });
     return rta;
   }
 
   async findOne(id) {
-    const user = await models.Customer.findOne({
+    const user = await models.Profile.findOne({
       where: {  'userId': id}
     });
 
-    if (!user)  throw boom.notFound('customer not found');
+    if (!user)  throw boom.notFound('profile not found');
     
     return user;
   }
@@ -64,7 +66,7 @@ class CustomerService {
 
 }
 
-module.exports = CustomerService;
+module.exports = ProfileService;
 
 
 // "users": [

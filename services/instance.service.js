@@ -15,7 +15,6 @@ class InstanceService {
 
   async create(data) {
     const newInstance = await models.Instance.create(data);
-    console.log('New instance created:', newInstance);
     
     const relation = {
       userId: data.userId,

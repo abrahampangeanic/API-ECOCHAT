@@ -45,6 +45,10 @@ app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
+app.get('/healthcheck', (req, res) => {
+  res.send({"message": "It's working!"});
+});
+
 
 routerApi(app);
 

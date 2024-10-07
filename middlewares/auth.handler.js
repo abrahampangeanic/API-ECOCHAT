@@ -1,7 +1,7 @@
 const boom = require('@hapi/boom');
 const { config } = require('../config/config');
-const InstanceService = require('../services/instance.service');
-const service = new InstanceService();
+const ApiKeyService = require('../services/apikey.service');
+const apikeyService = new ApiKeyService();
 
 function checkApiToken(req, res, next) {
   const apiKey = req.headers['api'];
@@ -12,22 +12,23 @@ function checkApiToken(req, res, next) {
   }
 }
 
-function checkApiKey(req, res, next) {
-  const apiKey = req.headers['api'];
-  if (apiKey === config.apiKey) {
+async function checkApiKey(req, res, next) {
+  const apiKey = req.headers['apikey'];
+  if (!apiKey)   next(boom.badRequest('apikey not found'));
+  
+  try {
+    const apiKeyRecord = await apikeyService.findByKey(apiKey);
+    if (!apiKeyRecord) next(boom.unauthorized());
     next();
-  } else {
-    next(boom.unauthorized());
+  } catch (error) {
+    next(boom.internalServerError(error.message));
   }
 }
 
 function checkAdminRole(req, res, next) {
   const user = req.user;
-  if (user.role === 'admin') {
-    next();
-  } else {
-    next(boom.unauthorized());
-  }
+  if (user.role === 'admin')  next();
+  else  next(boom.unauthorized());
 }
 
 

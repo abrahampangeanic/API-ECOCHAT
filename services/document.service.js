@@ -5,51 +5,51 @@ class DocumentService {
 
 
   async create(data) {
-    const assistant = await models.Document.create(data);
-    return assistant;
+    const document = await models.Document.create(data);
+    return document;
   }
 
-  async findByInstance(instanceId) {
-    const assistant = await models.Document.findAll({
-      where: {  '$instanceId$': instanceId  }
+  async findBySource(sourceId) {
+    const document = await models.Document.findAll({
+      where: {  '$sourceId$': sourceId  }
     });
 
-    return assistant;
+    return document;
   }
 
-  async findByInstanceAndId(instanceId, id) {
-    const assistant = await models.Document.findOne({
-      where: {  '$instanceId$': instanceId, '$id$': id  }
+  async findBySourceIdAndId( id,  sourceId) {
+    const document = await models.Document.findOne({
+      where: {  '$sourceId$': sourceId, '$id$': id  }
     });
 
-    return assistant;
+    return document;
   }
 
   async find() {
-    const assistant = await models.Document.findAll({
+    const document = await models.Document.findAll({
         order: [
             ['id', 'ASC']
           ]
     });
-    return assistant;
+    return document;
   }
 
   async findOne(id) {
-    const assistant = await models.Document.findByPk(id );
-    if (!assistant)  throw boom.notFound('assistant not found');
-    return assistant;
+    const document = await models.Document.findByPk(id );
+    if (!document)  throw boom.notFound('document not found');
+    return document;
   }
 
-  async update(instanceId, changes) {
-    const model = await this.findByInstanceAndId(instanceId, changes.id);
-    if (!model)   throw boom.notFound('assistant not found');
+  async update( changes) {
+    const model = await this.findOne(changes.id);
+    if (!model)   throw boom.notFound('document not found');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
     const model = await this.findByEnterprise(id);
-    if (!model)   throw boom.notFound('assistant not found');
+    if (!model)   throw boom.notFound('document not found');
     await model.destroy();
     return { rta: true };
   }

@@ -1,5 +1,5 @@
 const { User, UserSchema } = require('./user.model');
-const { Customer, CustomerSchema } = require('./customer.model');
+const { Profile, ProfileSchema } = require('./profile.model');
 const { InstanceUser, InstanceUserSchema } = require('./instance-user.model');
 const { Instance, InstanceSchema } = require('./instance.model');
 const { Assistant, AssistantSchema } = require('./assistant.model');
@@ -10,10 +10,11 @@ const { Collection, CollectionSchema } = require('./collection.model');
 const { CollectionSource, CollectionSourceSchema } = require('./collection-source.model');
 const { Source, SourceSchema } = require('./source.model');
 const { Document, DocumentSchema } = require('./document.model');
+const { ApiKey, ApiKeySchema } = require('./apikey.model');
 
 function setupModels(sequelize) {
   User.init(UserSchema, User.config(sequelize));
-  Customer.init(CustomerSchema, Customer.config(sequelize));
+  Profile.init(ProfileSchema, Profile.config(sequelize));
   InstanceUser.init(InstanceUserSchema, InstanceUser.config(sequelize));
   Instance.init(InstanceSchema, Instance.config(sequelize));
   Assistant.init(AssistantSchema, Assistant.config(sequelize));
@@ -24,9 +25,10 @@ function setupModels(sequelize) {
   CollectionSource.init(CollectionSourceSchema, CollectionSource.config(sequelize));
   Source.init(SourceSchema, Source.config(sequelize));
   Document.init(DocumentSchema, Document.config(sequelize));
+  ApiKey.init(ApiKeySchema, ApiKey.config(sequelize));
 
   User.associate(sequelize.models);
-  Customer.associate(sequelize.models);
+  Profile.associate(sequelize.models);
   InstanceUser.associate(sequelize.models);
   Instance.associate(sequelize.models);
   Assistant.associate(sequelize.models);
@@ -37,6 +39,7 @@ function setupModels(sequelize) {
   CollectionSource.associate(sequelize.models);
   Source.associate(sequelize.models);
   Document.associate(sequelize.models);
+  ApiKey.associate(sequelize.models);
 }
 
 module.exports = setupModels;
