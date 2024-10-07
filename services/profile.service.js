@@ -23,11 +23,12 @@ class ProfileService {
         role: 'Business'
       }
     }
-    const newProfile = await models.Profile.create(newData, {
-      include: ['user']
-    });
 
-    await apikeyService.create({userId: newProfile.userId , expiresAt: null });
+    const newProfile = await models.Profile.create(newData, {include: ['user']});
+    
+    // Create API Key for new user
+    const apiKeyRecord = await apikeyService.create({userId: newProfile.userId , expiresAt: null });
+    newProfile.user.apikey = apiKeyRecord;
 
     delete newProfile.dataValues.user.dataValues.password;
     return newProfile;

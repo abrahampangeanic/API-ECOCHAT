@@ -1,7 +1,7 @@
 const express = require('express');
 
 const authRouter = require('./auth.router');
-const customersRouter = require('./profile.router');
+const profileRouter = require('./profile.router');
 
 const instanceRouter = require('./instance.router');
 const documentRouter = require('./document.router');
@@ -23,8 +23,8 @@ function routerApi(app) {
 
   app.use('/api/v1', router);
   router.use('/auth', authRouter);
-  router.use('/customers', customersRouter);
-  router.use('/register', customersRouter);
+  router.use('/customers', profileRouter);
+  router.use('/register', profileRouter);
   router.use('/instances', instanceRouter);
   router.use('/documents', documentRouter);
   

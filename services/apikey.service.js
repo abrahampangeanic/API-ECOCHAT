@@ -6,8 +6,8 @@ class ApiKeyService {
 
   async create(data) {
     const apiKey = uuidv4();
-    data.key = apiKey;  // Almacena la clave encriptada
-    const newApiKey = await ApiKey.create(data);
+    data.key = apiKey;  
+    const newApiKey = await  models.ApiKey.create(data);
     return newApiKey;
   }
 

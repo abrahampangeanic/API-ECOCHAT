@@ -5,6 +5,7 @@ const AuthService = require('../services/auth.service');
 const ProfileService = require('../services/profile.service');
 
 const validationHandler = require('../middlewares/validator.handler');
+const { checkAdminRole } = require('../middlewares/auth.handler');
 const { createProfileSchema, getProfileSchema, updateProfileSchema} = require('../schemas/profile.schema');
 
 const router = express.Router({ mergeParams: true });
@@ -12,6 +13,8 @@ const service = new ProfileService();
 const auth = new AuthService();
 
 router.post('/',
+  passport.authenticate('jwt', {session: false}),
+  checkAdminRole,
   validationHandler(createProfileSchema, 'body'),
   async (req, res, next) => {
     try {
