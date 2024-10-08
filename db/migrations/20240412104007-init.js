@@ -60,6 +60,7 @@ module.exports = {
         expiresAt: null,
       }
     ]);
+    
   },
 
   down: async (queryInterface) => {

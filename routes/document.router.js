@@ -84,12 +84,9 @@ router.post('/callback/:documentId',
     try {
         const { documentId } = req.params;
         const { status } = req.body;
-
-        const document = await service.update({id: documentId, state: status }); // Extractor ID hardcoded for now
-        console.log(document);
-        // Send an appropriate response to the client
+        await service.update({id: documentId, state: status }); // Extractor ID hardcoded for now
+        
         res.status(201).json({ message: 'Callback successful' });
-      
     } catch (error) {
       next(error);
     }

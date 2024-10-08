@@ -33,7 +33,7 @@ const DocumentSchema =  {
   },
   sourceId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,  
   },
   createdAt: {
     allowNull: false,

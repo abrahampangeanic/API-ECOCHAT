@@ -27,17 +27,6 @@ function routerApi(app) {
   router.use('/register', profileRouter);
   router.use('/instances', instanceRouter);
   router.use('/documents', documentRouter);
-  
-  // router.use('/products', productsRouter);
-  // router.use('/categories', categoriesRouter);
-  // router.use('/users', usersRouter);
-  // router.use('/orders', orderRouter);
-
-
-  // router.use('/profile', profileRouter);
-
-  // router.use('/suscription', suscriptionRouter);
-  // router.use('/report', reportRouter);
 }
 
 module.exports = routerApi;
