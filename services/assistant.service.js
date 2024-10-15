@@ -15,7 +15,7 @@ class AssistantService {
       where: {  '$instanceId$': instanceId  }
     });
 
-    return assistant;
+    return { assistants: [...assistant] };
   }
 
   async findByInstanceAndId(instanceId, id) {
@@ -23,7 +23,7 @@ class AssistantService {
       where: {  '$instanceId$': instanceId, '$id$': id  }
     });
 
-    return assistant;
+    return { assistants: [...assistant] };
   }
 
   async find() {
@@ -32,7 +32,7 @@ class AssistantService {
             ['id', 'ASC']
           ]
     });
-    return assistant;
+    return { assistants: [...assistant] };
   }
 
   async findOne(id) {

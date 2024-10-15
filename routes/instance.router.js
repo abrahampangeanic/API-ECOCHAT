@@ -25,7 +25,7 @@ router.get('/',
   async (req, res, next) => {
     try {
       const userId = req.user.sub;
-      const instances = await service.findByUser(userId);
+      const instances = await service.findByUserBasic(userId);
       res.json(instances);
     } catch (error) {
       next(error);
@@ -34,7 +34,7 @@ router.get('/',
 
 router.get('/all', 
   passport.authenticate('jwt', {session: false}),
-  checkRoles('super'),
+  checkRoles('admin'),
   async (req, res, next) => {
     try {
       const instances = await service.find();

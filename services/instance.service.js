@@ -44,10 +44,10 @@ class InstanceService {
 
 
   async findByUserBasic(userId) {
-    const Instances = await models.User.findByPk(userId,{
-      include: [{ association: 'Instances'}]
+    const user = await models.User.findByPk(userId,{
+      include: [{ association: 'instances'}]
     });
-    return Instances.Instances;
+    return { intances: [...user.instances] };
   }
 
   async findByUser(userId) {

@@ -6,51 +6,54 @@ class PromptService {
   constructor(){}
 
   async create(data) {
-    const assistant = await models.Prompt.create(data);
-    return assistant;
+    const prompt = await models.Prompt.create(data);
+    return prompt;
   }
 
   async findByInstance(instanceId) {
-    const assistant = await models.Prompt.findAll({
+    const prompt = await models.Prompt.findAll({
       where: {  '$instanceId$': instanceId  }
     });
 
-    return assistant;
+    return { prompts: [...prompt] };
+
   }
 
   async findByInstanceAndId(instanceId, id) {
-    const assistant = await models.Prompt.findOne({
+    const prompt = await models.Prompt.findOne({
       where: {  '$instanceId$': instanceId, '$id$': id  }
     });
 
-    return assistant;
+    return { prompts: [...prompt] };
+
   }
 
   async find() {
-    const assistant = await models.Prompt.findAll({
+    const prompt = await models.Prompt.findAll({
         order: [
             ['id', 'ASC']
           ]
     });
-    return assistant;
+    return { prompts: [...prompt] };
+
   }
 
   async findOne(id) {
-    const assistant = await models.Prompt.findByPk(id );
-    if (!assistant)  throw boom.notFound('assistant not found');
-    return assistant;
+    const prompt = await models.Prompt.findByPk(id );
+    if (!prompt)  throw boom.notFound('prompt not found');
+    return prompt;
   }
 
   async update(instanceId, changes) {
     const model = await this.findByInstanceAndId(instanceId, changes.id);
-    if (!model)   throw boom.notFound('assistant not found');
+    if (!model)   throw boom.notFound('prompt not found');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
     const model = await this.findByEnterprise(id);
-    if (!model)   throw boom.notFound('assistant not found');
+    if (!model)   throw boom.notFound('prompt not found');
     await model.destroy();
     return { rta: true };
   }

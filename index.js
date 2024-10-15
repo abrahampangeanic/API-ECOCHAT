@@ -20,7 +20,7 @@ app.use(express.urlencoded({ extended: true }));
 
 const whitelist = [
   'http://localhost:8080',
-  'http://localhost:3011', 
+  'http://localhost:3000', 
   'https://myapp.co', 
   'http://localhost:5173', 
   'https://gest-client.onrender.com', 

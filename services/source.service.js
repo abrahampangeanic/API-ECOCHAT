@@ -6,52 +6,52 @@ class SourceService {
   constructor(){}
 
   async create(data) {
-    const assistant = await models.Source.create(data);
-    return assistant;
+    const source = await models.Source.create(data);
+    return source;
   }
 
   async findByInstance(instanceId) {
-    const assistant = await models.Source.findAll({
+    const source = await models.Source.findAll({
       where: {  '$instanceId$': instanceId  },
       include: [ 'documents' ],
     });
 
-    return assistant;
+    return { sources: [...source] };
   }
 
   async findByInstanceAndId(instanceId, id) {
-    const assistant = await models.Source.findOne({
+    const source = await models.Source.findOne({
       where: {  '$instanceId$': instanceId, '$id$': id  }
     });
 
-    return assistant;
+    return { sources: [...source] };
   }
 
   async find() {
-    const assistant = await models.Source.findAll({
+    const source = await models.Source.findAll({
         order: [
             ['id', 'ASC']
           ]
     });
-    return assistant;
+    return { sources: [...source] };
   }
 
   async findOne(id) {
-    const assistant = await models.Source.findByPk(id );
-    if (!assistant)  throw boom.notFound('assistant not found');
-    return assistant;
+    const source = await models.Source.findByPk(id );
+    if (!source)  throw boom.notFound('source not found');
+    return source;
   }
 
   async update(instanceId, changes) {
     const model = await this.findByInstanceAndId(instanceId, changes.id);
-    if (!model)   throw boom.notFound('assistant not found');
+    if (!model)   throw boom.notFound('source not found');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
     const model = await this.findByEnterprise(id);
-    if (!model)   throw boom.notFound('assistant not found');
+    if (!model)   throw boom.notFound('source not found');
     await model.destroy();
     return { rta: true };
   }
