@@ -35,6 +35,7 @@ const uploadhandler = (req, res, next) => {
         // Validate file types and sizes
         files.forEach((file) => {
             const allowedTypes = [
+                'text/plain',
                 'image/jpeg', 
                 'image/png', 
                 'application/pdf', 

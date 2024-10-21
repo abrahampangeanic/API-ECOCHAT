@@ -25,7 +25,8 @@ const whitelist = [
   'http://localhost:5173', 
   'https://gest-client.onrender.com', 
   'https://app.taxrepo.com', 
-  'http://192.168.100.143:3000'
+  'http://192.168.100.143:3000',
+  'http://192.168.100.143:3001',
 ];
 
 const options = {
