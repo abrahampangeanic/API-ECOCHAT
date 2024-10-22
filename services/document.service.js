@@ -44,6 +44,17 @@ class DocumentService {
     const model = await this.findOne(changes.id);
     if (!model)   throw boom.notFound('document not found');
     const rta = await model.update(changes);
+    
+    const source = await models.Source.findByPk(model.sourceId);
+    if (!source)   throw boom.notFound('source not found');
+
+    
+    if (changes.state === 'IN_PROGRESS') await source.update({indexstatus: 0});  // 0 = In Progress, 1 = Success, -1 = Failed
+    if (changes.state === 'FAILED')  await source.update({indexstatus: -1});
+    if (changes.state === 'SUCCESS') {
+      await source.update({indexstatus: 1});
+    } 
+    
     return rta;
   }
 

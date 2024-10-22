@@ -14,6 +14,9 @@ class SourceService {
     const source = await models.Source.findAll({
       where: {  '$instanceId$': instanceId  },
       include: [ 'documents' ],
+      order: [
+        ['createdAt', 'ASC']
+      ]
     });
 
     return { sources: [...source] };
