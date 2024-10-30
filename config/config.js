@@ -3,6 +3,10 @@ require('dotenv').config();
 const config = {
   env: process.env.NODE_ENV || 'dev',
   isProd: process.env.NODE_ENV === 'production',
+  apiUrl: process.env.API_URL,
+  modulePipeline:  process.env.MODULE_PIPELINE,
+  moduleExtractor:  process.env.MODULE_EXTRACTOR,
+  moduleScraping:  process.env.MODULE_SCRAPING,
   apiKey: process.env.API_KEY,
   jwtSecret: process.env.JWT_SECRET,
   dbUrl: process.env.DATABASE_URL,

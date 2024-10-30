@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const id = Joi.number().integer();
+const id = Joi.string();
 const name = Joi.string();
 const description = Joi.string();
 const sourcetype = Joi.string();
@@ -19,6 +19,8 @@ const files = Joi.object({
     size: Joi.number().max(5 * 1024 * 1024).required()  // tamaño máximo permitido (5MB en este caso)
   })
 });
+const status = Joi.string();
+const modules = Joi.string();
 
 const createSourceSchema = Joi.object({
     name: name.required(),    
@@ -54,4 +56,14 @@ const getSourceSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createSourceSchema, updateSourceSchema, getSourceSchema, createSourceFileSchema }
+const getSourceIdSchema = Joi.object({
+  id: id.required(),
+});
+
+const updateStatusSourceSchema = Joi.object({
+  id: id,
+  module: modules,
+  status: status,
+});
+
+module.exports = { createSourceSchema, updateSourceSchema, getSourceSchema, getSourceIdSchema, updateStatusSourceSchema, createSourceFileSchema }

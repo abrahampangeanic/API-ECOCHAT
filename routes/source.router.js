@@ -4,6 +4,7 @@ const boom = require('@hapi/boom');
 const FormData = require('form-data');
 const fs = require('fs');
 const axios = require('axios');
+const { config } = require('../config/config');
 
 const SourceService = require('../services/source.service');
 const service = new SourceService();
@@ -15,7 +16,13 @@ const documentServ = new DocumentService();
 const validatorHandler = require('../middlewares/validator.handler');
 const uploadhandler = require('../middlewares/upload.handler');
 const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getSourceSchema, updateSourceSchema, createSourceSchema, createSourceFileSchema } = require('../schemas/source.schema');
+const { 
+  getSourceSchema, 
+  updateSourceSchema, 
+  createSourceSchema, 
+  getSourceIdSchema, 
+  updateStatusSourceSchema,
+  createSourceFileSchema } = require('../schemas/source.schema');
 
 const router = express.Router({ mergeParams: true });
 
@@ -91,13 +98,13 @@ router.post('/file',
               sourceId: source.id,
             };
             
-            const document = await documentServ.create(documentInfo);
+            await documentServ.create(documentInfo);
 
-            const callback = `http://192.168.100.143:3000/api/v1/documents/callback/${document.id}`;
-            console.log('Callback URL:', callback);
+            const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${source.id}`;
+            console.log('Callback Extractor URL:', callback);
 
             const form = new FormData();
-            form.append('id', document.id);
+            form.append('id', source.id);
             form.append('file', fs.createReadStream(filePath)); // El primer argumento es el nombre del campo en la API de destino
             form.append('include_page_breaks', 'true');
             form.append('callback_url', callback);
@@ -118,7 +125,6 @@ router.post('/file',
             } catch (error) {
               console.error('Error al enviar el archivo al Extractor:', error.response ? error.response.data : error.message);
             }
-
           });
         });
     
@@ -143,7 +149,85 @@ router.post('/web',
         const body = req.body;
         body.instanceId = instanceId;
         const source = await service.create(body);
+
+        const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${source.id}`;
+        console.log('Callback Extractor URL:', callback);
+
+        const data = {
+          id: source.id,
+          url: source.reference,
+          callback_url: callback,
+          limit: -1,
+          mode: source.web_connector_type,
+          extract_documents: false,
+          extract_multimedia: false
+        }
+
+        console.log(data)
+
+        const urlScraper = `${config.moduleScraping}/process`;
+
+        try {
+          const response = await axios.post(urlScraper, data );
+          console.log('Response data:', response.data);
+
+        } catch (error) {
+          console.error('Error al enviar el archivo al Scraping:', error.response ? error.response.data : error.message);
+        }
+
         res.status(201).json(source);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post('/status/:id',
+  validatorHandler(getSourceSchema, 'params'),
+  validatorHandler(updateStatusSourceSchema, 'body'),
+  async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { status, module } = req.body;
+        console.log("Status: ",req.body)
+        let indexstatus = 0
+
+        if (module === 'text-extractor' || module === "WEB_SCRAPER") {
+          if(status === "SUCCESS") {
+            const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${id}`;
+            const module_url = module === 'text-extractor' ? config.moduleExtractor : config.moduleScraping;
+            
+            const indexData = {
+              source_id: id,
+              data_type: "TEXT",
+              source_type: module === 'text-extractor' ? "FILE" : "WEB",
+              collections: [],
+              module_name: module,
+              module_url: module_url,
+              callback_url: callback
+            }
+
+            const indexUrl = `${config.modulePipeline}/index`;
+            try {
+              const response = await axios.post(indexUrl, indexData );
+
+              if (response.data.success === false) indexstatus = -2;
+              else indexstatus = 2;
+
+              console.log('Response from INDEX data:', response.data);
+            } catch (error) {
+              console.error('Error al enviar a INDEX:', error.response ? error.response.data : error.message);
+            }
+
+          }
+          else if(status === "FAILED") indexstatus = -1
+        }
+
+        console.log("Update", id, indexstatus)
+
+        await service.update({id: id, indexstatus: indexstatus }); 
+        
+        res.status(201).json({ message: 'Callback successful' });
     } catch (error) {
       next(error);
     }
@@ -164,7 +248,7 @@ router.patch('/',
       const body = req.body;
       body.instanceId = instanceId;
 
-      const source = await service.update(instanceId, body);
+      const source = await service.update( body);
       res.json(source);
     } catch (error) {
       next(error);
@@ -179,10 +263,21 @@ router.delete('/:id',
     try {
       const { instanceId, id } = req.params;
       const userId = req.user.sub;
+
       const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
       if(relationships.length === 0) throw boom.unauthorized();
 
+      console.log("Eliminating source", id)
       await service.delete(id);
+
+      const indexUrl = `${config.modulePipeline}/index/${id}`;
+      try {
+        const response = await axios.delete(indexUrl);
+        console.log('Eliminado de INDEX', response.data);
+      } catch (error) {
+        console.error('Error al eliminar de INDEX:', error.response ? error.response.data : error.message);
+      }
+
       res.status(201).json({id});
     } catch (error) {
       next(error);

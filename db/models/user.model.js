@@ -26,7 +26,7 @@ const UserSchema = {
   role: {
     allowNull: false,
     type: DataTypes.STRING,
-    defaultValue: 'customer'
+    defaultValue: 'CUSTOMER'
   },
   createdAt: {
     allowNull: false,
@@ -38,14 +38,9 @@ const UserSchema = {
 
 class User extends Model {
   static associate(models) {
-    this.hasOne(models.Profile, {
-      as: 'profile',
-      foreignKey: 'userId'
-    });
-    this.hasOne(models.ApiKey, {
-      as: 'apikey',
-      foreignKey: 'userId'
-    });
+    this.hasOne(models.Profile, { as: 'profile',  foreignKey: 'userId' });
+    this.hasMany(models.Session, { as: 'sessions',  foreignKey: 'userId' });
+    this.hasOne(models.ApiKey, { as: 'apikey',  foreignKey: 'userId' });
     this.belongsToMany(models.Instance, {
       as: 'instances',
       through: models.InstanceUser,

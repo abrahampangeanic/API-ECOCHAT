@@ -8,16 +8,25 @@ const validatorHandler = require('../middlewares/validator.handler');
 const { createInstanceSchema, getInstanceSchema, updateInstanceSchema,  } = require('../schemas/instance.schema');
 
 const assistantRouter = require('./assistant.router');
+const assistantCollectionRouter = require('./assistantcollection.router');
+const assistantPromptRouter = require('./assistantprompt.router');
+const assistantSkillRouter = require('./assistantskill.router');
 const promptRouter = require('./prompt.router');
 const collectionRouter = require('./collection.router');
+const collectionSourceRouter = require('./collectionsources.router');
 const sourceRouter = require('./source.router');
 
 const router = express.Router();
 const service = new instanceService();
 
 router.use('/:instanceId/assistants', assistantRouter);
+router.use('/:instanceId/assistantscollections', assistantCollectionRouter);
+router.use('/:instanceId/assistantsskills', assistantSkillRouter);
+router.use('/:instanceId/assistantsprompts', assistantPromptRouter);
+router.use('/:instanceId/assistants', assistantRouter);
 router.use('/:instanceId/prompts', promptRouter);
 router.use('/:instanceId/collections', collectionRouter);
+router.use('/:instanceId/collectionsources', collectionSourceRouter);
 router.use('/:instanceId/sources', sourceRouter);
 
 router.get('/', 

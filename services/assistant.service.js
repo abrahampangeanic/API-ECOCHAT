@@ -12,7 +12,8 @@ class AssistantService {
 
   async findByInstance(instanceId) {
     const assistant = await models.Assistant.findAll({
-      where: {  '$instanceId$': instanceId  }
+      where: {  'instanceId': instanceId  },
+      include: [ 'collections', 'skills' ]
     });
 
     return { assistants: [...assistant] };

@@ -13,6 +13,10 @@ const { ASSISTANTCOLLECTION_TABLE, AssistantCollectionSchema } = require('../mod
 const { SOURCE_TABLE, SourceSchema } = require('../models/source.model');
 const { COLLECTIONSOURCE_TABLE, CollectionSourceSchema } = require('../models/collection-source.model');
 const { APIKEY_TABLE, ApiKeySchema } = require('../models/apikey.model');
+const { SESSION_TABLE, SessionSchema } = require('../models/session.model');
+const { QUERY_TABLE, QuerySchema } = require('../models/query.model');
+const { SKILL_TABLE, SkillSchema } = require('../models/skill.model');
+const { ASSISTANTSKILL_TABLE, AssistantSkillSchema } = require('../models/assistant-skill.model');
 
 module.exports = {
   up: async (queryInterface) => {
@@ -29,6 +33,10 @@ module.exports = {
     await queryInterface.createTable(SOURCE_TABLE, SourceSchema) ;
     await queryInterface.createTable(COLLECTIONSOURCE_TABLE, CollectionSourceSchema) ;
     await queryInterface.createTable(APIKEY_TABLE, ApiKeySchema) ;
+    await queryInterface.createTable(SESSION_TABLE, SessionSchema) ;
+    await queryInterface.createTable(QUERY_TABLE, QuerySchema) ;
+    await queryInterface.createTable(SKILL_TABLE, SkillSchema) ;
+    await queryInterface.createTable(ASSISTANTSKILL_TABLE, AssistantSkillSchema) ;
 
     await queryInterface.bulkInsert('users', [
       {
@@ -60,10 +68,36 @@ module.exports = {
         expiresAt: null,
       }
     ]);
+
+    await queryInterface.bulkInsert('skills', [
+      {
+        id: 1, 
+        title: 'QA',
+        description: 'Question and Answer',
+        created_at: new Date(),
+      },
+      {
+        id: 2, 
+        title: 'SEARCH',
+        description: 'SEARCH',
+        created_at: new Date(),
+      },
+      {
+        id: 3, 
+        title: 'GENERATE',
+        description: 'GENERATE CONTENT',
+        created_at: new Date(),
+      },
+
+    ]);
     
   },
 
   down: async (queryInterface) => {
+    await queryInterface.dropTable(ASSISTANTSKILL_TABLE);
+    await queryInterface.dropTable(SKILL_TABLE);
+    await queryInterface.dropTable(QUERY_TABLE);
+    await queryInterface.dropTable(SESSION_TABLE);
     await queryInterface.dropTable(APIKEY_TABLE);
     await queryInterface.dropTable(COLLECTION_TABLE);
     await queryInterface.dropTable(ASSISTANTCOLLECTION_TABLE);

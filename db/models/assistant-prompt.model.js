@@ -29,8 +29,8 @@ const AssistantPromptSchema = {
 class AssistantPrompt extends Model {
 
   static associate(models) {
-    this.belongsTo(models.Assistant, { as: 'assistants' });
-    this.belongsTo(models.Prompt, { as: 'prompts' });
+    this.belongsTo(models.Assistant, { as: 'assistant' });
+    this.belongsTo(models.Prompt, { as: 'prompt' });
   }
 
   static config(sequelize) {

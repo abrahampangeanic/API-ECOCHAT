@@ -65,18 +65,27 @@ class Assistant extends Model {
   static associate(models) {
     this.belongsTo(models.Instance, {  as: 'instance'});
     this.hasMany(models.AssistantCollection, { as: 'relationCollection',  foreignKey: 'assistantId' });
+
     this.belongsToMany(models.Collection, {
       as: 'collections',
       through: models.AssistantCollection,
       foreignKey: 'assistantId',
       otherKey: 'collectionId'
     });
+    
     this.hasMany(models.AssistantPrompt, { as: 'relationPrompt',  foreignKey: 'assistantId' });
     this.belongsToMany(models.Prompt, {
       as: 'prompts',
       through: models.AssistantPrompt,
       foreignKey: 'assistantId',
       otherKey: 'promptId'
+    });
+
+    this.belongsToMany(models.Skill, {
+      as: 'skills',
+      through: models.AssistantSkill,
+      foreignKey: 'assistantId',
+      otherKey: 'skillId'
     });
   }
 

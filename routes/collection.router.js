@@ -82,9 +82,9 @@ router.patch('/',
       if(relationships.length === 0) throw boom.unauthorized();
 
       const body = req.body;
-      body.instanceId = instanceId;
+      body.instanceId = Number(instanceId);
 
-      const collection = await service.update(instanceId, body);
+      const collection = await service.update(body);
       res.json(collection);
     } catch (error) {
       next(error);

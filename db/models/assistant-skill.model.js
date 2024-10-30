@@ -1,28 +1,21 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const INSTANCEUSER_TABLE = 'instance_user';
+const ASSISTANTSKILL_TABLE = 'assistant_skills';
 
-const InstanceUserSchema = {
+const AssistantSkillSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
     primaryKey: true,
     type: DataTypes.INTEGER
   },
-  userId: {
-    field: 'user_id',
+  assistantId: {
     allowNull: false,
     type: DataTypes.INTEGER,
   },
-  instanceId: {
-    field: 'instance_id',
+  skillId: {
     allowNull: false,
     type: DataTypes.INTEGER,
-  },
-  role: {
-    allowNull: true,
-    type: DataTypes.STRING,
-    field: 'USER',
   },
   createdAt: {
     allowNull: false,
@@ -33,21 +26,21 @@ const InstanceUserSchema = {
 }
 
 
-class InstanceUser extends Model {
+class AssistantSkill extends Model {
 
   static associate(models) {
-    this.belongsTo(models.User, { as: 'user' });
-    this.belongsTo(models.Instance, { as: 'instance' });
+    this.belongsTo(models.Assistant, { as: 'assistant' });
+    this.belongsTo(models.Skill, { as: 'skill' });
   }
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: INSTANCEUSER_TABLE,
-      modelName: 'InstanceUser',
+      tableName: ASSISTANTSKILL_TABLE,
+      modelName: 'AssistantSkill',
       timestamps: false
     }
   }
 }
 
-module.exports = { InstanceUser, InstanceUserSchema, INSTANCEUSER_TABLE };
+module.exports = { AssistantSkill, AssistantSkillSchema, ASSISTANTSKILL_TABLE };

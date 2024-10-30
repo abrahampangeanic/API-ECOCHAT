@@ -45,15 +45,15 @@ class SourceService {
     return source;
   }
 
-  async update(instanceId, changes) {
-    const model = await this.findByInstanceAndId(instanceId, changes.id);
+  async update( changes) {
+    const model = await this.findOne(changes.id);
     if (!model)   throw boom.notFound('source not found');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
-    const model = await this.findByEnterprise(id);
+    const model = await this.findOne(id);
     if (!model)   throw boom.notFound('source not found');
     await model.destroy();
     return { rta: true };

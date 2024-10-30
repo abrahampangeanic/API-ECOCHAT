@@ -15,7 +15,7 @@ const AssistantCollectionSchema = {
   },
   collectionId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   accessMode: {
     allowNull: false,
@@ -33,8 +33,8 @@ const AssistantCollectionSchema = {
 class AssistantCollection extends Model {
 
   static associate(models) {
-    this.belongsTo(models.Assistant, { as: 'assistants' });
-    this.belongsTo(models.Collection, { as: 'collections' });
+    this.belongsTo(models.Assistant, { as: 'assistant' });
+    this.belongsTo(models.Collection, { as: 'collection' });
   }
 
   static config(sequelize) {

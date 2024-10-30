@@ -1,13 +1,14 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
+const { v4: uuidv4 } = require('uuid'); 
 
 const COLLECTION_TABLE = 'collections';
 
 const CollectionSchema = {
   id: {
     allowNull: false,
-    autoIncrement: true,
     primaryKey: true,
-    type: DataTypes.INTEGER
+    defaultValue: uuidv4,
+    type: DataTypes.UUID,  
   },
   name: {
     type: DataTypes.STRING,
@@ -41,7 +42,7 @@ class Collection extends Model {
       otherKey: 'assistantId'
     });
 
-    this.hasMany(models.CollectionSource, { as: 'relationSource',  foreignKey: 'collectionId' });
+    // this.hasMany(models.CollectionSource, { as: 'relationSource',  foreignKey: 'collectionId' });
     this.belongsToMany(models.Source, {
       as: 'sources',
       through: models.CollectionSource,

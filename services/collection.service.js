@@ -12,7 +12,8 @@ class CollectionService {
 
   async findByInstance(instanceId) {
     const collection = await models.Collection.findAll({
-      where: {  '$instanceId$': instanceId  }
+      where: {  'instanceId': instanceId },
+      include: [ 'sources' ],
     });
 
     return { collections: [...collection] };
@@ -42,16 +43,18 @@ class CollectionService {
     return collection;
   }
 
-  async update(instanceId, changes) {
-    const model = await this.findByInstanceAndId(instanceId, changes.id);
+  async update(changes) {
+    const model = await this.findOne(changes.id);
     if (!model)   throw boom.notFound('collection not found');
+    if (model.instanceId !== changes.instanceId) throw boom.unauthorized('collection not authorized');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
-    const model = await this.findByEnterprise(id);
+    const model = await this.findOne(id);
     if (!model)   throw boom.notFound('collection not found');
+    await models.CollectionSource.destroy({ where: { collectionId: id } });
     await model.destroy();
     return { rta: true };
   }

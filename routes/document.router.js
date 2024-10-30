@@ -77,7 +77,23 @@ const instance = new InstanceService();
 //   }
 // );
 
-router.post('/callback/:documentId',
+router.post('/extractor/:documentId',
+  validatorHandler(getDocumentSchema, 'params'),
+  validatorHandler(updateStatusDocumentSchema, 'body'),
+  async (req, res, next) => {
+    try {
+        const { documentId } = req.params;
+        const { status } = req.body;
+        await service.update({id: documentId, state: status }); // Extractor ID hardcoded for now
+        
+        res.status(201).json({ message: 'Callback successful' });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+router.post('/index/:documentId',
   validatorHandler(getDocumentSchema, 'params'),
   validatorHandler(updateStatusDocumentSchema, 'body'),
   async (req, res, next) => {
