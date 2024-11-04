@@ -192,8 +192,9 @@ router.post('/status/:id',
         console.log("Status: ",req.body)
         let indexstatus = 0
 
-        if (module === 'text-extractor' || module === "WEB_SCRAPER") {
+        // if (module === 'text-extractor' || module === "WEB_SCRAPER") {
           if(status === "SUCCESS") {
+            indexstatus = 1
             const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${id}`;
             const module_url = module === 'text-extractor' ? config.moduleExtractor : config.moduleScraping;
             
@@ -221,7 +222,7 @@ router.post('/status/:id',
 
           }
           else if(status === "FAILED") indexstatus = -1
-        }
+        // }
 
         console.log("Update", id, indexstatus)
 

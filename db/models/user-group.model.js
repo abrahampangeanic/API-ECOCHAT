@@ -1,8 +1,8 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
 
-const INSTANCEUSER_TABLE = 'instance_user';
+const USERGROUP_TABLE = 'user_group';
 
-const InstanceUserSchema = {
+const UserGroupSchema = {
   id: {
     allowNull: false,
     autoIncrement: true,
@@ -14,15 +14,10 @@ const InstanceUserSchema = {
     allowNull: false,
     type: DataTypes.INTEGER,
   },
-  instanceId: {
-    field: 'instance_id',
+  groupId: {
+    field: 'group_id',
     allowNull: false,
-    type: DataTypes.INTEGER,
-  },
-  role: {
-    allowNull: true,
     type: DataTypes.STRING,
-    defaultValue: 'USER',
   },
   createdAt: {
     allowNull: false,
@@ -33,21 +28,21 @@ const InstanceUserSchema = {
 }
 
 
-class InstanceUser extends Model {
+class UserGroup extends Model {
 
   static associate(models) {
     this.belongsTo(models.User, { as: 'user' });
-    this.belongsTo(models.Instance, { as: 'instance' });
+    this.belongsTo(models.Group, { as: 'group' });
   }
 
   static config(sequelize) {
     return {
       sequelize,
-      tableName: INSTANCEUSER_TABLE,
-      modelName: 'InstanceUser',
+      tableName: USERGROUP_TABLE,
+      modelName: 'UserGroup',
       timestamps: false
     }
   }
 }
 
-module.exports = { InstanceUser, InstanceUserSchema, INSTANCEUSER_TABLE };
+module.exports = { UserGroup, UserGroupSchema, USERGROUP_TABLE };

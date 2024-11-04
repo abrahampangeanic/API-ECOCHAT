@@ -42,9 +42,10 @@ class AssistantService {
     return assistant;
   }
 
-  async update(instanceId, changes) {
-    const model = await this.findByInstanceAndId(instanceId, changes.id);
+  async update(changes) {
+    const model = await this.findOne(changes.id);
     if (!model)   throw boom.notFound('assistant not found');
+    if (model.instanceId !== changes.instanceId) throw boom.unauthorized('Assitant not authorized');
     const rta = await model.update(changes);
     return rta;
   }

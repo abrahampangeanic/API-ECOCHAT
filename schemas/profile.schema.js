@@ -7,7 +7,7 @@ const phone =  Joi.string();
 const userId = Joi.number().integer();
 const email = Joi.string().email();
 const password =  Joi.string();
-// const role =  Joi.string();
+const role =  Joi.string();
 const language =  Joi.string();
 
 const getProfileSchema = Joi.object({
@@ -22,7 +22,7 @@ const createProfileSchema = Joi.object({
   user: Joi.object({
     email: email.required(),
     password: password.required(),
-    // role: role.required(),
+    role: role
   })
 });
 

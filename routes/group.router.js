@@ -2,14 +2,14 @@ const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
 
-const AssistantService = require('../services/assistant.service');
-const service = new AssistantService();
+const GroupService = require('../services/group.service');
+const service = new GroupService();
 const InstanceService = require('../services/instance.service');
 const instanceServ = new InstanceService();
 
 const validatorHandler = require('../middlewares/validator.handler');
 const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getAssistantSchema, updateAssistantSchema, createAssistantSchema } = require('../schemas/assistant.schema');
+const { getGroupSchema, updateGroupSchema, createGroupSchema } = require('../schemas/group.schema');
 
 const router = express.Router({ mergeParams: true });
 
@@ -23,8 +23,8 @@ router.get('/',
       const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
       if(relationships.length === 0) throw boom.unauthorized();
 
-      const assistant = await service.findByInstance(instanceId);
-      res.json(assistant);
+      const group = await service.findByInstance(instanceId);
+      res.json(group);
     } catch (error) {
       next(error);
     }
@@ -32,7 +32,7 @@ router.get('/',
 
 router.get('/:id',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getAssistantSchema, 'params'),
+  validatorHandler(getGroupSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId, id } = req.params;
@@ -52,7 +52,7 @@ router.get('/:id',
 router.post('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(createAssistantSchema, 'body'),
+  validatorHandler(createGroupSchema, 'body'),
   async (req, res, next) => {
     try {
         const { instanceId  } = req.params;
@@ -62,8 +62,8 @@ router.post('/',
 
         const body = req.body;
         body.instanceId = instanceId;
-        const assistant = await service.create(body);
-        res.status(201).json(assistant);
+        const group = await service.create(body);
+        res.status(201).json(group);
     } catch (error) {
       next(error);
     }
@@ -73,19 +73,19 @@ router.post('/',
 router.patch('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(updateAssistantSchema, 'body'),
+  validatorHandler(updateGroupSchema, 'body'),
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
       const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+      if(relationships.length === 0) throw boom.unauthorized();
+
       const body = req.body;
       body.instanceId = Number(instanceId);
 
-      if(relationships.length === 0) throw boom.unauthorized();
-      
-      const assistant = await service.update(body);
-      res.json(assistant);
+      const group = await service.update(body);
+      res.json(group);
     } catch (error) {
       next(error);
     }
@@ -94,7 +94,7 @@ router.patch('/',
 
 router.delete('/:id',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getAssistantSchema, 'params'),
+  validatorHandler(getGroupSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId, id } = req.params;

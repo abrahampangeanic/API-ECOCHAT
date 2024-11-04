@@ -19,7 +19,7 @@ class InstanceService {
     const relation = {
       userId: data.userId,
       instanceId: newInstance.id,
-      permissions: 'admin'
+      role: 'ADMIN'
     }
 
     await models.InstanceUser.create(relation);

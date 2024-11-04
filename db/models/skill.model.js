@@ -10,7 +10,7 @@ const SkillSchema = {
     primaryKey: true,
     type: DataTypes.INTEGER
   },
-  title: {
+  name: {
     type: DataTypes.STRING,
     allowNull: true,
   },

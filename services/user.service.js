@@ -23,6 +23,21 @@ class UserService {
     return rta;
   }
 
+  
+  async findByInstance(id) {
+    const rta = await models.Instance.findByPk(id, {
+      include: [{ model: models.User, as: 'users' , include: ['profile', 'groups']}]
+    });
+
+    if (!rta)   return { users: [] }; // Retorna un array vacío si no se encuentra la instancia
+    
+    const instanceData = rta.toJSON();
+    const users = instanceData.users || [];
+    const usersWithoutPasswords = users.map(({ password, ...user }) => user);
+    
+    return { users: usersWithoutPasswords };
+  }
+
   async findByEmail(email) {
     const rta = await models.User.findOne({
       where: { email },

@@ -47,6 +47,12 @@ class User extends Model {
       foreignKey: 'userId',
       otherKey: 'instanceId'
     });
+    this.belongsToMany(models.Group, {
+      as: 'groups',
+      through: models.UserGroup,
+      foreignKey: 'userId',
+      otherKey: 'groupId'
+    });
   }
 
   static config(sequelize) {

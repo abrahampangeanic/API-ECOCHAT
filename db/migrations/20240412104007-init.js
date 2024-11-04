@@ -17,6 +17,9 @@ const { SESSION_TABLE, SessionSchema } = require('../models/session.model');
 const { QUERY_TABLE, QuerySchema } = require('../models/query.model');
 const { SKILL_TABLE, SkillSchema } = require('../models/skill.model');
 const { ASSISTANTSKILL_TABLE, AssistantSkillSchema } = require('../models/assistant-skill.model');
+const { USERGROUP_TABLE, UserGroupSchema } = require('../models/user-group.model');
+const { GROUP_TABLE, GroupSchema } = require('../models/group.model');
+const { PERMISSION_TABLE, PermissionSchema } = require('../models/permisssion.model');
 
 module.exports = {
   up: async (queryInterface) => {
@@ -37,6 +40,9 @@ module.exports = {
     await queryInterface.createTable(QUERY_TABLE, QuerySchema) ;
     await queryInterface.createTable(SKILL_TABLE, SkillSchema) ;
     await queryInterface.createTable(ASSISTANTSKILL_TABLE, AssistantSkillSchema) ;
+    await queryInterface.createTable(USERGROUP_TABLE, UserGroupSchema) ;
+    await queryInterface.createTable(GROUP_TABLE, GroupSchema) ;
+    await queryInterface.createTable(PERMISSION_TABLE, PermissionSchema) ;
 
     await queryInterface.bulkInsert('users', [
       {
@@ -72,19 +78,19 @@ module.exports = {
     await queryInterface.bulkInsert('skills', [
       {
         id: 1, 
-        title: 'QA',
+        name: 'QA',
         description: 'Question and Answer',
         created_at: new Date(),
       },
       {
         id: 2, 
-        title: 'SEARCH',
+        name: 'SEARCH',
         description: 'SEARCH',
         created_at: new Date(),
       },
       {
         id: 3, 
-        title: 'GENERATE',
+        name: 'GENERATE',
         description: 'GENERATE CONTENT',
         created_at: new Date(),
       },
@@ -94,6 +100,9 @@ module.exports = {
   },
 
   down: async (queryInterface) => {
+    await queryInterface.dropTable(PERMISSION_TABLE);
+    await queryInterface.dropTable(GROUP_TABLE);
+    await queryInterface.dropTable(USERGROUP_TABLE);
     await queryInterface.dropTable(ASSISTANTSKILL_TABLE);
     await queryInterface.dropTable(SKILL_TABLE);
     await queryInterface.dropTable(QUERY_TABLE);

@@ -1,15 +1,38 @@
 const express = require('express');
-
+const passport = require('passport');
 const UserService = require('./../services/user.service');
 const { checkRoles } = require('./../middlewares/auth.handler');
 const validatorHandler = require('./../middlewares/validator.handler');
+const { getInstanceSchema} = require('../schemas/instance.schema');
 const { updateUserSchema, createUserSchema, getUserSchema } = require('./../schemas/user.schema');
 
-const router = express.Router();
 const service = new UserService();
+const InstanceService = require('../services/instance.service');
+const instanceServ = new InstanceService();
+
+const router = express.Router({ mergeParams: true });
 
 router.get('/', 
-  checkRoles('super'),
+  passport.authenticate('jwt', {session: false}),
+  validatorHandler(getInstanceSchema, 'params'),
+  async (req, res, next) => {
+    try {
+      const { instanceId } = req.params;
+      console.log("instanceId", instanceId)
+      const userId = req.user.sub;
+      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+      if(relationships.length === 0) throw boom.unauthorized();
+
+      const collection = await service.findByInstance(instanceId);
+      res.json(collection);
+    } catch (error) {
+      next(error);
+    }
+});
+
+router.get('/all', 
+  passport.authenticate('jwt', {session: false}),
+  checkRoles('admin'),
   async (req, res, next) => {
   try {
     const users = await service.find();
@@ -18,6 +41,10 @@ router.get('/',
     next(error);
   }
 });
+
+
+
+
 
 router.get('/:id',
   checkRoles('super'),

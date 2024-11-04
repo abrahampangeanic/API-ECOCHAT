@@ -15,10 +15,15 @@ const promptRouter = require('./prompt.router');
 const collectionRouter = require('./collection.router');
 const collectionSourceRouter = require('./collectionsources.router');
 const sourceRouter = require('./source.router');
+const userRouter = require('./users.router');
+const groupRouter = require('./group.router');
+const userGroupRouter = require('./usergroup.router');
+const permissionsRouter = require('./permission.router');
 
 const router = express.Router();
 const service = new instanceService();
 
+router.use('/:instanceId/users', userRouter);
 router.use('/:instanceId/assistants', assistantRouter);
 router.use('/:instanceId/assistantscollections', assistantCollectionRouter);
 router.use('/:instanceId/assistantsskills', assistantSkillRouter);
@@ -28,6 +33,10 @@ router.use('/:instanceId/prompts', promptRouter);
 router.use('/:instanceId/collections', collectionRouter);
 router.use('/:instanceId/collectionsources', collectionSourceRouter);
 router.use('/:instanceId/sources', sourceRouter);
+router.use('/:instanceId/groups', groupRouter);
+router.use('/:instanceId/usergroups', userGroupRouter);
+router.use('/:instanceId/permissions', permissionsRouter);
+
 
 router.get('/', 
   passport.authenticate('jwt', {session: false}),

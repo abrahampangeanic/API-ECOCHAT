@@ -11,9 +11,6 @@ const documentRouter = require('./document.router');
 // const usersRouter = require('./users.router');
 // const orderRouter = require('./orders.router');
 
-
-// const profileRouter = require('./profile.router');
-
 // const suscriptionRouter = require('./suscription.router');
 // const reportRouter = require('./report.router');
 
@@ -23,7 +20,7 @@ function routerApi(app) {
 
   app.use('/api/v1', router);
   router.use('/auth', authRouter);
-  router.use('/customers', profileRouter);
+  // router.use('/customers', profileRouter);
   router.use('/register', profileRouter);
   router.use('/instances', instanceRouter);
   router.use('/documents', documentRouter);

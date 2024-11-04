@@ -15,6 +15,9 @@ const { Session, SessionSchema } = require('./session.model');
 const { Query, QuerySchema } = require('./query.model');
 const { Skill, SkillSchema } = require('./skill.model');
 const { AssistantSkill, AssistantSkillSchema } = require('./assistant-skill.model');
+const { UserGroup, UserGroupSchema } = require('./user-group.model');
+const { Group, GroupSchema } = require('./group.model');
+const { Permission, PermissionSchema } = require('./permisssion.model');
 
 function setupModels(sequelize) {
   User.init(UserSchema, User.config(sequelize));
@@ -34,6 +37,9 @@ function setupModels(sequelize) {
   Query.init(QuerySchema, Query.config(sequelize));
   Skill.init(SkillSchema, Skill.config(sequelize));
   AssistantSkill.init(AssistantSkillSchema, AssistantSkill.config(sequelize));
+  UserGroup.init(UserGroupSchema, UserGroup.config(sequelize));
+  Group.init(GroupSchema, Group.config(sequelize));
+  Permission.init(PermissionSchema, Permission.config(sequelize));
 
   User.associate(sequelize.models);
   Profile.associate(sequelize.models);
@@ -52,6 +58,9 @@ function setupModels(sequelize) {
   Query.associate(sequelize.models);
   Skill.associate(sequelize.models);
   AssistantSkill.associate(sequelize.models);
+  UserGroup.associate(sequelize.models);
+  Group.associate(sequelize.models);
+  Permission.associate(sequelize.models);
 }
 
 module.exports = setupModels;
