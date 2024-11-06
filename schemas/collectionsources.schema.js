@@ -3,7 +3,7 @@ const Joi = require('joi');
 const id = Joi.number();
 const collectionId = Joi.string();
 const sourceId = Joi.string();
-const instanceId = Joi.number();
+const instanceId = Joi.string();
 
 const createCollectionSourceSchema = Joi.object({
     collectionId: collectionId.required(),

@@ -5,6 +5,7 @@ const profileRouter = require('./profile.router');
 
 const instanceRouter = require('./instance.router');
 const documentRouter = require('./document.router');
+const sessionRouter = require('./session.router');
 
 // const productsRouter = require('./products.router');
 // const categoriesRouter = require('./categories.router');
@@ -24,6 +25,7 @@ function routerApi(app) {
   router.use('/register', profileRouter);
   router.use('/instances', instanceRouter);
   router.use('/documents', documentRouter);
+  router.use('/sessions', sessionRouter);
 }
 
 module.exports = routerApi;

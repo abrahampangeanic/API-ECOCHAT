@@ -10,7 +10,7 @@ const SessionSchema = {
     defaultValue: uuidv4,
     type: DataTypes.UUID,  
   },
-  title: {
+  name: {
     type: DataTypes.STRING,
     allowNull: true,
   },

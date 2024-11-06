@@ -9,7 +9,7 @@ const include_citacions	 = Joi.number().integer().allow(null);
 const datetime_aware = Joi.date();;
 const system_prompt = Joi.string().allow(null);
 const task_prompt = Joi.string().allow(null);
-const instanceId = Joi.number().integer();
+const instanceId = Joi.string();
 
 const createPromptSchema = Joi.object({
     name: name.required(),    

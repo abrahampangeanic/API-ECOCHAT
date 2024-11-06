@@ -3,7 +3,7 @@ const Joi = require('joi');
 const id = Joi.number();
 const assistantId = Joi.string();
 const promptId = Joi.string();
-const instanceId = Joi.number();
+const instanceId = Joi.string();
 
 const createAssistantPromptSchema = Joi.object({
     assistantId: assistantId.required(),

@@ -17,7 +17,7 @@ const InstanceUserSchema = {
   instanceId: {
     field: 'instance_id',
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   role: {
     allowNull: true,

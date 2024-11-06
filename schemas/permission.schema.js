@@ -7,7 +7,7 @@ const accessMode = Joi.string();
 const groupId = Joi.string();
 const collectionId = Joi.string().allow("");
 const assistantId = Joi.number().integer().allow(null);
-const instanceId = Joi.number().integer();
+const instanceId = Joi.string();
 
 const createPermissionSchema = Joi.object({
   skill: skill.required(),    

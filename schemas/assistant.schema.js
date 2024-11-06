@@ -10,7 +10,7 @@ const llm_relevance_filter = Joi.number().integer();
 const llm_filter_extraction = Joi.number().integer();
 const starter_message = Joi.string().allow(null);
 const poor_answer_message = Joi.string().allow(null);
-const instanceId = Joi.number().integer();
+const instanceId = Joi.string();
 
 const createAssistantSchema = Joi.object({
     name: name.required(),    

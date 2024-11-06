@@ -30,6 +30,20 @@ class QueryService {
     return query;
   }
 
+  
+  async findBySession(sessionId) {
+    const rta = await models.Query.findAll({
+      where: { 'sessionId': sessionId }
+    });
+
+    if (!rta || rta.length === 0) return { queries: [] };
+
+    const queryData = rta.map(query => query.toJSON());
+    const queriesBasic = queryData.map(({ refs, ts_in, ts_out, tokens_in, tokens_out, task_prompt, ...query }) => query);
+  
+    return { queries: queriesBasic };
+  }
+
   async update( changes) {
     const model = await this.findOne(changes.id);
     const rta = await model.update(changes);
@@ -38,8 +52,7 @@ class QueryService {
 
   async delete(id) {
     const model = await this.findOne(id);
-    const change = { removed: 1}
-    await model.update(change);
+    await model.destroy();
     return { rta: true };
   }
 

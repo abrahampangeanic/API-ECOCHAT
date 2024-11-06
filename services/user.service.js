@@ -1,17 +1,38 @@
 const boom = require('@hapi/boom');
 const bcrypt = require('bcrypt');
-
+const { v4: uuidv4 } = require('uuid');
+const { Op } = require('sequelize');
 const { models } = require('../libs/sequelize');
 
 class UserService {
   constructor() {}
 
   async create(data) {
+
+    const user = await models.User.findOne({ where: { 'email': data.email }});
+    if (user)   throw boom.conflict('User already exists');
+
     const hash = await bcrypt.hash(data.password, 10);
-    const newUser = await models.User.create({
-      ...data,
-      password: hash
-    });
+
+    const newData = {
+      email: data.email,
+      password: hash,
+      role: 'client',
+      profile: {
+        name: data.name,
+        lastName: data.lastName,
+        language: data.language
+      },
+      instanceUsers: {
+        role: data.role,
+        instanceId: data.instanceId
+      },
+      apikey:{
+        key: uuidv4()
+      }
+    }
+
+    const newUser = await models.User.create(newData, {include: ['profile','instanceUsers', 'apikey']});
     delete newUser.dataValues.password;
     return newUser;
   }
@@ -26,7 +47,12 @@ class UserService {
   
   async findByInstance(id) {
     const rta = await models.Instance.findByPk(id, {
-      include: [{ model: models.User, as: 'users' , include: ['profile', 'groups']}]
+      include: [{ 
+        model: models.User, 
+        as: 'users' , 
+        where: { role: { [Op.ne]: 'super' } },
+        include: ['profile', 'groups']
+      }]
     });
 
     if (!rta)   return { users: [] }; // Retorna un array vacío si no se encuentra la instancia

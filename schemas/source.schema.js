@@ -11,7 +11,7 @@ const indextsreq = Joi.number().integer();
 const indextsend = Joi.number().integer();
 const enabled = Joi.number().integer();
 const indexstatus = Joi.number().integer();
-const instanceId = Joi.number().integer();
+const instanceId = Joi.string();
 const files = Joi.object({
   file: Joi.object({
     originalname: Joi.string().required(),  // nombre original del archivo

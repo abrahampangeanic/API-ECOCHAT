@@ -18,6 +18,14 @@ const QuerySchema = {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  feedback: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  feedback_message: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   refs: {
     type: DataTypes.TEXT,
     allowNull: true,
@@ -44,7 +52,7 @@ const QuerySchema = {
   },
   sessionId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   assistantId: {
     allowNull: false,
@@ -52,7 +60,7 @@ const QuerySchema = {
   },
   instanceId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   createdAt: {
     allowNull: false,

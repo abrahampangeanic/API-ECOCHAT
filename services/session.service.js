@@ -21,7 +21,7 @@ class SessionService {
   }
 
   async findByUser(userId) {
-    const sessions = await models.Session.findOne({
+    const sessions = await models.Session.findAll({
       where: { 'userId': userId }
     });
 
@@ -38,8 +38,7 @@ class SessionService {
 
   async delete(id) {
     const model = await this.findOne(id);
-    const change = { removed: 1}
-    await model.update(change);
+    await model.destroy();
     return { rta: true };
   }
 

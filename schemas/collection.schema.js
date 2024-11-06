@@ -4,7 +4,7 @@ const id = Joi.string();
 const name = Joi.string();
 const description = Joi.string();
 const access_type = Joi.string();
-const instanceId = Joi.number().integer();
+const instanceId = Joi.string();
 
 const createCollectionSchema = Joi.object({
     name: name.required(),    

@@ -3,7 +3,7 @@ const Joi = require('joi');
 const id = Joi.string();
 const name = Joi.string();
 const description = Joi.string();
-const instanceId = Joi.number();
+const instanceId = Joi.string();
 
 const createGroupSchema = Joi.object({
     name: name.required(),

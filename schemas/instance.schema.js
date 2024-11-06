@@ -9,7 +9,7 @@ const type = Joi.string();
 const lang = Joi.string();
 const logo = Joi.string().allow(null);
 
-const instanceId = Joi.number().integer();
+const instanceId = Joi.string();
 
 const createInstanceSchema = Joi.object({
     name: name.required(),    

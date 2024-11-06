@@ -3,7 +3,7 @@ const Joi = require('joi');
 const id = Joi.number();
 const assistantId = Joi.number();
 const collectionId = Joi.string();
-const instanceId = Joi.number();
+const instanceId = Joi.string();
 const accessMode = Joi.string();
 
 const createAssistantCollectionSchema = Joi.object({

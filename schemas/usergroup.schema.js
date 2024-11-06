@@ -3,7 +3,7 @@ const Joi = require('joi');
 const id = Joi.number();
 const assistantId = Joi.number();
 const skillId = Joi.number();
-const instanceId = Joi.number();
+const instanceId = Joi.string();
 
 const createUserGroupSchema = Joi.object({
     assistantId: assistantId.required(),

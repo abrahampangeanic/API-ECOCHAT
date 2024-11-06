@@ -49,7 +49,7 @@ module.exports = {
         id: '1', 
         email: 'abraham@pangeanic.com',
         password: '$2a$10$XufU.6H2sjEoZK3kcr2EPuuFRd6jh3p9O3m4bYspEREz9bZws4/4i',
-        role: 'admin',
+        role: 'super',
         create_at: new Date(),
       }
     ]);

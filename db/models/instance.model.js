@@ -1,13 +1,14 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
+const { v4: uuidv4 } = require('uuid'); 
 
 const INSTANCE_TABLE = 'instances';
 
 const InstanceSchema = {
   id: {
     allowNull: false,
-    autoIncrement: true,
     primaryKey: true,
-    type: DataTypes.INTEGER
+    defaultValue: uuidv4,
+    type: DataTypes.UUID,  
   },
   name: {
     type: DataTypes.STRING,
