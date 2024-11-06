@@ -12,6 +12,8 @@ const InstanceService = require('../services/instance.service');
 const instanceServ = new InstanceService();
 const DocumentService = require('../services/document.service');
 const documentServ = new DocumentService();
+const PipelineService = require('../services/pipeline.service');
+const pipelineServ = new PipelineService();
 
 const validatorHandler = require('../middlewares/validator.handler');
 const uploadhandler = require('../middlewares/upload.handler');
@@ -163,8 +165,6 @@ router.post('/web',
           extract_multimedia: false
         }
 
-        console.log(data)
-
         const urlScraper = `${config.moduleScraping}/process`;
 
         try {
@@ -195,31 +195,10 @@ router.post('/status/:id',
         // if (module === 'text-extractor' || module === "WEB_SCRAPER") {
           if(status === "SUCCESS") {
             indexstatus = 1
-            const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${id}`;
-            const module_url = module === 'text-extractor' ? config.moduleExtractor : config.moduleScraping;
-            
-            const indexData = {
-              source_id: id,
-              data_type: "TEXT",
-              source_type: module === 'text-extractor' ? "FILE" : "WEB",
-              collections: [],
-              module_name: module,
-              module_url: module_url,
-              callback_url: callback
-            }
-
-            const indexUrl = `${config.modulePipeline}/index`;
-            try {
-              const response = await axios.post(indexUrl, indexData );
-
-              if (response.data.success === false) indexstatus = -2;
+            const response  = await pipelineService.index(id, module);
+       
+              if (response.success === false) indexstatus = -2;
               else indexstatus = 2;
-
-              console.log('Response from INDEX data:', response.data);
-            } catch (error) {
-              console.error('Error al enviar a INDEX:', error.response ? error.response.data : error.message);
-            }
-
           }
           else if(status === "FAILED") indexstatus = -1
         // }

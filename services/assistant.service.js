@@ -19,6 +19,15 @@ class AssistantService {
     return { assistants: [...assistant] };
   }
 
+  async findByInstancePublic(instanceId) {
+    const assistant = await models.Assistant.findAll({
+      where: {  'instanceId': instanceId , 'access_type': 'public'  },
+      include: [ 'collections', 'skills' ]
+    });
+
+    return { assistants: [...assistant] };
+  }
+
   async findByInstanceAndId(instanceId, id) {
     const assistant = await models.Assistant.findOne({
       where: {  '$instanceId$': instanceId, '$id$': id  }

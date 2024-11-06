@@ -30,6 +30,18 @@ router.get('/',
     }
 });
 
+router.get('/public', 
+  validatorHandler(getInstanceSchema, 'params'),
+  async (req, res, next) => {
+    try {
+      const { instanceId } = req.params;
+      const assistant = await service.findByInstancePublic(instanceId);
+      res.json(assistant);
+    } catch (error) {
+      next(error);
+    }
+});
+
 router.get('/:id',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getAssistantSchema, 'params'),
