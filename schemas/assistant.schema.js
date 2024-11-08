@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const id = Joi.number().integer();
+const id = Joi.string();
 const name = Joi.string();
 const description = Joi.string();
 const access_type = Joi.string();

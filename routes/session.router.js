@@ -73,17 +73,11 @@ router.get('/:id/query',
 
 router.post('/',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getInstanceSchema, 'params'),
   validatorHandler(createSessionSchema, 'body'),
   async (req, res, next) => {
     try {
-        const { instanceId  } = req.params;
         const userId = req.user.sub;
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
-
         const body = req.body;
-        body.instanceId = instanceId;
         body.userId = userId;
         const session = await service.create(body);
         res.status(201).json(session);
@@ -120,7 +114,7 @@ router.patch('/',
       if(relationships.length === 0) throw boom.unauthorized();
 
       const body = req.body;
-      body.instanceId = Number(instanceId);
+      body.instanceId = instanceId;
 
       const session = await service.update(body);
       res.json(session);

@@ -6,6 +6,8 @@ const CollectionSourceService = require('../services/collectionsource.service');
 const service = new CollectionSourceService();
 const InstanceService = require('../services/instance.service');
 const instanceServ = new InstanceService();
+const PipelineService = require('../services/pipeline.service');
+const pipelineServ = new PipelineService();
 
 const validatorHandler = require('../middlewares/validator.handler');
 const { getInstanceSchema} = require('../schemas/instance.schema');
@@ -26,6 +28,14 @@ router.post('/',
 
         const body = req.body;
         const collection = await service.create(body);
+
+        const collectionSourcePipiline = {
+          collection_id: body.collectionId,
+          document_ids: [ body.sourceId]
+        }
+
+        await pipelineServ.addCollectionSource(collectionSourcePipiline);
+
         res.status(201).json(collection);
     } catch (error) {
       next(error);
@@ -43,6 +53,8 @@ router.delete('/:id',
       const userId = req.user.sub;
       const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
       if(relationships.length === 0) throw boom.unauthorized();
+
+      // Eliminar la relacion en pipeline
 
       await service.delete(id);
       res.status(201).json({id});

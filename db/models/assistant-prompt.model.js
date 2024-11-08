@@ -11,7 +11,7 @@ const AssistantPromptSchema = {
   },
   assistantId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   promptId: {
     allowNull: false,

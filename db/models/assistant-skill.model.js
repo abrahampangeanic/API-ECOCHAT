@@ -11,7 +11,7 @@ const AssistantSkillSchema = {
   },
   assistantId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   skillId: {
     allowNull: false,

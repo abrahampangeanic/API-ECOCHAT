@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const id = Joi.number();
-const assistantId = Joi.number();
+const assistantId = Joi.string();
 const collectionId = Joi.string();
 const instanceId = Joi.string();
 const accessMode = Joi.string();

@@ -35,6 +35,11 @@ const SourceSchema = {
     allowNull: false,
     defaultValue: 0,
   },
+  score: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 100,
+  },
   indextsreq:{
     type: DataTypes.BIGINT,
     allowNull: false,

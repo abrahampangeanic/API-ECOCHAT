@@ -92,7 +92,7 @@ router.patch('/',
       const userId = req.user.sub;
       const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
       const body = req.body;
-      body.instanceId = Number(instanceId);
+      body.instanceId = instanceId;
 
       if(relationships.length === 0) throw boom.unauthorized();
       

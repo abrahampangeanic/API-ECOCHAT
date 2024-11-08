@@ -20,7 +20,8 @@ const files = Joi.object({
   })
 });
 const status = Joi.string();
-const modules = Joi.string();
+const processor = Joi.string();
+const message = Joi.string().allow(null, '');
 
 const createSourceSchema = Joi.object({
     name: name.required(),    
@@ -62,8 +63,10 @@ const getSourceIdSchema = Joi.object({
 
 const updateStatusSourceSchema = Joi.object({
   id: id,
-  module: modules,
+  processor: processor,
   status: status,
+  pages: pages,
+  message: message
 });
 
 module.exports = { createSourceSchema, updateSourceSchema, getSourceSchema, getSourceIdSchema, updateStatusSourceSchema, createSourceFileSchema }

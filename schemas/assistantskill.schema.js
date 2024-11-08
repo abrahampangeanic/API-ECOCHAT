@@ -1,7 +1,7 @@
 const Joi = require('joi');
 
 const id = Joi.number();
-const assistantId = Joi.number();
+const assistantId = Joi.string();
 const skillId = Joi.number();
 const instanceId = Joi.string();
 

@@ -18,6 +18,11 @@ const CollectionSchema = {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  score: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 100,
+  },
   instanceId: {
     allowNull: false,
     type: DataTypes.STRING,

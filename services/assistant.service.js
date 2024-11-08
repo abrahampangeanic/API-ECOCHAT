@@ -13,7 +13,7 @@ class AssistantService {
   async findByInstance(instanceId) {
     const assistant = await models.Assistant.findAll({
       where: {  'instanceId': instanceId  },
-      include: [ 'collections', 'skills' ]
+      include: [ 'collections', 'skills', 'prompts' ]
     });
 
     return { assistants: [...assistant] };
@@ -22,7 +22,6 @@ class AssistantService {
   async findByInstancePublic(instanceId) {
     const assistant = await models.Assistant.findAll({
       where: {  'instanceId': instanceId , 'access_type': 'public'  },
-      include: [ 'collections', 'skills' ]
     });
 
     return { assistants: [...assistant] };
@@ -47,6 +46,13 @@ class AssistantService {
 
   async findOne(id) {
     const assistant = await models.Assistant.findByPk(id );
+    if (!assistant)  throw boom.notFound('assistant not found');
+    return assistant;
+  }
+
+  async findOneFull(id) {
+    const assistant = await models.Assistant.findByPk(id , 
+      { include: [ 'collections', 'skills', 'prompts' ]});
     if (!assistant)  throw boom.notFound('assistant not found');
     return assistant;
   }

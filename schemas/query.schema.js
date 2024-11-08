@@ -1,23 +1,19 @@
 const Joi = require('joi');
 
 const id = Joi.string();
-const name = Joi.string();
-const assistantId = Joi.string();
-const instanceId = Joi.string();
+const feedback = Joi.number();
+const feedback_message = Joi.string();
+const sessionId = Joi.string();
 
-const createQuerySchema = Joi.object({
-    name: name.required(),
-    assistantId: assistantId.required(),
-});
 
 const updateQuerySchema = Joi.object({
     id: id.required(),
-    name: name.required(),
+    feedback: feedback,
+    feedback_message: feedback_message,
 });
 
 const getQuerySchema = Joi.object({
-  instanceId: instanceId.required(),
-  id: id.required(),
+  sessionId: sessionId.required(),
 });
 
-module.exports = { createQuerySchema, updateQuerySchema, getQuerySchema }
+module.exports = { updateQuerySchema, getQuerySchema }

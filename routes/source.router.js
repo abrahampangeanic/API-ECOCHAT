@@ -111,7 +111,7 @@ router.post('/file',
             form.append('include_page_breaks', 'true');
             form.append('callback_url', callback);
 
-            const urlExtractor = 'https://api-priv.pangeanic.com/module/text-extractor/process';
+            const urlExtractor = `${config.moduleExtractor}/process`;;
 
             try {
               // Hacer la solicitud POST con Axios
@@ -182,31 +182,44 @@ router.post('/web',
   }
 );
 
+// STATUS CODE 4 INDEX
+// STATUS CODE 3 INDEX INPROGRESS
+// STATUS CODE 2 INDEX SUCCESS
+// STATUS CODE 1 EXTRACTION SUCCESS
+// STATUS CODE 0 INPROGRESS
+// STATUS CODE -1 EXTRACTION FAILED
+// STATUS CODE -2 EXTRACTION FAILED
 router.post('/status/:id',
   validatorHandler(getSourceSchema, 'params'),
   validatorHandler(updateStatusSourceSchema, 'body'),
   async (req, res, next) => {
     try {
         const { id } = req.params;
-        const { status, module } = req.body;
+        const { status, processor, pages, message } = req.body;
         console.log("Status: ",req.body)
         let indexstatus = 0
 
-        // if (module === 'text-extractor' || module === "WEB_SCRAPER") {
+        if (processor === 'text-extractor' || processor === "web-scraper") {
           if(status === "SUCCESS") {
             indexstatus = 1
-            const response  = await pipelineService.index(id, module);
+            const response  = await pipelineServ.index(id, processor);
        
-              if (response.success === false) indexstatus = -2;
-              else indexstatus = 2;
+            if (response.success === false) indexstatus = -2;
+            else indexstatus = 2; // TODO INDEX
           }
           else if(status === "FAILED") indexstatus = -1
-        // }
 
-        console.log("Update", id, indexstatus)
+          await service.update({id: id, indexstatus: indexstatus, pages: pages });
+        }
 
-        await service.update({id: id, indexstatus: indexstatus }); 
-        
+        if(processor === 'eco-pipeline-index') {
+          if(status === "SUCCESS") indexstatus = 4 // DONE
+          else if(status === "INPROGRESS") indexstatus = 3 // INPROGRESS
+          else if(status === "FAILED") indexstatus = -3
+
+          await service.update({id: id, indexstatus: indexstatus });
+        }
+
         res.status(201).json({ message: 'Callback successful' });
     } catch (error) {
       next(error);

@@ -11,7 +11,7 @@ const AssistantCollectionSchema = {
   },
   assistantId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   collectionId: {
     allowNull: false,

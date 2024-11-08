@@ -97,6 +97,19 @@ class UserService {
     return user;
   }
 
+  async findOneWithPermissions(id) {
+    const user = await models.User.findByPk(id, {
+      include: [{ 
+        model: models.Group,
+        as: 'groups',
+        include: ['permissions']
+      }]
+    });
+    
+    if (!user) throw boom.notFound('user not found');
+    return user;
+  }
+
   async update(id, changes) {
     const user = await this.findOneBasic(id);
     const rta = await user.update(changes);

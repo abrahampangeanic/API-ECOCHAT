@@ -56,7 +56,7 @@ const QuerySchema = {
   },
   assistantId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   instanceId: {
     allowNull: false,
