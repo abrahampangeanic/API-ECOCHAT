@@ -12,7 +12,7 @@ const InstanceUserSchema = {
   userId: {
     field: 'user_id',
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   instanceId: {
     field: 'instance_id',

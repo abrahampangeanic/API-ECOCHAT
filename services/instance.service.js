@@ -47,6 +47,9 @@ class InstanceService {
     const user = await models.User.findByPk(userId,{
       include: [{ association: 'instances'}]
     });
+
+    if (!user)   throw boom.notFound('Instance not found');
+    
     return { instances: [...user.instances] };
   }
 

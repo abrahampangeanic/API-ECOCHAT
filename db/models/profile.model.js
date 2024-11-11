@@ -29,7 +29,7 @@ const ProfileSchema =  {
   },
   userId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     unique: true,
   },
   removed: {

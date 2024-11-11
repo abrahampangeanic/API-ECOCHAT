@@ -28,8 +28,10 @@ class CollectionSourceService {
 
   async delete(id) {
     const model = await this.findOne(id);
+    if (!model)   throw boom.notFound('CollectionSource not found');
+    const rta = {collectionId: model.collectionId, sourceId: model.sourceId};
     await model.destroy();
-    return { rta: true };
+    return rta;
   }
 
 }

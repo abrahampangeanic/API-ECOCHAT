@@ -71,21 +71,21 @@ router.post('/',
 
             const query = await queryServ.create(queryData);
 
-            const sessionTitle = await pipelineServ.getSessionName(sessionId, question, answer.answer.answer);
-            console.log("Session title: " + sessionTitle)
+            // const sessionTitle = await pipelineServ.getSessionName(sessionId, question, answer.answer.answer);
+            // console.log("Session title: " + sessionTitle)
             
-            res.status(200).json({ message: query  });
+            res.status(200).json({ query: query  });
           }
 
 
 
-          res.status(200).json({ message: "hola que tal" });
+          // res.status(200).json({ message: "hola que tal" });
         }
         else
         {
           console.log("No estoy en el pipeline")
 
-          res.status(200).json({ message: 'No tiene acceso a esa skill' });
+          res.status(200).json({ query: { message_out: 'No tiene acceso a esa skill' } });
         }
     } catch (error) {
       next(error);

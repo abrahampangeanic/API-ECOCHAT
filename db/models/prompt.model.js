@@ -1,13 +1,14 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
+const { v4: uuidv4 } = require('uuid'); 
 
 const PROMPT_TABLE = 'prompts';
 
 const PromptSchema = {
   id: {
     allowNull: false,
-    autoIncrement: true,
     primaryKey: true,
-    type: DataTypes.INTEGER
+    defaultValue: uuidv4,
+    type: DataTypes.UUID,  
   },
   name: {
     type: DataTypes.STRING,
@@ -17,28 +18,24 @@ const PromptSchema = {
     type: DataTypes.TEXT,
     allowNull: false,
   },
+  prompt:{
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   lang: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  skill: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   shared: {
     type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  include_citacions:{
-    type: DataTypes.INTEGER,
-    allowNull: true,
-  },
-  datetime_aware:{
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  system_prompt:{
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  task_prompt:{
-    type: DataTypes.TEXT,
     allowNull: true,
   },
   instanceId: {

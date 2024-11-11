@@ -44,8 +44,8 @@ class PromptService {
     return prompt;
   }
 
-  async update(instanceId, changes) {
-    const model = await this.findByInstanceAndId(instanceId, changes.id);
+  async update(changes) {
+    const model = await this.findOne( changes.id);
     if (!model)   throw boom.notFound('prompt not found');
     const rta = await model.update(changes);
     return rta;

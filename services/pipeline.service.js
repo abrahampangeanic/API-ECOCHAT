@@ -66,7 +66,7 @@ class PipelineService {
   }
 
   async addCollectionSource( data ) {
-    const endpoint = `${config.modulePipeline}/index/collection`;
+    const endpoint = `${config.modulePipeline}/collection/add-sources`;
 
     try {
         const response = await axios.post(endpoint, data );
@@ -79,13 +79,13 @@ class PipelineService {
   }
 
   async deleteCollectionSource( data ) {
-    const endpoint = `${config.modulePipeline}/index/collection`;
+    const endpoint = `${config.modulePipeline}/collection/del-sources`;
 
     try {
         const response = await axios.post(endpoint, data );
         if (response.data.success) return response.data;
       } catch (error) {
-        console.error('Error al enviar a AddCollectionSource:', error.response ? error.response.data : error.message);
+        console.error('Error al enviar a delete CollectionSource:', error.response ? error.response.data : error.message);
       }
 
     return false;
@@ -211,7 +211,7 @@ class PipelineService {
         search_type: "HYBRID"
       }
     }
-      
+    
     try {
       const response = await axios.post(endpoint, dataPipeline );
       if (response.status === 200) return response.data;

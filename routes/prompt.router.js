@@ -84,7 +84,7 @@ router.patch('/',
       const body = req.body;
       body.instanceId = instanceId;
 
-      const prompt = await service.update(instanceId, body);
+      const prompt = await service.update(body);
       res.json(prompt);
     } catch (error) {
       next(error);

@@ -12,7 +12,7 @@ const UserGroupSchema = {
   userId: {
     field: 'user_id',
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   groupId: {
     field: 'group_id',

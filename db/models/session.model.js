@@ -16,7 +16,7 @@ const SessionSchema = {
   },
   userId: {
     allowNull: false,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   createdAt: {
     allowNull: false,

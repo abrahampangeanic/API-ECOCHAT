@@ -54,9 +54,16 @@ router.delete('/:id',
       const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
       if(relationships.length === 0) throw boom.unauthorized();
 
-      // Eliminar la relacion en pipeline
+      const deleteCS = await service.delete(id);
 
-      await service.delete(id);
+      const collectionSourcePipiline = {
+        collection_id: deleteCS.collectionId,
+        document_ids: [ deleteCS.sourceId]
+      }
+
+      const rta = await pipelineServ.addCollectionSource(collectionSourcePipiline);
+      console.log("res pipeline delete CollectionSource", rta)
+
       res.status(201).json({id});
     } catch (error) {
       next(error);
