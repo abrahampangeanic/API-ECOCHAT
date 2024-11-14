@@ -21,7 +21,7 @@ const questionRouter = require('./question.router');
 function routerApi(app) {
   const router = express.Router();
 
-  app.use('/api/v1', router);
+  app.use('/service/ecochat/api/v1', router);
   router.use('/auth', authRouter);
   // router.use('/customers', profileRouter);
   router.use('/register', profileRouter);

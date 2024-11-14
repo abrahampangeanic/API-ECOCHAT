@@ -32,7 +32,7 @@ const SessionSchema = {
 
 class Session extends Model {
   static associate(models) {
-    this.belongsTo(models.Assitant, {  as: 'assistant'});
+    this.belongsTo(models.Assistant, {  as: 'assistant'});
     this.belongsTo(models.User, {  as: 'user'});
     this.hasMany(models.Query, { as: 'query',  foreignKey: 'sessionId' });
   }

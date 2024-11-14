@@ -30,10 +30,10 @@ router.get('/',
 
 router.get('/:assistantId', 
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(createQuestionSchema, 'body'),
+  validatorHandler(createSessionSchema, 'body'),
   async (req, res, next) => {
     try {
-      const { assistantId} = req.body;
+      const { assistantId } = req.body;
       const userId = req.user.sub;
       const session = await service.findByUserAssistant(userId, assistantId);
       res.json(session);

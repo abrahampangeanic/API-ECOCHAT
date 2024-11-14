@@ -27,6 +27,9 @@ const whitelist = [
   'https://app.taxrepo.com', 
   'http://192.168.100.143:3000',
   'http://192.168.100.143:3001',
+  'https://test3.pangeanic.com',
+  'http://test3.pangeanic.com',
+  'api.pangeanic.com',
 ];
 
 const options = {
@@ -38,6 +41,7 @@ const options = {
     }
   }
 }
+
 app.use(cors(options));
 
 require('./utils/auth');
@@ -46,7 +50,12 @@ app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
-app.get('/healthcheck', (req, res) => {
+app.get('/service/ecochat', (req, res) => {
+  res.send('Welcome to ECOChat');
+});
+
+app.get('/service/ecochat/healthcheck', (req, res) => {
+  console.log('healthcheck');
   res.send({"message": "It's working!"});
 });
 
