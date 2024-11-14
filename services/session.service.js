@@ -25,7 +25,27 @@ class SessionService {
       where: { 'userId': userId }
     });
 
-    if (!sessions)  throw boom.notFound('customer not found');
+    if (!sessions)  throw boom.notFound('Session not found');
+    
+    return sessions;
+  }
+
+  async findByAssistant( assistantId) {
+    const sessions = await models.Session.findAll({
+      where: { 'assistantId': assistantId }
+    });
+
+    if (!sessions)  throw boom.notFound('Session not found');
+    
+    return sessions;
+  }
+
+  async findByUserAssistant(userId, assistantId) {
+    const sessions = await models.Session.findAll({
+      where: { 'userId': userId , 'assistantId': assistantId }
+    });
+
+    if (!sessions)  throw boom.notFound('Session not found');
     
     return sessions;
   }

@@ -18,15 +18,24 @@ const router = express.Router({ mergeParams: true });
 
 router.get('/', 
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
     try {
-      const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
-
       const session = await service.findByUser(userId);
+      res.json(session);
+    } catch (error) {
+      next(error);
+    }
+});
+
+router.get('/:assistantId', 
+  passport.authenticate('jwt', {session: false}),
+  validatorHandler(createQuestionSchema, 'body'),
+  async (req, res, next) => {
+    try {
+      const { assistantId} = req.body;
+      const userId = req.user.sub;
+      const session = await service.findByUserAssistant(userId, assistantId);
       res.json(session);
     } catch (error) {
       next(error);
@@ -57,12 +66,7 @@ router.get('/:id/query',
   validatorHandler(getSessionSchema, 'params'),
   async (req, res, next) => {
     try {
-      const { instanceId, id } = req.params;
-      const userId = req.user.sub;
-      
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
-
+      const { id } = req.params;
       const queries = await queryServ.findBySession(id);
       res.json(queries);
     } catch (error) {

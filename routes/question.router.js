@@ -34,6 +34,7 @@ router.post('/',
         
 
         /// Verificar la seguridad de los groups y permissions
+        console.log(pipeline)
         
         if(skills.some(objeto => objeto.name === pipeline)){
           console.log("Estoy en el pipeline")
@@ -64,6 +65,7 @@ router.post('/',
               tokens_in: answer.token_usage.net_input,
               tokens_out: answer.token_usage.net_output,
               task_prompt: "",
+              skill: pipeline,
               sessionId: sessionId,
               assistantId: assistantId,
               instanceId: assistant.instanceId,

@@ -2,10 +2,11 @@ const Joi = require('joi');
 
 const id = Joi.string();
 const name = Joi.string();
-const instanceId = Joi.string();
+const assitantId = Joi.string();
 
 const createSessionSchema = Joi.object({
     name: name.required(),
+    assitantId: assitantId.required(),
 });
 
 const updateSessionSchema = Joi.object({
@@ -14,7 +15,6 @@ const updateSessionSchema = Joi.object({
 });
 
 const getSessionSchema = Joi.object({
-  instanceId: instanceId.required(),
   id: id.required(),
 });
 

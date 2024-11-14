@@ -14,6 +14,10 @@ const SessionSchema = {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  assistantId: {
+    allowNull: false,
+    type: DataTypes.STRING,
+  },
   userId: {
     allowNull: false,
     type: DataTypes.STRING,
@@ -28,6 +32,7 @@ const SessionSchema = {
 
 class Session extends Model {
   static associate(models) {
+    this.belongsTo(models.Assitant, {  as: 'assistant'});
     this.belongsTo(models.User, {  as: 'user'});
     this.hasMany(models.Query, { as: 'query',  foreignKey: 'sessionId' });
   }

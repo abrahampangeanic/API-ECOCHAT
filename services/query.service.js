@@ -1,6 +1,7 @@
 const { v4: uuidv4 } = require('uuid');
 const boom = require('@hapi/boom');
 const { models } = require('../libs/sequelize');  
+const { Op, Sequelize } = require("sequelize");
 
 class QueryService {
 
@@ -30,7 +31,36 @@ class QueryService {
     return query;
   }
 
-  
+  async CountbyInstance(instanceId) {
+    const year = 2024;
+
+    const results = await models.Query.findAll({
+      attributes: [
+        [Sequelize.fn("MONTH", Sequelize.col("created_At")), "month"],
+        [Sequelize.fn("COUNT", Sequelize.col("id")), "total"],
+      ],
+      where: {
+        instanceId: instanceId,
+        createdAt: {
+          [Op.gte]: new Date(`${year}-01-01`),
+          [Op.lt]: new Date(`${year + 1}-01-01`),
+        },
+      },
+      group: [Sequelize.fn("MONTH", Sequelize.col("created_At"))],
+      order: [[Sequelize.fn("MONTH", Sequelize.col("created_At")), "ASC"]],
+    });
+    
+    const monthlyTotals = Array.from({ length: 12 }, (_, i) => (0));
+
+    // Combina los resultados de la consulta en el array de 12 meses
+    results.forEach(result => {
+      const monthIndex = result.dataValues.month - 1; // Ajusta el índice para el array (de 1 a 12)
+      monthlyTotals[monthIndex] = result.dataValues.total;
+    });
+
+    return monthlyTotals;
+  }
+
   async findBySession(sessionId) {
     const rta = await models.Query.findAll({
       where: { 'sessionId': sessionId }

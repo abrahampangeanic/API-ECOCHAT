@@ -90,8 +90,14 @@ module.exports = {
       },
       {
         id: 3, 
-        name: 'GENERATE',
-        description: 'GENERATE CONTENT',
+        name: 'GENERATION',
+        description: 'GENERATION CONTENT',
+        created_at: new Date(),
+      },
+      {
+        id: 4, 
+        name: 'SUMMARIZATION',
+        description: 'SUMMARIZATION CONTENT',
         created_at: new Date(),
       },
 

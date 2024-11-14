@@ -64,6 +64,7 @@ class Assistant extends Model {
 
   static associate(models) {
     this.belongsTo(models.Instance, {  as: 'instance'});
+    this.hasMany(models.Session, { as: 'sessions',  foreignKey: 'assistantId' });
     this.hasMany(models.AssistantCollection, { as: 'relationCollection',  foreignKey: 'assistantId' });
 
     this.belongsToMany(models.Collection, {

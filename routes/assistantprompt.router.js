@@ -9,7 +9,7 @@ const instanceServ = new InstanceService();
 
 const validatorHandler = require('../middlewares/validator.handler');
 const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getAssistantPromptSchema, createAssistantPromptSchema } = require('../schemas/collectionsources.schema');
+const { getAssistantPromptSchema, createAssistantPromptSchema } = require('../schemas/assistantprompt.schema');
 
 const router = express.Router({ mergeParams: true });
 

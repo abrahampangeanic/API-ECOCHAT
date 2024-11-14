@@ -50,6 +50,10 @@ const QuerySchema = {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  skill: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   sessionId: {
     allowNull: false,
     type: DataTypes.STRING,

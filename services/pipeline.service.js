@@ -137,45 +137,17 @@ class PipelineService {
   }
 
   async getPipeline( msg ) {
-    const endpoint = `${config.modulePipeline}/qa/v1`;
+    const endpoint = `${config.modulePipeline}/router`;
 
-    // const data = {
-    //     message: "string",
-    //     history: [
-    //       {
-    //         message: "string",
-    //         message_type: "system"
-    //       }
-    //     ],
-    //     prompt: {
-    //       system_prompt: "string",
-    //       task_prompt: "string",
-    //       include_datetime: true,
-    //       include_citations: true,
-    //       use_language_hint: false,
-    //       language: "English"
-    //     },
-    //     rephrase: {
-    //       always_rephrase: false,
-    //       prompt_rephrase: ""
-    //     },
-    //     retriever: {
-    //       rerank: false,
-    //       llm_chunk_filter: false,
-    //       num_to_retrieve: 10,
-    //       include_title: false,
-    //       include_web_search: false,
-    //       search_type: "HYBRID"
-    //     },
-    //     filters: {}
-    //   }
+    const data = { message: msg }
 
-    // try {
-    // const response = await axios.post(endpoint, data );
-    // if (response.status === 200) return response.data;
-    // } catch (error) {
-    // console.error('Error al enviar session name:', error.response ? error.response.data : error.message);
-    // }
+    try {
+      const response = await axios.post(endpoint, data );
+      console.log(response.data)
+      if (response.status === 200) return response.data.destination;
+    } catch (error) {
+    console.error('Error al enviar session name:', error.response ? error.response.data : error.message);
+    }
 
     return "QA";
   }

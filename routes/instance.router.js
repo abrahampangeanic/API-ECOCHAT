@@ -19,6 +19,7 @@ const userRouter = require('./users.router');
 const groupRouter = require('./group.router');
 const userGroupRouter = require('./usergroup.router');
 const permissionsRouter = require('./permission.router');
+const statsRouter = require('./stats.router');
 
 
 const router = express.Router();
@@ -37,8 +38,7 @@ router.use('/:instanceId/sources', sourceRouter);
 router.use('/:instanceId/groups', groupRouter);
 router.use('/:instanceId/usergroups', userGroupRouter);
 router.use('/:instanceId/permissions', permissionsRouter);
-
-
+router.use('/:instanceId/stats', statsRouter);
 
 router.get('/', 
   passport.authenticate('jwt', {session: false}),
@@ -114,30 +114,6 @@ router.patch('/',
     }
   }
 );
-
-//permissions
-
-// router.patch('/:instanceId/:year/mailclient',
-//   passport.authenticate('jwt', {session: false}),
-//   //checkRoles(['super','gest']),
-//   validatorHandler(getinstanceYearSchema, 'params'),
-//   validatorHandler(updateMailCLientinstanceSchema, 'body'),
-//   async (req, res, next) => {
-//     try {
-//       const { instanceId } = req.params;
-//       const userId = req.user.sub;
-//       const relationships = await service.checkinstancesByUser(instanceId, userId);
-//       if(relationships.length === 0) throw boom.unauthorized();
-
-//       const body = req.body;
-//       body.id = instanceId;
-//       const instance = await service.updateMailClient(body);
-//       res.json(instance);
-//     } catch (error) {
-//       next(error);
-//     }
-//   }
-// );
 
 router.delete('/:instanceId',
   passport.authenticate('jwt', {session: false}),
