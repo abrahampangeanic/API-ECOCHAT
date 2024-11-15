@@ -51,6 +51,8 @@ router.post('/',
             }
           }
 
+          console.log(dataPipeline)
+
           const answer = await pipelineServ.qa(dataPipeline)
 
           if(answer){

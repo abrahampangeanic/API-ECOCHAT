@@ -2,11 +2,11 @@ const Joi = require('joi');
 
 const id = Joi.string();
 const name = Joi.string();
-const assitantId = Joi.string();
+const assistantId = Joi.string();
 
 const createSessionSchema = Joi.object({
     name: name.required(),
-    assitantId: assitantId.required(),
+    assistantId: assistantId.required(),
 });
 
 const updateSessionSchema = Joi.object({

@@ -30,6 +30,8 @@ const whitelist = [
   'https://test3.pangeanic.com',
   'http://test3.pangeanic.com',
   'api.pangeanic.com',
+  'https://ecochat.pangeanic.com',
+  'http://admin.local.com'
 ];
 
 const options = {
@@ -37,6 +39,7 @@ const options = {
     if (whitelist.includes(origin) || !origin) {
       callback(null, true);
     } else {
+      console.log('Origin not allowed by CORS', origin);
       callback(new Error('no permitido'));
     }
   }

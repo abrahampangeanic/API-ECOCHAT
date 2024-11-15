@@ -18,6 +18,8 @@ const { AssistantSkill, AssistantSkillSchema } = require('./assistant-skill.mode
 const { UserGroup, UserGroupSchema } = require('./user-group.model');
 const { Group, GroupSchema } = require('./group.model');
 const { Permission, PermissionSchema } = require('./permisssion.model');
+const { AssistantMessage, AssistantMessageSchema } = require('./assistant-message.model');
+
 
 function setupModels(sequelize) {
   User.init(UserSchema, User.config(sequelize));
@@ -40,6 +42,7 @@ function setupModels(sequelize) {
   UserGroup.init(UserGroupSchema, UserGroup.config(sequelize));
   Group.init(GroupSchema, Group.config(sequelize));
   Permission.init(PermissionSchema, Permission.config(sequelize));
+  AssistantMessage.init(AssistantMessageSchema, AssistantMessage.config(sequelize));
 
   User.associate(sequelize.models);
   Profile.associate(sequelize.models);
@@ -61,6 +64,7 @@ function setupModels(sequelize) {
   UserGroup.associate(sequelize.models);
   Group.associate(sequelize.models);
   Permission.associate(sequelize.models);
+  AssistantMessage.associate(sequelize.models);
 }
 
 module.exports = setupModels;

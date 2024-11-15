@@ -20,6 +20,7 @@ const { ASSISTANTSKILL_TABLE, AssistantSkillSchema } = require('../models/assist
 const { USERGROUP_TABLE, UserGroupSchema } = require('../models/user-group.model');
 const { GROUP_TABLE, GroupSchema } = require('../models/group.model');
 const { PERMISSION_TABLE, PermissionSchema } = require('../models/permisssion.model');
+const { ASSISTANTMESSAGE_TABLE, AssistantMessageSchema } = require('../models/assistant-message.model');
 
 module.exports = {
   up: async (queryInterface) => {
@@ -43,6 +44,7 @@ module.exports = {
     await queryInterface.createTable(USERGROUP_TABLE, UserGroupSchema) ;
     await queryInterface.createTable(GROUP_TABLE, GroupSchema) ;
     await queryInterface.createTable(PERMISSION_TABLE, PermissionSchema) ;
+    await queryInterface.createTable(ASSISTANTMESSAGE_TABLE, AssistantMessageSchema) ;
 
     await queryInterface.bulkInsert('users', [
       {
@@ -106,6 +108,7 @@ module.exports = {
   },
 
   down: async (queryInterface) => {
+    await queryInterface.dropTable(ASSISTANTMESSAGE_TABLE);
     await queryInterface.dropTable(PERMISSION_TABLE);
     await queryInterface.dropTable(GROUP_TABLE);
     await queryInterface.dropTable(USERGROUP_TABLE);

@@ -13,7 +13,7 @@ class AssistantService {
   async findByInstance(instanceId) {
     const assistant = await models.Assistant.findAll({
       where: {  'instanceId': instanceId  },
-      include: [ 'collections', 'skills', 'prompts' ]
+      include: [ 'collections', 'skills', 'prompts', 'messages' ]
     });
 
     return { assistants: [...assistant] };
@@ -52,7 +52,7 @@ class AssistantService {
 
   async findOneFull(id) {
     const assistant = await models.Assistant.findByPk(id , 
-      { include: [ 'collections', 'skills', 'prompts' ]});
+      { include: [ 'collections', 'skills', 'prompts', 'messages' ]});
     if (!assistant)  throw boom.notFound('assistant not found');
     return assistant;
   }

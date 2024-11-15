@@ -70,6 +70,8 @@ class PipelineService {
 
     try {
         const response = await axios.post(endpoint, data );
+        console.log(data)
+        console.log("Añadiendo ColeccionSource", response.data)
         if (response.data.success) return response.data;
       } catch (error) {
         console.error('Error al enviar a AddCollectionSource:', error.response ? error.response.data : error.message);
@@ -155,6 +157,8 @@ class PipelineService {
   async qa( data ) {
     const endpoint = `${config.modulePipeline}/qa`;
 
+    console.log( endpoint)
+
     const dataPipeline = {
       message: data.question,
       filters: {
@@ -183,6 +187,8 @@ class PipelineService {
         search_type: "HYBRID"
       }
     }
+
+    console.log(dataPipeline)
     
     try {
       const response = await axios.post(endpoint, dataPipeline );

@@ -35,6 +35,10 @@ router.get('/public',
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;
+
+      const instance = await instanceServ.findOne(instanceId);
+      console.log("Public Assistant", instance)
+
       const assistant = await service.findByInstancePublic(instanceId);
       res.json(assistant);
     } catch (error) {
