@@ -12,7 +12,7 @@ const queryServ = new QueryService();
 
 const validatorHandler = require('../middlewares/validator.handler');
 const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getSessionSchema, updateSessionSchema, createSessionSchema } = require('../schemas/session.schema');
+const { getSessionSchema, updateSessionSchema, createSessionSchema, getSessionByAssitantSchema } = require('../schemas/session.schema');
 
 const router = express.Router({ mergeParams: true });
 
@@ -28,12 +28,12 @@ router.get('/',
     }
 });
 
-router.get('/:assistantId', 
+router.get('/assistant/:assistantId',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(createSessionSchema, 'body'),
+  validatorHandler(getSessionByAssitantSchema, 'params'),
   async (req, res, next) => {
     try {
-      const { assistantId } = req.body;
+      const { assistantId } = req.params;
       const userId = req.user.sub;
       const session = await service.findByUserAssistant(userId, assistantId);
       res.json(session);

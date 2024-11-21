@@ -200,6 +200,52 @@ class PipelineService {
 
     return false;
   }
+
+  async processPipeline(pipeline , data) {
+    const endpoint = `${config.modulePipeline}/${pipeline}`;
+    console.log( endpoint)
+
+    const dataPipeline = {
+      message: data.question,
+      filters: {
+        document_ids: [],
+        collection_ids: data.collections
+      },
+      history: data.history,
+      prompts: {
+        system_prompt: data.prompts.system_prompt,
+        task_prompt: data.prompts.task_prompt,
+        rephrase_prompt: data.prompts.rephrase_prompt
+      },
+      config: {
+        always_rephrase: true,
+        include_datetime: true,
+        include_citations: true,
+        use_language_hint: true, //false
+        language: "Spanish"
+      },
+      retriever: {
+        rerank: false,
+        llm_chunk_filter: true,
+        num_to_retrieve: 10,
+        include_title: false,
+        include_web_search: false,
+        search_type: "HYBRID"
+      }
+    }
+
+    console.log(dataPipeline)
+    
+    try {
+      const response = await axios.post(endpoint, dataPipeline );
+      if (response.status === 200) return response.data;
+
+    } catch (error) {
+      console.error(`Error to process pipeline ${pipeline}:`, error.response ? error.response.data : error.message);
+    }
+
+    return false;
+  }
   
   async search( id, msg ) {
     const endpoint = `${config.modulePipeline}/search`;

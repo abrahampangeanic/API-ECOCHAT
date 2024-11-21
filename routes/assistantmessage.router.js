@@ -33,9 +33,9 @@ router.post('/',
   }
 );
 
-router.get('/:id', 
+router.get('/', 
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getAssistantMessageSchema, 'params'),
+  validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;

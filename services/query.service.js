@@ -22,17 +22,30 @@ class QueryService {
   }
 
   async findByUser(userId) {
-    const query = await models.Query.findOne({
-      where: { 'userId': userId }
+    const query = await models.Query.findAll({
+      where: { '$userId$': userId }
     });
 
     if (!query)  throw boom.notFound('Query not found');
     
-    return query;
+    return { queries: [...query] };
+  }
+
+  async findByInstance(instanceId) {
+    const query = await models.Query.findAll({
+      where: {  '$instanceId$': instanceId  },
+      order: [
+        ['id', 'DESC']
+      ]
+    });
+
+    if (!query)  throw boom.notFound('Query not found');
+    
+    return { queries: [...query] };
   }
 
   async CountbyInstance(instanceId) {
-    const year = 2024;
+    const year = new Date().getFullYear(); 
 
     const results = await models.Query.findAll({
       attributes: [
@@ -61,6 +74,32 @@ class QueryService {
     return monthlyTotals;
   }
 
+  async getCurrentYearTokensSum (instanceId)  {
+    try {
+      const currentYear = new Date().getFullYear(); // Obtiene el año actual
+      const startOfYear = new Date(`${currentYear}-01-01T00:00:00`);
+      const endOfYear = new Date(`${currentYear}-12-31T23:59:59`);
+  
+      const result = await models.Query.findAll({
+        attributes: [
+          [Sequelize.fn('SUM', Sequelize.col('tokens_in')), 'in'],
+          [Sequelize.fn('SUM', Sequelize.col('tokens_out')), 'out'],
+        ],
+        where: {
+          instanceId: instanceId,
+          createdAt: {
+            [Op.between]: [startOfYear, endOfYear], // Filtro para el año en curso
+          },
+        },
+      });
+  
+      return result[0].dataValues; // Devuelve los resultados de la suma
+    } catch (error) {
+      console.error('Error al obtener la suma de tokens del año actual:', error);
+      throw error;
+    }
+  };
+
   async findBySession(sessionId) {
     const rta = await models.Query.findAll({
       where: { 'sessionId': sessionId }
@@ -69,7 +108,7 @@ class QueryService {
     if (!rta || rta.length === 0) return { queries: [] };
 
     const queryData = rta.map(query => query.toJSON());
-    const queriesBasic = queryData.map(({ refs, ts_in, ts_out, tokens_in, tokens_out, task_prompt, ...query }) => query);
+    const queriesBasic = queryData.map(({ refs, tokens_in, tokens_out, task_prompt, ...query }) => query);
   
     return { queries: queriesBasic };
   }

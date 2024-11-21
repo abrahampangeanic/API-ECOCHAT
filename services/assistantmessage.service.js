@@ -13,6 +13,14 @@ class AssistantMessageService {
     return messages;
   }
 
+  async findByAssistant(assistantId) {
+    const assistant = await models.AssistantMessage.findAll({
+      where: {  'assistantId': assistantId  }
+    });
+
+    return { assistants: [...assistant] };
+  }
+
   async findOne(id) {
     const message = await models.AssistantMessage.findByPk(id);
     if (!message)  throw boom.notFound('AssistantMessage not found');

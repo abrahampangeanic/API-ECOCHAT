@@ -92,7 +92,7 @@ class InstanceService {
       const obj = {
         id: item.id,
         email: item.email,
-        permissions: item.InstanceUser.permissions
+        role: item.InstanceUser.role
       }
       relation.push(obj)
     })
@@ -112,7 +112,7 @@ class InstanceService {
         { association: 'sources'},
         { association: 'prompts'},
         { association: 'users'},
-        // { association: 'suscription'},
+        // { association: 'relationUser'},
       ]
     });
 
@@ -126,7 +126,7 @@ class InstanceService {
         id: item.id,
         userId: item.userId,
         email: item.email,
-        permissions: item.InstanceUser.permissions
+        role: item.InstanceUser.role
       }
       relation.push(obj)
     })

@@ -105,14 +105,97 @@ router.post('/public',
   validatorHandler(createQuestionSchema, 'body'),
   async (req, res, next) => {
     try {
-        // const { documentId } = req.params;
-        // const { status } = req.body;
-
-        // const document = await service.update({id: documentId, statu: status }); // Extractor ID hardcoded for now
-        // console.log(document);
-        // // Send an appropriate response to the client
-        res.status(200).json({ message: 'hola que tal' });
+      // const { documentId } = req.params;
+      const { assistantId, question, sessionId } = req.body;
+      const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+      // const userId = req.user.sub;
+      const assistant = await assistantServ.findOneFull(assistantId)
+      let skills = assistant.skills;
+      skills.push({id: 0, name: 'SOCIAL_INTERACTION', description: 'SOCIAL_INTERACTION'})
+      const pipeline = await pipelineServ.getPipeline(question);
+      // const user = await userServ.findOneWithPermissions(userId);
+      // const groups = user.groups;
       
+
+      /// Verificar la seguridad de los groups y permissions
+      console.log(pipeline)
+      
+      if(skills.some(objeto => objeto.name === pipeline)){
+        console.log("Estoy en el pipeline")
+        const collections = assistant.collections.map(collection => collection.id);
+        const system_prompt = assistant.prompts.find( item => item.type === "SYSTEM") || { prompt: "" };
+        const task_prompt = assistant.prompts.find( item => item.type === "TASK") || { prompt: "" };
+        const rephrase_prompt = assistant.prompts.find( item => item.type === "REPHRASE") || { prompt: "" };
+
+        const dataPipeline = {
+          question: question,
+          collections: collections,
+          history: [], 
+          prompts: {
+            system_prompt: system_prompt.prompt ,
+            task_prompt: task_prompt.prompt,
+            rephrase_prompt: rephrase_prompt.prompt , 
+          }
+        }
+        
+        const pipelineMap = {
+          QA: 'qa',
+          SEARCH: 'search',
+          SUMMARIZE: 'summarize',
+          GENERATE: 'generate',
+          SOCIAL_INTERACTION: 'social',
+        };
+        
+        let pipelineProcess = pipelineMap[pipeline.name] || 'qa';
+
+        const answer = await pipelineServ.processPipeline(pipelineProcess, dataPipeline)
+      
+        const poor_message = assistant.messages.find( item => item.type === "POOR")
+
+        console.log(answer)
+        
+        if(answer){
+          let msg_out = answer.answer.answer
+
+          if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
+
+          const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);
+          
+          const queryData = {
+            message_in: question,
+            message_out: msg_out,
+            feedback: 0,
+            feedback_message: "",
+            refs: "",
+            ts_in: now,
+            ts_out: now2,
+            tokens_in: answer.token_usage.net_input,
+            tokens_out: answer.token_usage.net_output,
+            task_prompt: "",
+            skill: pipeline,
+            sessionId: sessionId,
+            assistantId: assistantId,
+            instanceId: assistant.instanceId,
+          }
+
+          const query = await queryServ.create(queryData);
+
+          // const sessionTitle = await pipelineServ.getSessionName(sessionId, question, answer.answer.answer);
+          // console.log("Session title: " + sessionTitle)
+          
+          res.status(200).json({ query: query  });
+        }
+
+
+
+        // res.status(200).json({ message: "hola que tal" });
+      }
+      else
+      {
+        console.log("No estoy en el pipeline")
+
+        res.status(200).json({ query: { message_out: 'No tiene acceso a esa skill' } });
+      }
     } catch (error) {
       next(error);
     }

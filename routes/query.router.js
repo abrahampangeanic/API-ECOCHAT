@@ -14,7 +14,6 @@ const { getQuerySchema, updateQuerySchema } = require('../schemas/query.schema')
 
 const router = express.Router({ mergeParams: true });
 
-
 router.patch('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(updateQuerySchema, 'body'),
@@ -36,19 +35,23 @@ router.patch('/',
   }
 );
 
-// router.get('/', 
-//   passport.authenticate('jwt', {session: false}),
-//   validatorHandler(getInstanceSchema, 'body'),
-//   async (req, res, next) => {
-//     try {
-//       const { sessionId } = req.body;
+router.get('/', 
+  passport.authenticate('jwt', {session: false}),
+  validatorHandler(getInstanceSchema, 'params'),
+  async (req, res, next) => {
+    try {
+      const { instanceId } = req.params;
+      const userId = req.user.sub;
+      
+      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+      if(relationships.length === 0) throw boom.unauthorized();
      
-//       const query = await service.findByInstance(instanceId);
-//       res.json(query);
-//     } catch (error) {
-//       next(error);
-//     }
-// });
+      const query = await service.findByInstance(instanceId);
+      res.json(query);
+    } catch (error) {
+      next(error);
+    }
+});
 
 // router.get('/:id',
 //   passport.authenticate('jwt', {session: false}),

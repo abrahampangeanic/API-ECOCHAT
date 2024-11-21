@@ -35,5 +35,24 @@ router.get('/queries',
     }
 });
 
+router.get('/tokens', 
+  passport.authenticate('jwt', {session: false}),
+  validatorHandler(getInstanceSchema, 'params'),
+  async (req, res, next) => {
+    try {
+      const { instanceId } = req.params;
+      const userId = req.user.sub;
+      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+      if(relationships.length === 0) throw boom.unauthorized();
+
+      const rta = await queryServ.getCurrentYearTokensSum(instanceId);
+
+      res.json(rta);
+    
+    } catch (error) {
+      next(error);
+    }
+});
+
 module.exports = router;
 

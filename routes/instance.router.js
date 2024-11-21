@@ -21,6 +21,7 @@ const groupRouter = require('./group.router');
 const userGroupRouter = require('./usergroup.router');
 const permissionsRouter = require('./permission.router');
 const statsRouter = require('./stats.router');
+const queryRouter = require('./query.router');
 
 
 const router = express.Router();
@@ -41,6 +42,7 @@ router.use('/:instanceId/groups', groupRouter);
 router.use('/:instanceId/usergroups', userGroupRouter);
 router.use('/:instanceId/permissions', permissionsRouter);
 router.use('/:instanceId/stats', statsRouter);
+router.use('/:instanceId/queries', queryRouter);
 
 router.get('/', 
   passport.authenticate('jwt', {session: false}),

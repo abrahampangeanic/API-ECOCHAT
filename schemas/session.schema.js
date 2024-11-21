@@ -3,6 +3,7 @@ const Joi = require('joi');
 const id = Joi.string();
 const name = Joi.string();
 const assistantId = Joi.string();
+const instanceId = Joi.string();
 
 const createSessionSchema = Joi.object({
     name: name.required(),
@@ -18,4 +19,8 @@ const getSessionSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createSessionSchema, updateSessionSchema, getSessionSchema }
+const getSessionByAssitantSchema = Joi.object({
+  assistantId: assistantId.required(),
+});
+
+module.exports = { createSessionSchema, updateSessionSchema, getSessionSchema, getSessionByAssitantSchema }

@@ -16,7 +16,6 @@ class PromptService {
     });
 
     return { prompts: [...prompt] };
-
   }
 
   async findByInstanceAndId(instanceId, id) {

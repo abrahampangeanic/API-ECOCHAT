@@ -17,7 +17,7 @@ class UserService {
     const newData = {
       email: data.email,
       password: hash,
-      role: 'client',
+      role: 'CLIENT',
       profile: {
         name: data.name,
         lastName: data.lastName,

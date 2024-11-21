@@ -22,6 +22,7 @@ class AssistantService {
   async findByInstancePublic(instanceId) {
     const assistant = await models.Assistant.findAll({
       where: {  'instanceId': instanceId , 'access_type': 'public'  },
+      include: [ 'messages' ]
     });
 
     return { assistants: [...assistant] };
