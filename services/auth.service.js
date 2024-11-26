@@ -85,13 +85,16 @@ class AuthService {
     }
   }
 
-  async changePassword(userId, password, newPassword) {
+  async changePassword(
+    userId, 
+    // password, 
+    newPassword) {
     try {
       const user = await models.User.findByPk(userId);
       if (!user)  throw boom.unauthorized();
       
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch)  throw boom.unauthorized();;
+      // const isMatch = await bcrypt.compare(password, user.password);
+      // if (!isMatch)  throw boom.unauthorized();;
       
       const hash = await bcrypt.hash(newPassword, 10);
       await service.update(user.id, {recoveryToken: null, password: hash});

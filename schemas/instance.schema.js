@@ -3,7 +3,7 @@ const Joi = require('joi');
 const id = Joi.number().integer();
 const name = Joi.string();
 const client_name = Joi.string();
-const baseUrl = Joi.string();
+const base_url = Joi.string();
 const description = Joi.string();
 const type = Joi.string();
 const lang = Joi.string();
@@ -14,7 +14,7 @@ const instanceId = Joi.string();
 const createInstanceSchema = Joi.object({
     name: name.required(),    
     client_name: client_name.required(),
-    baseUrl: baseUrl,
+    base_url: base_url,
     description: description.required(),
     type: type.required(),
     lang: lang.required(),
@@ -25,7 +25,7 @@ const updateInstanceSchema = Joi.object({
     id: id.required(),
     name: name.required(),    
     client_name: client_name.required(),
-    baseUrl: baseUrl,
+    base_url: base_url,
     description: description.required(),
     type: type.required(),
     lang: lang.required(),

@@ -21,8 +21,11 @@ router.patch('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const body = req.body;
       body.instanceId = instanceId;
@@ -43,8 +46,10 @@ router.get('/',
       const { instanceId } = req.params;
       const userId = req.user.sub;
       
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
      
       const query = await service.findByInstance(instanceId);
       res.json(query);

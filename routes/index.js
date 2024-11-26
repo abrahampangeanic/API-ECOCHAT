@@ -25,6 +25,7 @@ function routerApi(app) {
   router.use('/auth', authRouter);
   // router.use('/customers', profileRouter);
   router.use('/register', profileRouter);
+  router.use('/profile', profileRouter);
   router.use('/instances', instanceRouter);
   router.use('/documents', documentRouter);
   router.use('/sessions', sessionRouter);

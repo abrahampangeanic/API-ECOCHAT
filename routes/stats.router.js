@@ -23,8 +23,10 @@ router.get('/queries',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const rta = await queryServ.CountbyInstance(instanceId);
 
@@ -42,8 +44,10 @@ router.get('/tokens',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const rta = await queryServ.getCurrentYearTokensSum(instanceId);
 

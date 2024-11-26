@@ -35,7 +35,7 @@ class QueryService {
     const query = await models.Query.findAll({
       where: {  '$instanceId$': instanceId  },
       order: [
-        ['id', 'DESC']
+        ['created_at', 'DESC']
       ]
     });
 

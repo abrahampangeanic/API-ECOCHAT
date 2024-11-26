@@ -51,8 +51,10 @@ router.delete('/:id',
     try {
       const { instanceId, id } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const deleteCS = await service.delete(id);
 

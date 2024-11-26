@@ -20,8 +20,10 @@ router.get('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const group = await service.findByInstance(instanceId);
       res.json(group);
@@ -38,8 +40,10 @@ router.get('/:id',
       const { instanceId, id } = req.params;
       const userId = req.user.sub;
       
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const instance = await service.findOne(id);
       res.json(instance);
@@ -57,8 +61,12 @@ router.post('/',
     try {
         const { instanceId  } = req.params;
         const userId = req.user.sub;
+
+      if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();
+      }
+
 
         const body = req.body;
         body.instanceId = instanceId;
@@ -78,8 +86,10 @@ router.patch('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const body = req.body;
       body.instanceId = instanceId;
@@ -99,8 +109,10 @@ router.delete('/:id',
     try {
       const { instanceId, id } = req.params;
       const userId = req.user.sub;
-      const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       await service.delete(id);
       res.status(201).json({id});

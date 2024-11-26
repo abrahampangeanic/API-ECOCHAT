@@ -58,7 +58,7 @@ router.get('/',
 
 router.get('/all', 
   passport.authenticate('jwt', {session: false}),
-  checkRoles('admin'),
+  checkRoles('SUPER'),
   async (req, res, next) => {
     try {
       const instances = await service.find();
@@ -75,8 +75,12 @@ router.get('/:instanceId',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-      const relationships = await service.checkInstancesByUser(instanceId, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+
+      if(req.user.role !== 'SUPER') {
+        const relationships = await service.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
+
       const instance = await service.findOneFULL(instanceId);
       res.json(instance);
     } catch (error) {
@@ -107,8 +111,10 @@ router.patch('/',
   async (req, res, next) => {
     try {
       const userId = req.user.sub;
-      const relationships = await service.checkInstancesByUser(body.id, userId);
-      if(relationships.length === 0) throw boom.unauthorized();
+      if(req.user.role !== 'SUPER') {
+        const relationships = await service.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
       const body = req.body;
       const instance = await service.update(body);

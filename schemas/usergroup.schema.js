@@ -1,19 +1,19 @@
 const Joi = require('joi');
 
 const id = Joi.number();
-const assistantId = Joi.number();
-const skillId = Joi.number();
+const userId = Joi.string();
+const groupId = Joi.string();
 const instanceId = Joi.string();
 
 const createUserGroupSchema = Joi.object({
-    assistantId: assistantId.required(),
-    skillId: skillId.required(),
+    userId: userId.required(),
+    groupId: groupId.required(),
 });
 
 const updateUserGroupSchema = Joi.object({
     id: id.required(),
-    assistantId: assistantId.required(),
-    skillId: skillId.required(),
+    userId: userId.required(),
+    groupId: groupId.required(),
 });
 
 const getUserGroupSchema = Joi.object({

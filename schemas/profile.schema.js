@@ -27,11 +27,9 @@ const createProfileSchema = Joi.object({
 });
 
 const updateProfileSchema = Joi.object({
-  name,
-  lastName,
-  //phone,
-  language,
-  userId
+  userId: userId.required(),
+  name: name.required(),
+  lastName: lastName.required(),
 });
 
 module.exports = { getProfileSchema, createProfileSchema, updateProfileSchema };

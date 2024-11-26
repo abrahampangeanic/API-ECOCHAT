@@ -34,7 +34,7 @@ router.patch('/',
   async (req, res, next) => {
     try {
       const body = req.body;
-      body.id = req.user.sub;
+      body.id = body.userId;
       const profile = await service.update( body);
       res.status(201).json(profile);
     } catch (error) {

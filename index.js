@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const routerApi = require('./routes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
 //const { checkApiKey } = require('./middlewares/auth.handler');
 
 const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
@@ -31,7 +33,8 @@ const whitelist = [
   'http://test3.pangeanic.com',
   'api.pangeanic.com',
   'https://ecochat.pangeanic.com',
-  'http://admin.local.com'
+  'http://admin.local.com',
+  'https://api.pangeanic.com',
 ];
 
 const options = {
@@ -53,10 +56,33 @@ app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
+app.use('/service/ecochat/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.get('/service/ecochat', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
+
+/**
+ * @swagger
+ * /service/ecochat/healthcheck:
+ *   get:
+ *     summary: Healthcheck del servicio EcoChat
+ *     description: Verifica el estado del servicio EcoChat.
+ *     tags:
+ *       - Healthcheck
+ *     responses:
+ *       200:
+ *         description: El servicio está funcionando correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "It's working!"
+ */
 app.get('/service/ecochat/healthcheck', (req, res) => {
   console.log('healthcheck');
   res.send({"message": "It's working!"});
