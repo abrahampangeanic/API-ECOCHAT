@@ -67,8 +67,14 @@ class AssistantService {
   }
 
   async delete(id) {
-    const model = await this.findByEnterprise(id);
+    const model = await this.findOne(id);
     if (!model)   throw boom.notFound('assistant not found');
+
+    await models.AssistantCollection.destroy({ where: { assistantId: id } });
+    await models.AssistantMessage.destroy({ where: { assistantId: id } });
+    await models.AssistantPrompt.destroy({ where: { assistantId: id } });
+    await models.AssistantSkill.destroy({ where: { assistantId: id } });
+
     await model.destroy();
     return { rta: true };
   }

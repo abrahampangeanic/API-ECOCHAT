@@ -63,7 +63,7 @@ router.delete('/:id',
         document_ids: [ deleteCS.sourceId]
       }
 
-      const rta = await pipelineServ.addCollectionSource(collectionSourcePipiline);
+      const rta = await pipelineServ.deleteCollectionSource(collectionSourcePipiline);
       console.log("res pipeline delete CollectionSource", rta)
 
       res.status(201).json({id});

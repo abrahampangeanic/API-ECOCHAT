@@ -11,7 +11,7 @@ const updateStatusDocumentSchema = Joi.object({
 });
 
 const getDocumentSchema = Joi.object({
-  documentId: id.required(),
+  id: id.required(),
 });
 
 

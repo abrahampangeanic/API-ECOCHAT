@@ -102,11 +102,17 @@ router.patch('/:id',
 );
 
 router.delete('/:id',
-  checkRoles('super'),
+  passport.authenticate('jwt', {session: false}),
   validatorHandler(getUserSchema, 'params'),
   async (req, res, next) => {
     try {
-      const { id } = req.params;
+      const { instanceId, id } = req.params;
+      const userId = req.user.sub;
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
+
       await service.delete(id);
       res.status(201).json({id});
     } catch (error) {

@@ -9,10 +9,11 @@ class DocumentService {
     return document;
   }
 
-  async findBySource(sourceId) {
-    const document = await models.Document.findAll({
+  async findBySourceId(sourceId) {
+    const document = await models.Document.findOne({
       where: {  '$sourceId$': sourceId  }
     });
+    if (!document)  throw boom.notFound('document not found');
 
     return document;
   }

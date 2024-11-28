@@ -38,7 +38,7 @@ router.get('/public',
     try {
       const { instanceId } = req.params;
 
-      const instance = await instanceServ.findOne(instanceId);
+      // const instance = await instanceServ.findOne(instanceId);
 
       const assistant = await service.findByInstancePublic(instanceId);
       res.json(assistant);

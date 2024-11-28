@@ -222,7 +222,7 @@ class PipelineService {
         include_datetime: true,
         include_citations: true,
         use_language_hint: true, //false
-        language: "Spanish"
+        language: data.language
       },
       retriever: {
         rerank: false,
@@ -238,6 +238,7 @@ class PipelineService {
     
     try {
       const response = await axios.post(endpoint, dataPipeline );
+      console.log(response.data)
       if (response.status === 200) return response.data;
 
     } catch (error) {

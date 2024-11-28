@@ -7,6 +7,7 @@ const name = Joi.string();
 const lastName = Joi.string()
 const language = Joi.string();
 const role = Joi.string();
+const instanceId = Joi.string();
 
 const createUserSchema = Joi.object({
   email: email.required(),
@@ -29,6 +30,7 @@ const changePasswordSchema = Joi.object({
 
 const getUserSchema = Joi.object({
   id: id.required(),
+  instanceId: instanceId.required(),
 });
 
 module.exports = { createUserSchema, updateUserSchema, getUserSchema, changePasswordSchema }

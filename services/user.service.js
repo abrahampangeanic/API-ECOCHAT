@@ -43,7 +43,6 @@ class UserService {
     });
     return rta;
   }
-
   
   async findByInstance(id) {
     const rta = await models.Instance.findByPk(id, {
@@ -81,7 +80,7 @@ class UserService {
 
   async findOne(id) {
     const user = await models.User.findByPk(id, {
-      include: ['profile', 'instances', 'apikey']
+      include: ['profile', 'instances']
     });
 
     if (!user)  throw boom.notFound('user not found');
@@ -118,6 +117,7 @@ class UserService {
 
   async delete(id) {
     const user = await this.findOneBasic(id);
+    await models.InstanceUser.destroy({ where: { userId: id } });
     await user.destroy();
     return { id };
   }
