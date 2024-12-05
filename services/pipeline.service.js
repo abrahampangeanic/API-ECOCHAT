@@ -111,8 +111,6 @@ class PipelineService {
     let name = "" 
 
     const data = {
-        history: [
-          {
             history: [
               {
                 message: msgUser,
@@ -124,13 +122,11 @@ class PipelineService {
               }
             ]
           }
-        ]
-      }
       
     try {
       const response = await axios.post(endpoint, data );
       if (response.status === 200) name = response.data.name;
-      await sessionServ.update({ id: id, name: name });
+      const rta = await sessionServ.update({ id: id, name: name });
     } catch (error) {
       console.error('Error al enviar session name:', error.response ? error.response.data : error.message);
     }
@@ -234,11 +230,11 @@ class PipelineService {
       }
     }
 
-    console.log(dataPipeline)
+    // console.log(dataPipeline)
     
     try {
       const response = await axios.post(endpoint, dataPipeline );
-      console.log(response.data)
+      // console.log(response.data)
       if (response.status === 200) return response.data;
 
     } catch (error) {

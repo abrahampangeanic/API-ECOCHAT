@@ -29,12 +29,14 @@ const whitelist = [
   'https://app.taxrepo.com', 
   'http://192.168.100.143:3000',
   'http://192.168.100.143:3001',
+  'http://192.168.100.143:3016',
   'https://test3.pangeanic.com',
   'http://test3.pangeanic.com',
   'api.pangeanic.com',
   'https://ecochat.pangeanic.com',
   'http://admin.local.com',
   'https://api.pangeanic.com',
+  'https://ecochat2.pangeanic.com/'
 ];
 
 const options = {
@@ -56,7 +58,7 @@ app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
-app.use('/service/ecochat/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/service/ecochat/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get('/service/ecochat', (req, res) => {
   res.send('Welcome to ECOChat');

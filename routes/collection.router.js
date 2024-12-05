@@ -20,6 +20,7 @@ router.get('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
+
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();
@@ -61,8 +62,11 @@ router.post('/',
     try {
         const { instanceId  } = req.params;
         const userId = req.user.sub;
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
+
+        if(req.user.role !== 'SUPER') {
+          const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+          if(relationships.length === 0) throw boom.unauthorized();
+        }
 
         const body = req.body;
         body.instanceId = instanceId;
@@ -82,6 +86,7 @@ router.patch('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
+
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();

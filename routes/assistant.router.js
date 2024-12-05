@@ -1,3 +1,11 @@
+
+/**
+ * @swagger
+ * tags:
+ *   name: Assistants
+ *   description: Endpoints para gestionar asistentes
+ */
+
 const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
@@ -13,6 +21,48 @@ const { getAssistantSchema, updateAssistantSchema, createAssistantSchema } = req
 
 const router = express.Router({ mergeParams: true });
 
+/**
+ * @swagger
+ * /service/ecochat/api/v1/instances/{instanceId}/assistants:
+ *   get:
+ *     summary: Obtener todos los asistentes de una instancia
+ *     tags: [Assistants]
+ *     description: Recupera una lista de asistentes asociados a una instancia específica. Requiere autenticación con token JWT.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: instanceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID de la instancia
+ *     responses:
+ *       200:
+ *         description: Lista de asistentes obtenida correctamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "abc123"
+ *                   name:
+ *                     type: string
+ *                     example: "Asistente 1"
+ *                   description:
+ *                     type: string
+ *                     example: "Descripción del asistente"
+ *       401:
+ *         description: No autorizado. El token JWT es inválido o el usuario no tiene permisos.
+ *       403:
+ *         description: Prohibido. El usuario no tiene acceso a esta instancia.
+ *       500:
+ *         description: Error interno del servidor.
+ */
 router.get('/', 
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
@@ -20,6 +70,7 @@ router.get('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
+
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();
@@ -76,8 +127,11 @@ router.post('/',
     try {
         const { instanceId  } = req.params;
         const userId = req.user.sub;
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
+
+        if(req.user.role !== 'SUPER') {
+          const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+          if(relationships.length === 0) throw boom.unauthorized();
+        }
 
         const body = req.body;
         body.instanceId = instanceId;

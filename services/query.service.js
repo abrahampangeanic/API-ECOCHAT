@@ -100,6 +100,50 @@ class QueryService {
     }
   };
 
+  async countQueriesByType(instanceId) {
+    try {
+      const currentYear = new Date().getFullYear(); // Obtiene el año actual
+      const startOfYear = new Date(`${currentYear}-01-01T00:00:00`);
+      const endOfYear = new Date(`${currentYear}-12-31T23:59:59`);
+  
+      const results = await models.Query.findAll({
+        attributes: [
+          [Sequelize.fn('YEAR', Sequelize.col('created_at')), 'year'],
+          'skill',
+          [Sequelize.fn('COUNT', Sequelize.col('id')), 'count'],
+        ],
+        where: {
+          instanceId: instanceId,
+          created_At: {
+            [Op.between]: [startOfYear, endOfYear], // Filtro para el año en curso
+          },
+        },
+        group: ['year', 'skill'],
+        order: [['skill', 'ASC']],
+      });
+  
+      // Formatear resultados
+      let summary = {
+        QA: 0,
+        SEARCH: 0,
+        GENERATION: 0,
+        SUMMARIZATION: 0,
+        SOCIAL_INTERACTION: 0,
+      };
+  
+      results.forEach(result => {
+        let { skill, count } = result.dataValues;
+        if (skill === 'Q&A')  skill = "QA"
+        summary[skill] = count;
+      });
+  
+      return summary;
+    } catch (error) {
+      console.error('Error al contar las consultas por tipo:', error);
+      throw error;
+    }
+  }
+  
   async findBySession(sessionId) {
     const rta = await models.Query.findAll({
       where: { 'sessionId': sessionId }
@@ -108,7 +152,7 @@ class QueryService {
     if (!rta || rta.length === 0) return { queries: [] };
 
     const queryData = rta.map(query => query.toJSON());
-    const queriesBasic = queryData.map(({ refs, tokens_in, tokens_out, task_prompt, ...query }) => query);
+    const queriesBasic = queryData.map(({ tokens_in, tokens_out, task_prompt, ...query }) => query);
   
     return { queries: queriesBasic };
   }

@@ -58,5 +58,29 @@ router.get('/tokens',
     }
 });
 
+
+
+router.get('/skills', 
+  passport.authenticate('jwt', {session: false}),
+  validatorHandler(getInstanceSchema, 'params'),
+  async (req, res, next) => {
+    try {
+      const { instanceId } = req.params;
+      const userId = req.user.sub;
+
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
+
+      const rta = await queryServ.countQueriesByType(instanceId);
+
+      res.json(rta);
+    
+    } catch (error) {
+      next(error);
+    }
+});
+
 module.exports = router;
 

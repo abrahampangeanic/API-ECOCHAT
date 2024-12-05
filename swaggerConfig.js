@@ -18,7 +18,6 @@ const options = {
       },
     ],
   },
-  apis: ['./index.js', './routes/auth.router.js'],
   components: {
     securitySchemes: {
       bearerAuth: {
@@ -27,7 +26,14 @@ const options = {
         bearerFormat: 'JWT',
       }
     }
-  }
+  },
+  apis: [
+    './index.js', 
+    './routes/auth.router.js',
+    './routes/assistant.router.js',
+    './routes/instance.router.js',
+    './routes/user.router.js',
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(options);

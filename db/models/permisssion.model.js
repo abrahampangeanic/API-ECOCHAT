@@ -36,7 +36,7 @@ const PermissionSchema = {
   },
   assistantId: {
     allowNull: true,
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
   },
   instanceId: {
     allowNull: true,
