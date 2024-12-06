@@ -137,13 +137,7 @@ router.delete('/:id',
   validatorHandler(getSessionSchema, 'params'),
   async (req, res, next) => {
     try {
-      const { instanceId, id } = req.params;
-      const userId = req.user.sub;
-      if(req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
-      }
-
+      const { id } = req.params;
       await service.delete(id);
       res.status(201).json({id});
     } catch (error) {

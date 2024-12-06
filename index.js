@@ -36,7 +36,7 @@ const whitelist = [
   'https://ecochat.pangeanic.com',
   'http://admin.local.com',
   'https://api.pangeanic.com',
-  'https://ecochat2.pangeanic.com/'
+  'https://ecochat2.pangeanic.com'
 ];
 
 const options = {
