@@ -167,7 +167,7 @@ router.post('/web',
           id: source.id,
           url: source.reference,
           callback_url: callback,
-          limit: -1,
+          limit: 500,
           mode: source.web_connector_type,
           extract_documents: false,
           extract_multimedia: false

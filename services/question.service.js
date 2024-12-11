@@ -24,10 +24,11 @@ class QuestionService {
     return pipelineMap;
   }
 
-  isAssistantAccessDenied(Data, assistantId) {
+  isAssistantAccessDenied(Data, assistantId, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (permission.assistantId === assistantId && permission.accessMode === "DENIED") {
+        console.log("permission", permission)
+        if (permission.assistantId === assistantId && permission.accessMode === "DENIED" && permission.pipeline === pipeline) {
           return true;
         }
       }
@@ -35,10 +36,10 @@ class QuestionService {
     return false;
   }
 
-  isAssistantAccessRESTRICTED(Data, assistantId) {
+  isAssistantAccessRESTRICTED(Data, assistantId, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (permission.assistantId === assistantId && permission.accessMode === "RESTRICTED") {
+        if (permission.assistantId === assistantId && permission.accessMode === "RESTRICTED" && permission.pipeline === pipeline) {
           return true;
         }
       }
@@ -46,10 +47,10 @@ class QuestionService {
     return false;
   }
 
-  isCollectionAccessDenied(Data, collections) {
+  isCollectionAccessDenied(Data, collections, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (collections.includes(permission.collectionId) && permission.accessMode === "DENIED") {
+        if (collections.includes(permission.collectionId) && permission.accessMode === "DENIED" && permission.pipeline === pipeline) {
           return true;
         }
       }
@@ -57,10 +58,10 @@ class QuestionService {
     return false;
   }
 
-  isCollectionAccessRESTRICTED(Data, collectionId) {
+  isCollectionAccessRESTRICTED(Data, collectionId, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (permission.collectionId === collectionId && permission.accessMode === "RESTRICTED") {
+        if (permission.collectionId === collectionId && permission.accessMode === "RESTRICTED" && permission.pipeline === pipeline) {
           return true;
         }
       }
@@ -72,12 +73,13 @@ class QuestionService {
     return skills.some(objeto => objeto.name === pipeline)
   }
 
-  getCollectionsAllowed(groups, collections) {
+  getCollectionsAllowed(groups, collections, pipeline) {
     const collectionsDenied = groups.flatMap(group =>
       group.permissions
         .filter(permission => 
           permission.resource === "COLLECTION" &&
           permission.accessMode === "DENIED" &&
+          permission.skills === pipeline &&
           permission.collectionId
         )
         .map(permission => permission.collectionId)
@@ -89,12 +91,13 @@ class QuestionService {
     return collectionsAllow.length > 0 ? collectionsAllow : false;
   }
 
-  getReferenceAllowed(groups, references) {
+  getReferenceAllowed(groups, references, pipeline) {
     const collectionsDenied = groups.flatMap(group =>
       group.permissions
         .filter(permission => 
           permission.resource === "COLLECTION" &&
           permission.accessMode === "RESTRICTED" &&
+          permission.skills === pipeline &&
           permission.collectionId
         )
         .map(permission => permission.collectionId)

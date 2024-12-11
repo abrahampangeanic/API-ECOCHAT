@@ -186,7 +186,7 @@ router.post('/lost-password',
  *           schema:
  *             type: object
  *             properties:
- *               oldPassword:
+ *               userId:
  *                 type: string
  *               newPassword:
  *                 type: string

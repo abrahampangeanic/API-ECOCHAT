@@ -5,8 +5,8 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'API Documentation',
-      version: '1.0.0',
-      description: 'Documentación de la API ECOCHAT del proyecto Pangeanic',
+      version: '1.0.8',
+      description: 'Pangeanic Project ECOCHAT API Documentation',
     },
     servers: [
       {
@@ -17,24 +17,30 @@ const options = {
         description: 'Servidor público de producción',
       },
     ],
-  },
-  components: {
-    securitySchemes: {
-      bearerAuth: {
-        type: 'https',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        }
       }
-    }
+    },
+    security: [
+      {
+        bearerAuth: [],
+      },
+    ],
   },
   apis: [
     './index.js', 
     './routes/auth.router.js',
-    './routes/assistant.router.js',
     './routes/instance.router.js',
+    './routes/assistant.router.js',
     './routes/user.router.js',
   ],
 };
+
 
 const swaggerSpec = swaggerJsdoc(options);
 module.exports = swaggerSpec;

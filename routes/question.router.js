@@ -52,9 +52,10 @@ router.post('/',
 
         const pipelineMap = questionServ.getPipelineMap();
         
-        // let pipeline = await pipelineServ.getPipeline(question);
-        let pipeline = "QA"
+        let pipeline = await pipelineServ.getPipeline(question);
+        console.log("Pipeline: " + pipeline)
         const pipelineProcess = pipelineMap[pipeline] || 'qa';
+        
 
         const history = [
           {
@@ -65,10 +66,16 @@ router.post('/',
         
         if(pipeline === "QA") pipeline = "Q&A"
 
-        const checkAsistantAccessDenied = questionServ.isAssistantAccessDenied(groups, assistant.id);
-        const checkAsistantAccessRestricted = questionServ.isAssistantAccessRESTRICTED(groups, assistant.id);
-        const collectionsAllowed = questionServ.getCollectionsAllowed(groups, collections);
+        const checkAsistantAccessDenied = questionServ.isAssistantAccessDenied(groups, assistant.id, pipeline);
+        const checkAsistantAccessRestricted = questionServ.isAssistantAccessRESTRICTED(groups, assistant.id, pipeline);
+        const collectionsAllowed = questionServ.getCollectionsAllowed(groups, collections, pipeline);
         const checkSkillAccess = questionServ.isSkillAccess(skills, pipeline);
+
+        console.log("checkSkillAccess", checkSkillAccess)
+        console.log("groups", groups)
+        console.log("checkAsistantAccessDenied", checkAsistantAccessDenied)
+        console.log("collectionsAllowed", collectionsAllowed)
+
 
         if(checkSkillAccess && !checkAsistantAccessDenied && collectionsAllowed ){
           console.log("Estoy en el pipeline")
@@ -91,13 +98,14 @@ router.post('/',
           const rta = await pipelineServ.processPipeline(pipelineProcess, dataPipeline)
         
           const poor_message = assistant.messages.find( item => item.type === "POOR")
-          const references = questionServ.getReferenceAllowed(groups, rta.answer.citations)
+          const references = questionServ.getReferenceAllowed(groups, rta.answer.citations, pipeline)
 
           if(rta){
             let msg_out = rta.answer.answer
             let refs = JSON.stringify(references) || ""
             if(checkAsistantAccessRestricted ) refs = ""
 
+            if(pipeline === "SEARCH" && refs.length == 0 && msg_out === "") msg_out = "I can't answer that question based on the provided information"
             if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
   
             const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -172,6 +180,8 @@ router.post('/public',
       let skills = assistant.skills;
       skills.push({id: 0, name: 'SOCIAL_INTERACTION', description: 'SOCIAL_INTERACTION'})
       let pipeline = await pipelineServ.getPipeline(question);
+      console.log("Pipeline: " + pipeline)
+      
       // const user = await userServ.findOneWithPermissions(userId);
       // const groups = user.groups;
 
@@ -234,6 +244,7 @@ router.post('/public',
           let msg_out = rta.answer.answer
           const refs = JSON.stringify(rta.answer.citations) || ""
 
+          if(pipeline === "SEARCH" && refs.length == 0 && msg_out === "") msg_out = "I can't answer that question based on the provided information"
           if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
 
           const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);

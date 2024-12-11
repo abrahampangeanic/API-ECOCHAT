@@ -24,8 +24,12 @@ class PipelineService {
       callback_url: callback
     }
 
+    console.log(endpoint);
+    console.log(indexData);
+
     try {
         const response = await axios.post(endpoint, indexData );
+        console.log(response.data);
         if (response.data.success) return response.data;
       } catch (error) {
         console.error('Error al enviar a INDEX:', error.response ? error.response.data : error.message);
@@ -230,11 +234,11 @@ class PipelineService {
       }
     }
 
-    // console.log(dataPipeline)
+    console.log(dataPipeline)
     
     try {
       const response = await axios.post(endpoint, dataPipeline );
-      // console.log(response.data)
+      console.log(response.data)
       if (response.status === 200) return response.data;
 
     } catch (error) {

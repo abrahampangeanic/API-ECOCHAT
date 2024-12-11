@@ -23,6 +23,7 @@ router.get('/:id',
     try {
       const { id } = req.params;
       const document = await service.findBySourceId(id);
+      console.log(document);
 
       console.log(document.url);
       const file = `${__dirname}/../${document.url}`; // Path to the file

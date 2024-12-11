@@ -15,21 +15,11 @@ const { getQuerySchema, updateQuerySchema } = require('../schemas/query.schema')
 const router = express.Router({ mergeParams: true });
 
 router.patch('/',
-  passport.authenticate('jwt', {session: false}),
+  // passport.authenticate('jwt', {session: false}),
   validatorHandler(updateQuerySchema, 'body'),
   async (req, res, next) => {
     try {
-      const { instanceId } = req.params;
-      const userId = req.user.sub;
-
-      if(req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
-      }
-
       const body = req.body;
-      body.instanceId = instanceId;
-
       const query = await service.update(body);
       res.json(query);
     } catch (error) {

@@ -44,6 +44,33 @@ router.use('/:instanceId/permissions', permissionsRouter);
 router.use('/:instanceId/stats', statsRouter);
 router.use('/:instanceId/queries', queryRouter);
 
+/**
+ * @swagger
+ * tags:
+ *   name: Instances
+ *   description: Endpoints to Instances
+ */
+
+/**
+ * @swagger
+ * /service/ecochat/api/v1/instances:
+ *   get:
+ *     summary: Obtener instancias del usuario autenticado
+ *     tags: [Instances]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de instancias
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Instance'
+ *       401:
+ *         description: No autorizado
+ */
 router.get('/', 
   passport.authenticate('jwt', {session: false}),
   async (req, res, next) => {
