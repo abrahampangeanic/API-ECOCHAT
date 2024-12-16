@@ -188,10 +188,13 @@ class InstanceService {
 
   async delete(id) {
     const model = await this.findOne(id);
-    if (model.id != id) throw boom.notAcceptable('not owner');
-    const change = { removed: 1}
-    await model.update(change);
-    await models.InstanceUser.destroy({ where: { 'InstanceId': id }})
+    await models.Source.destroy({ where: { 'instanceId': id }})
+    await models.Collection.destroy({ where: { 'instanceId': id }})
+    await models.Prompt.destroy({ where: { 'instanceId': id }})
+    await models.Assistant.destroy({ where: { 'instanceId': id }})
+    await models.Group.destroy({ where: { 'instanceId': id }})
+    await models.InstanceUser.destroy({ where: { 'instanceId': id }})
+    await model.destroy();
     return { rta: true };
   }
 

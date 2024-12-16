@@ -137,12 +137,7 @@ router.patch('/',
   validatorHandler(updateInstanceSchema, 'body'),
   async (req, res, next) => {
     try {
-      const userId = req.user.sub;
-      if(req.user.role !== 'SUPER') {
-        const relationships = await service.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
-      }
-
+      if(req.user.role !== 'SUPER')  throw boom.unauthorized();
       const body = req.body;
       const instance = await service.update(body);
       res.json(instance);
@@ -157,6 +152,7 @@ router.delete('/:instanceId',
   validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
     try {
+      if(req.user.role !== 'SUPER')  throw boom.unauthorized();
       const { instanceId } = req.params;
       await service.delete(instanceId);
       res.status(201).json({instanceId});

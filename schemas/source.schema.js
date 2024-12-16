@@ -4,8 +4,8 @@ const id = Joi.string();
 const name = Joi.string();
 const description = Joi.string();
 const sourcetype = Joi.string();
-const reference = Joi.string();
-const web_connector_type = Joi.string();
+const reference = Joi.string().allow(null, '');
+const web_connector_type = Joi.string().allow(null, '');
 const pages = Joi.number().integer();
 const indextsreq = Joi.number().integer();
 const indextsend = Joi.number().integer();
@@ -16,7 +16,7 @@ const files = Joi.object({
   file: Joi.object({
     originalname: Joi.string().required(),  // nombre original del archivo
     mimetype: Joi.string().valid('image/jpeg', 'image/png', 'application/pdf').required(),  // tipos permitidos
-    size: Joi.number().max(5 * 1024 * 1024).required()  // tamaño máximo permitido (5MB en este caso)
+    size: Joi.number().max(50 * 1024 * 1024).required()  // tamaño máximo permitido (5MB en este caso)
   })
 });
 const status = Joi.string();
@@ -45,11 +45,11 @@ const updateSourceSchema = Joi.object({
     sourcetype: sourcetype.required(),
     reference: reference.required(),
     web_connector_type: web_connector_type.required(),
+    indexstatus: indexstatus, 
     pages: pages,
     indextsreq: indextsreq,
     indextsend: indextsend,
     enabled: enabled,
-    indexstatus: indexstatus, 
 });
 
 const getSourceSchema = Joi.object({

@@ -44,7 +44,7 @@ const uploadhandler = (req, res, next) => {
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
             ];
-            const maxSize = 5 * 1024 * 1024; // 5MB
+            const maxSize = 50 * 1024 * 1024; // 50MB
 
             if (!allowedTypes.includes(file.mimetype)) {
                 errors.push(`Invalid file type: ${file.originalname}`);

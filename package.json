@@ -1,5 +1,5 @@
 {
-  "name": "gest-backend",
+  "name": "API-ECOChat",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,7 +13,7 @@
     "migrations:delete": "sequelize-cli db:migrate:undo:all"
   },
   "keywords": [],
-  "author": "",
+  "author": "Abraham Armas",
   "license": "ISC",
   "devDependencies": {
     "eslint": "^7.32.0",

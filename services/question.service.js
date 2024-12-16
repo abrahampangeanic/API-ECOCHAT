@@ -28,7 +28,7 @@ class QuestionService {
     for (const group of Data) {
       for (const permission of group.permissions) {
         console.log("permission", permission)
-        if (permission.assistantId === assistantId && permission.accessMode === "DENIED" && permission.pipeline === pipeline) {
+        if (permission.assistantId === assistantId && permission.accessMode === "DENIED" && permission.skill === pipeline) {
           return true;
         }
       }
@@ -39,7 +39,7 @@ class QuestionService {
   isAssistantAccessRESTRICTED(Data, assistantId, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (permission.assistantId === assistantId && permission.accessMode === "RESTRICTED" && permission.pipeline === pipeline) {
+        if (permission.assistantId === assistantId && permission.accessMode === "RESTRICTED" && permission.skill === pipeline) {
           return true;
         }
       }
@@ -50,7 +50,7 @@ class QuestionService {
   isCollectionAccessDenied(Data, collections, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (collections.includes(permission.collectionId) && permission.accessMode === "DENIED" && permission.pipeline === pipeline) {
+        if (collections.includes(permission.collectionId) && permission.accessMode === "DENIED" && permission.skill === pipeline) {
           return true;
         }
       }
@@ -61,7 +61,7 @@ class QuestionService {
   isCollectionAccessRESTRICTED(Data, collectionId, pipeline) {
     for (const group of Data) {
       for (const permission of group.permissions) {
-        if (permission.collectionId === collectionId && permission.accessMode === "RESTRICTED" && permission.pipeline === pipeline) {
+        if (permission.collectionId === collectionId && permission.accessMode === "RESTRICTED" && permission.skill === pipeline) {
           return true;
         }
       }
@@ -79,7 +79,7 @@ class QuestionService {
         .filter(permission => 
           permission.resource === "COLLECTION" &&
           permission.accessMode === "DENIED" &&
-          permission.skills === pipeline &&
+          permission.skill === pipeline &&
           permission.collectionId
         )
         .map(permission => permission.collectionId)
@@ -97,7 +97,7 @@ class QuestionService {
         .filter(permission => 
           permission.resource === "COLLECTION" &&
           permission.accessMode === "RESTRICTED" &&
-          permission.skills === pipeline &&
+          permission.skill === pipeline &&
           permission.collectionId
         )
         .map(permission => permission.collectionId)

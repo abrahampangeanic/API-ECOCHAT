@@ -1,6 +1,6 @@
 const Joi = require('joi');
 
-const id = Joi.number().integer();
+const id = Joi.string();
 const name = Joi.string();
 const client_name = Joi.string();
 const base_url = Joi.string();

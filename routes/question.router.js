@@ -42,10 +42,10 @@ router.post('/',
         const groups = user.groups;
 
         const denied_message = assistant.messages.find( item => item.type === "DENIED")
-        const message_out_denied = denied_message || `You do not have access to that skill `
+        const message_out_denied = denied_message?.message || `You do not have access `
 
         const restricted_message = assistant.messages.find( item => item.type === "DENIED")
-        const message_out_restricted = restricted_message || `You do not have access to that skill `
+        const message_out_restricted = restricted_message?.message || `You do not have access to that skill `
         
         const languageMap = questionServ.getLanguageMap();
         const languageProcess = languageMap[instance.lang] || 'English';
@@ -70,12 +70,6 @@ router.post('/',
         const checkAsistantAccessRestricted = questionServ.isAssistantAccessRESTRICTED(groups, assistant.id, pipeline);
         const collectionsAllowed = questionServ.getCollectionsAllowed(groups, collections, pipeline);
         const checkSkillAccess = questionServ.isSkillAccess(skills, pipeline);
-
-        console.log("checkSkillAccess", checkSkillAccess)
-        console.log("groups", groups)
-        console.log("checkAsistantAccessDenied", checkAsistantAccessDenied)
-        console.log("collectionsAllowed", collectionsAllowed)
-
 
         if(checkSkillAccess && !checkAsistantAccessDenied && collectionsAllowed ){
           console.log("Estoy en el pipeline")
@@ -105,7 +99,7 @@ router.post('/',
             let refs = JSON.stringify(references) || ""
             if(checkAsistantAccessRestricted ) refs = ""
 
-            if(pipeline === "SEARCH" && refs.length == 0 && msg_out === "") msg_out = "I can't answer that question based on the provided information"
+            if(pipeline === "SEARCH" && references.length == 0 && !msg_out )   msg_out = "I can't answer that question based on the provided information"
             if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
   
             const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -120,7 +114,7 @@ router.post('/',
               ts_out: now2,
               tokens_in: rta.token_usage.net_input,
               tokens_out: rta.token_usage.net_output,
-              task_prompt: "",
+              task_prompt: null,
               skill: pipeline,
               sessionId: sessionId,
               assistantId: assistantId,
@@ -142,10 +136,8 @@ router.post('/',
               }
             }
 
-            const refsOut = JSON.parse(query.refs)
-            
             if(checkAsistantAccessRestricted ) query.refs = []
-            else query.refs = refsOut
+            else query.refs = JSON.parse(query.refs)
             
             res.status(200).json({ query: query  });
           }
@@ -237,14 +229,12 @@ router.post('/public',
         const rta = await pipelineServ.processPipeline(pipelineProcess, dataPipeline)
       
         const poor_message = assistant.messages.find( item => item.type === "POOR")
-
-        // console.log(answer)
         
         if(rta){
           let msg_out = rta.answer.answer
           const refs = JSON.stringify(rta.answer.citations) || ""
 
-          if(pipeline === "SEARCH" && refs.length == 0 && msg_out === "") msg_out = "I can't answer that question based on the provided information"
+          if(pipeline === "SEARCH" && references.length == 0 && !msg_out )   msg_out = "I can't answer that question based on the provided information"
           if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
 
           const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);
@@ -259,7 +249,7 @@ router.post('/public',
             ts_out: now2,
             tokens_in: rta.token_usage.net_input,
             tokens_out: rta.token_usage.net_output,
-            task_prompt: "",
+            task_prompt: null,
             skill: pipeline,
             sessionId: sessionId,
             assistantId: assistantId,

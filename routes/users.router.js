@@ -113,7 +113,7 @@ router.delete('/:id',
         if(relationships.length === 0) throw boom.unauthorized();
       }
 
-      await service.delete(id);
+      await service.delete(id, instanceId);
       res.status(201).json({id});
     } catch (error) {
       next(error);

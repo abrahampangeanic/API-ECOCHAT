@@ -10,31 +10,40 @@ class UserService {
   async create(data) {
 
     const user = await models.User.findOne({ where: { 'email': data.email }});
-    if (user)   throw boom.conflict('User already exists');
+    if (user) {
+      throw boom.badRequest('user already exists')
+      // const relationships = await models.InstanceUser.findAll({ where: { 'userId': user.id, 'instanceId': data.instanceId } });
+      // console.log("user exist", relationships.length )
+      // if(relationships.length > 0) { throw boom.badRequest('user already exists');}
+      // await models.InstanceUser.create({userId: user.id, instanceId: data.instanceId, role: data.role});
+      // delete user.dataValues.password;
+      // return user;
+    } 
+    else {
+      const hash = await bcrypt.hash(data.password, 10);
 
-    const hash = await bcrypt.hash(data.password, 10);
-
-    const newData = {
-      email: data.email,
-      password: hash,
-      role: 'CLIENT',
-      profile: {
-        name: data.name,
-        lastName: data.lastName,
-        language: data.language
-      },
-      instanceUsers: {
-        role: data.role,
-        instanceId: data.instanceId
-      },
-      apikey:{
-        key: uuidv4()
+      const newData = {
+        email: data.email,
+        password: hash,
+        role: 'CLIENT',
+        profile: {
+          name: data.name,
+          lastName: data.lastName,
+          language: data.language
+        },
+        instanceUsers: {
+          role: data.role,
+          instanceId: data.instanceId
+        },
+        apikey:{
+          key: uuidv4()
+        }
       }
-    }
 
-    const newUser = await models.User.create(newData, {include: ['profile','instanceUsers', 'apikey']});
-    delete newUser.dataValues.password;
-    return newUser;
+      const newUser = await models.User.create(newData, {include: ['profile','instanceUsers', 'apikey']});
+      delete newUser.dataValues.password;
+      return newUser;
+    }
   }
 
   async find() {
@@ -115,9 +124,10 @@ class UserService {
     return rta;
   }
 
-  async delete(id) {
+  async delete(id, instanceId) {
     const user = await this.findOneBasic(id);
     await models.InstanceUser.destroy({ where: { userId: id } });
+    await models.UserGroup.destroy({ where: { userId: id } });
     await user.destroy();
     return { id };
   }

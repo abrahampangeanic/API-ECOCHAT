@@ -51,14 +51,14 @@ module.exports = {
         id: '2c91ac93-0f3c-4dbd-8b0d-4d682153cc2e', 
         email: 'abraham@pangeanic.com',
         password: '$2a$10$XufU.6H2sjEoZK3kcr2EPuuFRd6jh3p9O3m4bYspEREz9bZws4/4i',
-        role: 'super',
+        role: 'SUPER',
         create_at: new Date(),
       }
     ]);
 
     await queryInterface.bulkInsert('profiles', [
       {
-        id: "2c91ac93-0f3c-4dbd-8b0d-4d682153cc2e", 
+        id: "1", 
         name: 'Abraham',
         last_name: 'Armas',
         phone: '+56 987654321',
@@ -80,7 +80,7 @@ module.exports = {
     await queryInterface.bulkInsert('skills', [
       {
         id: 1, 
-        name: 'QA',
+        name: 'Q&A',
         description: 'Question and Answer',
         created_at: new Date(),
       },
