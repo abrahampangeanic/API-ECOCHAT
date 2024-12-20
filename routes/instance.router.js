@@ -53,7 +53,7 @@ router.use('/:instanceId/queries', queryRouter);
 
 /**
  * @swagger
- * /service/ecochat/api/v1/instances:
+ * /instances:
  *   get:
  *     summary: Obtener instancias del usuario autenticado
  *     tags: [Instances]
@@ -95,6 +95,72 @@ router.get('/all',
     }
 });
 
+/**
+ * @swagger
+ * /instances/{instanceId}:
+ *   get:
+ *     summary: Obtiene una instancia por ID
+ *     description: |
+ *       Este endpoint permite obtener la información detallada de una instancia específica por su `instanceId`.
+ *       Requiere autenticación con JWT y roles específicos.
+ *     tags: [Instances]
+ *     parameters:
+ *       - in: path
+ *         name: instanceId
+ *         required: true
+ *         description: El ID de la instancia a obtener.
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Información de la instancia
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Instance'
+ *       401:
+ *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       403:
+ *         description: Acceso denegado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Access Denied
+ *       404:
+ *         description: Instancia no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Instance not found
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
 router.get('/:instanceId',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
@@ -116,6 +182,108 @@ router.get('/:instanceId',
   }
 );
 
+
+/**
+ * @swagger
+ * /instances:
+ *   post:
+ *     summary: Crea una nueva instancia
+ *     description: |
+ *       Este endpoint permite crear una nueva instancia. 
+ *       Requiere autenticación con JWT.
+ *     tags: [Instances]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - client_name
+ *               - description
+ *               - type
+ *               - lang
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Nombre de la instancia.
+ *               client_name:
+ *                 type: string
+ *                 description: Nombre del cliente asociado.
+ *               base_url:
+ *                 type: string
+ *                 description: URL base de la instancia.
+ *               description:
+ *                 type: string
+ *                 description: Descripción detallada de la instancia.
+ *               type:
+ *                 type: string
+ *                 description: Tipo de la instancia.
+ *               lang:
+ *                 type: string
+ *                 description: Idioma configurado para la instancia.
+ *               logo:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Logo de la instancia.
+ *           example:
+ *             name: "Gestión de Proyectos"
+ *             client_name: "Cliente XYZ"
+ *             base_url: "https://proyectos.cliente-xyz.com"
+ *             description: "Instancia dedicada a la gestión de proyectos de la empresa Cliente XYZ."
+ *             type: "BASIC"
+ *             lang: "ES"
+ *     responses:
+ *       201:
+ *         description: Instancia creada con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Instance'
+ *             example:
+ *               id: "123e4567-e89b-12d3-a456-426614174000"
+ *               name: "Gestión de Proyectos"
+ *               client_name: "Cliente XYZ"
+ *               base_url: "https://proyectos.cliente-xyz.com"
+ *               description: "Instancia dedicada a la gestión de proyectos de la empresa Cliente XYZ."
+ *               type: "Gestión"
+ *               lang: "es"
+ *               logo: "https://proyectos.cliente-xyz.com/logo.png"
+ *               userId: "456e1237-d89c-45f3-b756-526614174111"
+ *       400:
+ *         description: Datos inválidos en la solicitud
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Bad Request
+ *       401:
+ *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
 router.post('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(createInstanceSchema, 'body'),
@@ -132,6 +300,122 @@ router.post('/',
   }
 );
 
+/**
+ * @swagger
+ * /instances/{instanceId}:
+ *   patch:
+ *     summary: Actualiza una instancia
+ *     description: |
+ *       Este endpoint permite actualizar la información detallada de una instancia específica por su `instanceId`.
+ *       Requiere autenticación con JWT y roles específicos.
+ *     tags: [Instances]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - instanceId 
+ *               - name
+ *               - client_name
+ *               - description
+ *               - type
+ *               - lang
+ *             properties:
+ *               instanceId:
+ *                 type: string
+ *                 description: ID de la instancia a actualizar.
+ *               name:
+ *                 type: string
+ *                 description: Nombre de la instancia.
+ *               client_name:
+ *                 type: string
+ *                 description: Nombre del cliente asociado.
+ *               base_url:
+ *                 type: string
+ *                 description: URL base de la instancia.
+ *               description:
+ *                 type: string
+ *                 description: Descripción detallada de la instancia.
+ *               type:
+ *                 type: string
+ *                 description: Tipo de la instancia.
+ *               lang:
+ *                 type: string
+ *                 description: Idioma configurado para la instancia.
+ *               logo:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Logo de la instancia.
+ *           example:
+ *             instanceId: "123e4567-e89b-12d3-a456-426614174000"
+ *             name: "Gestión de Proyectos"
+ *             client_name: "Cliente XYZ"
+ *             base_url: "https://proyectos.cliente-xyz.com"
+ *             description: "Instancia dedicada a la gestión de proyectos de la empresa Cliente XYZ."
+ *             type: "BASIC"
+ *             lang: "ES"
+ *     responses:
+ *       200:
+ *         description: Instancia actualizada con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Instance'
+ *             example:
+ *               id: "123e4567-e89b-12d3-a456-426614174000"
+ *               name: "Gestión de Proyectos"
+ *               client_name: "Cliente XYZ"
+ *               base_url: "https://proyectos.cliente-xyz.com"
+ *               description: "Instancia dedicada a la gestión de proyectos de la empresa Cliente XYZ."
+ *               type: "BASIC"
+ *               lang: "ES"
+ *               logo: "https://proyectos.cliente-xyz.com/logo.png"
+ *               userId: "456e1237-d89c-45f3-b756-526614174111"
+ *       401:
+ *         description: No autorizado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       403:
+ *         description: Acceso denegado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Access Denied
+ *       404:
+ *         description: Instancia no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Instance not found
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
 router.patch('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(updateInstanceSchema, 'body'),

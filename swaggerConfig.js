@@ -10,10 +10,10 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000', // URL base de tu servidor
+        url: 'http://192.168.100.143:3000/service/ecochat/api/v1', // URL base de tu servidor
       },
       {
-        url: 'https://api.pangeanic.com/service/ecochat', // URL del servidor público
+        url: 'https://api.pangeanic.com/service/ecochat/api/v1', // URL del servidor público
         description: 'Servidor público de producción',
       },
     ],

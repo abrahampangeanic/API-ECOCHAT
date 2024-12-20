@@ -17,7 +17,7 @@ const service = new AuthService();
 
 /**
  * @swagger
- * /service/ecochat/api/v1/auth/login:
+ * /auth/login:
  *   post:
  *     summary: Iniciar sesión
  *     tags: [Auth]
@@ -67,7 +67,7 @@ router.post('/login',
 
 /**
  * @swagger
- * /service/ecochat/api/v1/auth/verify_token:
+ * /auth/verify_token:
  *   post:
  *     summary: Verificar token
  *     tags: [Auth]
@@ -99,29 +99,29 @@ router.post('/verify_token',
   }
 );
 
-/**
- * @swagger
- * /service/ecochat/api/v1/auth/recovery:
- *   post:
- *     summary: Recuperar cuenta
- *     tags: [Auth]
- *     description: Envía un correo electrónico para la recuperación de cuenta.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 example: "user@example.com"
- *     responses:
- *       200:
- *         description: Correo de recuperación enviado correctamente.
- *       404:
- *         description: Usuario no encontrado.
- */
+// /**
+//  * @swagger
+//  * /service/ecochat/api/v1/auth/recovery:
+//  *   post:
+//  *     summary: Recuperar cuenta
+//  *     tags: [Auth]
+//  *     description: Envía un correo electrónico para la recuperación de cuenta.
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               email:
+//  *                 type: string
+//  *                 example: "user@example.com"
+//  *     responses:
+//  *       200:
+//  *         description: Correo de recuperación enviado correctamente.
+//  *       404:
+//  *         description: Usuario no encontrado.
+//  */
 router.post('/recovery',
   async (req, res, next) => {
     try {
@@ -134,30 +134,30 @@ router.post('/recovery',
   }
 );
 
-/**
- * @swagger
- * /service/ecochat/api/v1/auth/lost-password:
- *   post:
- *     summary: Restablecer contraseña
- *     tags: [Auth]
- *     description: Restablece la contraseña utilizando un token de recuperación.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               token:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Contraseña restablecida correctamente.
- *       400:
- *         description: Token inválido o expirado.
- */
+// /**
+//  * @swagger
+//  * /service/ecochat/api/v1/auth/lost-password:
+//  *   post:
+//  *     summary: Restablecer contraseña
+//  *     tags: [Auth]
+//  *     description: Restablece la contraseña utilizando un token de recuperación.
+//  *     requestBody:
+//  *       required: true
+//  *       content:
+//  *         application/json:
+//  *           schema:
+//  *             type: object
+//  *             properties:
+//  *               token:
+//  *                 type: string
+//  *               password:
+//  *                 type: string
+//  *     responses:
+//  *       200:
+//  *         description: Contraseña restablecida correctamente.
+//  *       400:
+//  *         description: Token inválido o expirado.
+//  */
 router.post('/lost-password',
   async (req, res, next) => {
     try {
@@ -172,7 +172,7 @@ router.post('/lost-password',
 
 /**
  * @swagger
- * /service/ecochat/api/v1/auth/change-password:
+ * /auth/change-password:
  *   post:
  *     summary: Cambiar contraseña
  *     tags: [Auth]
