@@ -1,5 +1,5 @@
 # Usa la imagen oficial de Node.js 20-t 
-FROM node:20
+FROM node:20.17.0
 
 # Establece el directorio de trabajo en el contenedor
 WORKDIR /usr/src/app
