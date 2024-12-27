@@ -2,7 +2,7 @@
  * @swagger
  * tags:
  *   name: Auth
- *   description: Endpoints de autenticación
+ *   description: Endpoints to authenticate
  */
 
 const express = require('express');
@@ -19,9 +19,9 @@ const service = new AuthService();
  * @swagger
  * /auth/login:
  *   post:
- *     summary: Iniciar sesión
+ *     summary: Login
  *     tags: [Auth]
- *     description: Autentica a un usuario utilizando email y contraseña y devuelve un token JWT.
+ *     description: Authenticates a user using email and password and returns a JWT token.
  *     requestBody:
  *       required: true
  *       content:
@@ -34,13 +34,13 @@ const service = new AuthService();
  *             properties:
  *               email:
  *                 type: string
- *                 example: "user@example.com"
+ *                 example: "admin@admin.com"
  *               password:
  *                 type: string
- *                 example: "password123"
+ *                 example: "Password123*"
  *     responses:
  *       200:
- *         description: Usuario autenticado correctamente.
+ *         description: User successfully authenticated.
  *         content:
  *           application/json:
  *             schema:
@@ -50,9 +50,8 @@ const service = new AuthService();
  *                   type: string
  *                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
  *       401:
- *         description: Credenciales inválidas.
+ *         description: Invalid credentials.
  */
-
 router.post('/login',
   passport.authenticate('local', {session: false}),
   async (req, res, next) => {
@@ -69,9 +68,9 @@ router.post('/login',
  * @swagger
  * /auth/verify_token:
  *   post:
- *     summary: Verificar token
+ *     summary: Verify token
  *     tags: [Auth]
- *     description: Verifica la validez de un token JWT.
+ *     description: Verifies the validity of a JWT token.
  *     requestBody:
  *       required: true
  *       content:
@@ -84,9 +83,9 @@ router.post('/login',
  *                 example: "your-token-here"
  *     responses:
  *       200:
- *         description: Token verificado correctamente.
+ *         description: Token successfully verified.
  *       400:
- *         description: Token inválido.
+ *         description: Invalid token.
  */
 router.post('/verify_token',
   async (req, res, next) => {
@@ -174,9 +173,9 @@ router.post('/lost-password',
  * @swagger
  * /auth/change-password:
  *   post:
- *     summary: Cambiar contraseña
+ *     summary: Change Password
  *     tags: [Auth]
- *     description: Cambia la contraseña de un usuario autenticado.
+ *     description: Change the password of an authenticated user.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -192,9 +191,9 @@ router.post('/lost-password',
  *                 type: string
  *     responses:
  *       200:
- *         description: Contraseña cambiada correctamente.
+ *         description: Password changed successfully.
  *       401:
- *         description: No autorizado o contraseña actual incorrecta.
+ *         description: Unauthorized or current password incorrect.
  */
 router.post('/change-password',
   passport.authenticate('jwt', {session: false}),

@@ -55,13 +55,13 @@ router.use('/:instanceId/queries', queryRouter);
  * @swagger
  * /instances:
  *   get:
- *     summary: Obtener instancias del usuario autenticado
+ *     summary: Get instances of the authenticated user
  *     tags: [Instances]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de instancias
+ *         description: List of instances
  *         content:
  *           application/json:
  *             schema:
@@ -69,7 +69,7 @@ router.use('/:instanceId/queries', queryRouter);
  *               items:
  *                 $ref: '#/components/schemas/Instance'
  *       401:
- *         description: No autorizado
+ *         description: Unauthorized
  */
 router.get('/', 
   passport.authenticate('jwt', {session: false}),
@@ -99,23 +99,23 @@ router.get('/all',
  * @swagger
  * /instances/{instanceId}:
  *   get:
- *     summary: Obtiene una instancia por ID
+ *     summary: Get an instance by ID
  *     description: |
- *       Este endpoint permite obtener la información detallada de una instancia específica por su `instanceId`.
- *       Requiere autenticación con JWT y roles específicos.
+ *       This endpoint allows you to get detailed information about a specific instance by its `instanceId`.
+ *       Requires authentication with JWT and specific roles.
  *     tags: [Instances]
  *     parameters:
  *       - in: path
  *         name: instanceId
  *         required: true
- *         description: El ID de la instancia a obtener.
+ *         description: The ID of the instance to get.
  *         schema:
  *           type: string
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Información de la instancia
+ *         description: Instance information
  *         content:
  *           application/json:
  *             schema:
@@ -131,7 +131,7 @@ router.get('/all',
  *                   type: string
  *                   example: Unauthorized
  *       403:
- *         description: Acceso denegado
+ *         description: Access denied
  *         content:
  *           application/json:
  *             schema:
@@ -151,7 +151,7 @@ router.get('/all',
  *                   type: string
  *                   example: Instance not found
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
@@ -187,10 +187,10 @@ router.get('/:instanceId',
  * @swagger
  * /instances:
  *   post:
- *     summary: Crea una nueva instancia
+ *     summary: Create a new instance
  *     description: |
- *       Este endpoint permite crear una nueva instancia. 
- *       Requiere autenticación con JWT.
+ *       This endpoint allows you to create a new instance
+ *       Requires JWT authentication.
  *     tags: [Instances]
  *     security:
  *       - bearerAuth: []
@@ -209,26 +209,22 @@ router.get('/:instanceId',
  *             properties:
  *               name:
  *                 type: string
- *                 description: Nombre de la instancia.
+ *                 description: Instance name
  *               client_name:
  *                 type: string
- *                 description: Nombre del cliente asociado.
+ *                 description: Name of the associated client.
  *               base_url:
  *                 type: string
- *                 description: URL base de la instancia.
+ *                 description: URL of the instance.
  *               description:
  *                 type: string
- *                 description: Descripción detallada de la instancia.
+ *                 description: Detailed description of the instance.
  *               type:
  *                 type: string
- *                 description: Tipo de la instancia.
+ *                 description: Instance type.
  *               lang:
  *                 type: string
- *                 description: Idioma configurado para la instancia.
- *               logo:
- *                 type: string
- *                 nullable: true
- *                 description: Logo de la instancia.
+ *                 description: Language configured for the instance.
  *           example:
  *             name: "Gestión de Proyectos"
  *             client_name: "Cliente XYZ"
@@ -238,7 +234,7 @@ router.get('/:instanceId',
  *             lang: "ES"
  *     responses:
  *       201:
- *         description: Instancia creada con éxito
+ *         description: Instance created successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -254,7 +250,7 @@ router.get('/:instanceId',
  *               logo: "https://proyectos.cliente-xyz.com/logo.png"
  *               userId: "456e1237-d89c-45f3-b756-526614174111"
  *       400:
- *         description: Datos inválidos en la solicitud
+ *         description: Invalid data in the application
  *         content:
  *           application/json:
  *             schema:
@@ -274,7 +270,7 @@ router.get('/:instanceId',
  *                   type: string
  *                   example: Unauthorized
  *       500:
- *         description: Error interno del servidor
+ *         description: Internal Server Error
  *         content:
  *           application/json:
  *             schema:
@@ -304,10 +300,10 @@ router.post('/',
  * @swagger
  * /instances/{instanceId}:
  *   patch:
- *     summary: Actualiza una instancia
+ *     summary: Update an instance
  *     description: |
- *       Este endpoint permite actualizar la información detallada de una instancia específica por su `instanceId`.
- *       Requiere autenticación con JWT y roles específicos.
+ *       This endpoint allows you to update detailed information about a specific instance by its `instanceId`.
+ *       Requires authentication with JWT and specific roles.
  *     tags: [Instances]
  *     security:
  *       - bearerAuth: []
@@ -435,10 +431,10 @@ router.patch('/',
  * @swagger
  * /instances/{instanceId}:
  *   delete:
- *     summary: Elimina una instancia
+ *     summary: Delete an instance
  *     description: |
- *       Este endpoint permite eliminar una instancia específica por su `instanceId`.
- *       Requiere autenticación con JWT y roles específicos.
+ *       This endpoint allows you to delete a specific instance by its `instanceId`.
+ *       Requires authentication with JWT and specific roles.
  *     tags: [Instances]
  *     parameters:
  *       - in: path

@@ -23,6 +23,107 @@ const { createQuestionSchema } = require('../schemas/question.schema');
 
 const router = express.Router({ mergeParams: true });
 
+/**
+ * @swagger
+ * tags:
+ *   name: Questions
+ *   description: Endpoints for managing questions
+ */
+
+
+/**
+ * @swagger
+ * /questions:
+ *   post:
+ *     summary: Create a new question
+ *     tags: [Questions]
+ *     description: Create a new question. Requires authentication with JWT.
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - assistantId
+ *               - question
+ *               - sessionId
+ *             properties:
+ *               assistantId:
+ *                 type: string
+ *                 description: ID of the assistant.
+ *               question:
+ *                 type: string
+ *                 description: Question.
+ *               sessionId:
+ *                 type: string
+ *                 description: ID of the session.
+ *               history:
+ *                 type: array
+ *                 description: History of the conversation.
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       description: Message.
+ *                     message_type:
+ *                       type: string
+ *                       description: assistant or user.
+ *     responses:
+ *       200:
+ *         description: Question created successfully.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Question created
+ *       400:
+ *         description: Datos inválidos en la solicitud
+ *         content:
+ *           application/json:            
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Bad Request 
+ *       401:
+ *         description: No autorizado. El token JWT es inválido o el usuario no tiene permisos.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       403:
+ *         description: Prohibido. El usuario no tiene acceso a esta instancia.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Forbidden
+ *       500:
+ *         description: Error interno del servidor.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
 router.post('/',
   passport.authenticate('jwt', {session: false}),
   // validatorHandler(getDocumentSchema, 'params'),

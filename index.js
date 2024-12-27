@@ -65,26 +65,7 @@ app.get('/service/ecochat', (req, res) => {
 });
 
 
-/**
- * @swagger
- * /service/ecochat/healthcheck:
- *   get:
- *     summary: Healthcheck del servicio EcoChat
- *     description: Verifica el estado del servicio EcoChat.
- *     tags:
- *       - Healthcheck
- *     responses:
- *       200:
- *         description: El servicio está funcionando correctamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "It's working!"
- */
+
 app.get('/service/ecochat/healthcheck', (req, res) => {
   console.log('healthcheck');
   res.send({"message": "It's working!"});
