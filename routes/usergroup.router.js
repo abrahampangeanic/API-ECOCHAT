@@ -36,7 +36,6 @@ router.post('/',
   }
 );
 
-
 router.delete('/:id',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getUserGroupSchema, 'params'),

@@ -44,10 +44,6 @@ router.get('/all',
   }
 });
 
-
-
-
-
 router.get('/:id',
   checkRoles('super'),
   validatorHandler(getUserSchema, 'params'),

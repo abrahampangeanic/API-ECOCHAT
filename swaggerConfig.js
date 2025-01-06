@@ -13,6 +13,10 @@ const options = {
         url: 'https://api.pangeanic.com/service/ecochat/api/v1', // URL del servidor público
         description: 'Production Server',
       },
+      {
+        url: 'http://192.168.100.143:3000/service/ecochat/api/v1', // URL del servidor público
+        description: 'Production Server',
+      },
     ],
     components: {
       securitySchemes: {
@@ -31,22 +35,18 @@ const options = {
   },
   apis: [
     './index.js', 
-    './routes/auth.router.js',
-    './routes/instance.router.js',
-    './routes/assistant.router.js',
-    './routes/assistantcollection.router.js',
-    './routes/assistantmessage.router.js',
-    './routes/assistantprompt.router.js',
-    './routes/assistantskill.router.js',
-    './routes/assistantcollection.router.js',
-    './routes/assistantcollectionsource.router.js',
-    './routes/collection.router.js',
-    './routes/collectionsource.router.js',
-    './routes/prompt.router.js',
-    './routes/source.router.js',
-    './routes/session.router.js',
-    './routes/question.router.js',
-    './routes/user.router.js',
+    './swagger/assistant.swagger.js',
+    './swagger/assistantcollection.swagger.js',
+    './swagger/assistantmessage.swagger.js',
+    './swagger/assistantprompt.swagger.js',
+    './swagger/assistantskill.swagger.js',
+    './swagger/auth.swagger.js',
+    './swagger/collection.swagger.js',
+    './swagger/collectionsources.swagger.js',
+    './swagger/instance.swagger.js',
+    './swagger/question.swagger.js',
+    './swagger/session.swagger.js',
+    './swagger/source.swagger.js',
   ],
 };
 

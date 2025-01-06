@@ -58,8 +58,6 @@ router.get('/tokens',
     }
 });
 
-
-
 router.get('/skills', 
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
