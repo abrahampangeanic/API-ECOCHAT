@@ -5,7 +5,6 @@
  *   description: Endpoints for managing questions
  */
 
-
 /**
  * @swagger
  * /questions:
@@ -55,6 +54,9 @@
  *                     message_type:
  *                       type: string
  *                       description: Type of message (e.g., "assistant" or "user").
+ *                       enum:
+ *                         - assistant
+ *                         - user    
  *     responses:
  *       200:
  *         description: Question created successfully.
@@ -226,6 +228,9 @@
  *                     message_type:
  *                       type: string
  *                       description: Type of message (e.g., "assistant" or "user").
+ *                       enum:
+ *                         - assistant
+ *                         - user    
  *     responses:
  *       200:
  *         description: Question created successfully.

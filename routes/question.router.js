@@ -27,7 +27,7 @@ router.post('/',
   validatorHandler(createQuestionSchema, 'body'),
   async (req, res, next) => {
     try {
-        const { assistantId, question, sessionId } = req.body;
+        const { assistantId, question, sessionId, skill } = req.body;
         const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
         const userId = req.user.sub;
         const assistant = await assistantServ.findOneFull(assistantId)

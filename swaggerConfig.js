@@ -5,7 +5,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'API Documentation',
-      version: '1.0.13',
+      version: '1.0.14',
       description: 'Pangeanic Project ECOCHAT API Documentation',
     },
     servers: [
@@ -13,10 +13,10 @@ const options = {
         url: 'https://api.pangeanic.com/service/ecochat/api/v1', // URL del servidor público
         description: 'Production Server',
       },
-      {
-        url: 'http://192.168.100.143:3000/service/ecochat/api/v1', // URL del servidor público
-        description: 'Production Server',
-      },
+      // {
+      //   url: 'http://192.168.100.143:3000/service/ecochat/api/v1', // URL del servidor público
+      //   description: 'Production Server',
+      // },
     ],
     components: {
       securitySchemes: {
