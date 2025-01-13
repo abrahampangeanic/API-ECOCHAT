@@ -67,6 +67,11 @@ router.post('/',
         const collectionsAllowed = questionServ.getCollectionsAllowed(groups, collections, pipeline);
         const checkSkillAccess = questionServ.isSkillAccess(skills, pipeline);
 
+        console.log("checkSkillAccess", checkSkillAccess)
+        console.log("checkAsistantAccessDenied", checkAsistantAccessDenied)
+        console.log("checkAsistantAccessRestricted", checkAsistantAccessRestricted)
+        console.log("collectionsAllowed", collectionsAllowed)
+
         if(checkSkillAccess && !checkAsistantAccessDenied && collectionsAllowed ){
           console.log("Estoy en el pipeline")
           const system_prompt = assistant.prompts.find( item => item.type === "SYSTEM") || { prompt: "" };
