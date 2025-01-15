@@ -5,6 +5,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const axios = require('axios');
 const { config } = require('../config/config');
+const { checkRoles } = require('../middlewares/auth.handler');
 
 const SourceService = require('../services/source.service');
 const service = new SourceService();
@@ -42,6 +43,18 @@ router.get('/',
 
       const source = await service.findByInstance(instanceId);
       res.json(source);
+    } catch (error) {
+      next(error);
+    }
+});
+
+router.get('/all', 
+  passport.authenticate('jwt', {session: false}),
+  checkRoles('SUPER'),
+  async (req, res, next) => {
+    try {
+      const sources = await service.find();
+      res.json(sources);
     } catch (error) {
       next(error);
     }
