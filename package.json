@@ -25,6 +25,11 @@
   "dependencies": {
     "@hapi/boom": "^9.1.4",
     "@joi/date": "^2.1.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.55.2",
+    "@opentelemetry/exporter-metrics-otlp-http": "^0.57.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.57.0",
+    "@opentelemetry/sdk-node": "^0.57.0",
     "@stripe/stripe-js": "^3.3.0",
     "axios": "^1.7.7",
     "bcrypt": "^5.0.1",
@@ -49,7 +54,8 @@
     "stripe": "^15.4.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "winston": "^3.17.0"
   },
   "engines": {
     "node": "14.x"

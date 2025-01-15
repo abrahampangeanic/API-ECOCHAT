@@ -4,6 +4,8 @@ const routerApi = require('./routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
 //const { checkApiKey } = require('./middlewares/auth.handler');
+require('./tracing');
+const { trace } = require('@opentelemetry/api');
 
 const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
 
@@ -55,6 +57,11 @@ app.use(cors(options));
 require('./utils/auth');
 
 app.get('/', (req, res) => {
+  console.log('hola index')
+  const tracer = trace.getTracer('root');
+  const span = tracer.startSpan('root-span');
+  span.setStatus({code: 200});
+  span.end();
   res.send('Welcome to ECOChat');
 });
 
