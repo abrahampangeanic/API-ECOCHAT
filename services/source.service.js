@@ -39,6 +39,16 @@ class SourceService {
     return { sources: [...source] };
   }
 
+  async findAllWithInstance() {
+    const source = await models.Source.findAll({
+        include: [ 'instance' ],
+        order: [
+            ['id', 'ASC']
+          ]
+    });
+    return { sources: [...source] };
+  }
+
   async findOne(id) {
     const source = await models.Source.findByPk(id );
     if (!source)  throw boom.notFound('source not found');

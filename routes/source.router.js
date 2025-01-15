@@ -53,7 +53,7 @@ router.get('/all',
   checkRoles('SUPER'),
   async (req, res, next) => {
     try {
-      const sources = await service.find();
+      const sources = await service.findAllWithInstance();
       res.json(sources);
     } catch (error) {
       next(error);
