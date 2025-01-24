@@ -24,32 +24,33 @@ const processor = Joi.string();
 const message = Joi.string().allow(null, '');
 
 const createSourceSchema = Joi.object({
-    name: name.required(),    
-    description: description.required(),
-    sourcetype: sourcetype.required(),
-    reference: reference.required(),
-    web_connector_type: web_connector_type.required(),
+  name: name.required(),
+  description: description.required(),
+  sourcetype: sourcetype.required(),
+  reference: reference.required(),
+  web_connector_type: web_connector_type.required(),
 });
 
 
 const createSourceFileSchema = Joi.object({
-  name: name.required(),    
+  name: name.required(),
   description: description.required(),
   // files: files.required(),
 });
 
+
 const updateSourceSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),    
-    description: description.required(),
-    sourcetype: sourcetype.required(),
-    reference: reference.required(),
-    web_connector_type: web_connector_type.required(),
-    indexstatus: indexstatus, 
-    pages: pages,
-    indextsreq: indextsreq,
-    indextsend: indextsend,
-    enabled: enabled,
+  id: id.required(),
+  name: name.required(),
+  description: description.required(),
+  sourcetype: sourcetype.required(),
+  reference: reference.required(),
+  web_connector_type: web_connector_type.required(),
+  indexstatus: indexstatus,
+  pages: pages,
+  indextsreq: indextsreq,
+  indextsend: indextsend,
+  enabled: enabled,
 });
 
 const getSourceSchema = Joi.object({
@@ -69,4 +70,12 @@ const updateStatusSourceSchema = Joi.object({
   message: message
 });
 
-module.exports = { createSourceSchema, updateSourceSchema, getSourceSchema, getSourceIdSchema, updateStatusSourceSchema, createSourceFileSchema }
+// STATUS CODE 1 INDEX SUCCESS
+// STATUS CODE 2 INPROGRESS 
+// STATUS CODE 3 INDEX FAILED
+// STATUS CODE UNDEFINE ALL 
+const getSourceStatusIndex = Joi.object({
+  status: Joi.number().valid(1, 2, 3).optional().empty(''),
+});
+
+module.exports = { createSourceSchema, updateSourceSchema, getSourceSchema, getSourceIdSchema, updateStatusSourceSchema, createSourceFileSchema, getSourceStatusIndex }

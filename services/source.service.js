@@ -3,7 +3,7 @@ const { models } = require('../libs/sequelize');
 
 class SourceService {
 
-  constructor(){}
+  constructor() { }
 
   async create(data) {
     const source = await models.Source.create(data);
@@ -12,8 +12,8 @@ class SourceService {
 
   async findByInstance(instanceId) {
     const source = await models.Source.findAll({
-      where: {  '$instanceId$': instanceId  },
-      include: [ 'documents' ],
+      where: { '$instanceId$': instanceId },
+      include: ['documents'],
       order: [
         ['createdAt', 'ASC']
       ]
@@ -24,7 +24,7 @@ class SourceService {
 
   async findByInstanceAndId(instanceId, id) {
     const source = await models.Source.findOne({
-      where: {  '$instanceId$': instanceId, '$id$': id  }
+      where: { '$instanceId$': instanceId, '$id$': id }
     });
 
     return { sources: [...source] };
@@ -32,39 +32,49 @@ class SourceService {
 
   async find() {
     const source = await models.Source.findAll({
-        order: [
-            ['id', 'ASC']
-          ]
+      order: [
+        ['id', 'ASC']
+      ]
     });
     return { sources: [...source] };
   }
 
-  async findAllWithInstance() {
+// STATUS CODE 1 INDEX SUCCESS
+// STATUS CODE 2 INPROGRESS 
+// STATUS CODE 3 INDEX FAILED
+// STATUS CODE UNDEFINE ALL 
+  async findAllByStatus(status) {
+    let whereClause = {};
+    if (status === 1) whereClause = { indexstatus: 4 }
+    else if (status === 2) whereClause = { indexstatus: [0, 1, 2, 3] }
+    else if (status === 3) { whereClause = { indexstatus: [-1, -2] } }
+
     const source = await models.Source.findAll({
-        include: [ 'instance' ],
-        order: [
-            ['id', 'ASC']
-          ]
+      where: whereClause,
+      include: ['instance'],
+      order: [
+        ['id', 'ASC']
+      ]
     });
     return { sources: [...source] };
   }
 
   async findOne(id) {
-    const source = await models.Source.findByPk(id );
-    if (!source)  throw boom.notFound('source not found');
+    const source = await models.Source.findByPk(id);
+    if (!source) throw boom.notFound('source not found');
     return source;
   }
 
-  async update( changes) {
+  async update(changes) {
     const model = await this.findOne(changes.id);
-    if (!model)   throw boom.notFound('source not found');
+    if (!model) throw boom.notFound('source not found');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
     const model = await this.findOne(id);
-    if (!model)   throw boom.notFound('source not found');
+    if (!model) throw boom.notFound('source not found');
     await model.destroy();
     return { rta: true };
   }
