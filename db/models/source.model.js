@@ -70,6 +70,42 @@ const SourceSchema = {
     field: 'created_at',
     defaultValue: Sequelize.NOW,
   },
+  publicationDate: {
+    allowNull: true,
+    type: DataTypes.DATE,
+  },
+  owner: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
+  fingerprint: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
+  keyword: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
+  tokens: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+  },
+  chunks: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+  },
+  storage_size: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+  },
+  vector_size: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+  },
+  completed_at: {
+    allowNull: true,
+    type: DataTypes.DATE,
+  }
 }
 
 class Source extends Model {

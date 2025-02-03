@@ -12,6 +12,11 @@ const indextsend = Joi.number().integer();
 const enabled = Joi.number().integer();
 const indexstatus = Joi.number().integer();
 const instanceId = Joi.string();
+const publicationDate = Joi.date();
+const owner = Joi.string();
+const fingerprint = Joi.string();
+const keyword = Joi.string();
+
 const files = Joi.object({
   file: Joi.object({
     originalname: Joi.string().required(),  // nombre original del archivo
@@ -31,13 +36,15 @@ const createSourceSchema = Joi.object({
   web_connector_type: web_connector_type.required(),
 });
 
-
 const createSourceFileSchema = Joi.object({
   name: name.required(),
   description: description.required(),
+  publicationDate: publicationDate,
+  owner: owner,
+  fingerprint: fingerprint,
+  keyword: keyword,
   // files: files.required(),
 });
-
 
 const updateSourceSchema = Joi.object({
   id: id.required(),
@@ -51,6 +58,10 @@ const updateSourceSchema = Joi.object({
   indextsreq: indextsreq,
   indextsend: indextsend,
   enabled: enabled,
+  publicationDate: publicationDate,
+  owner: owner,
+  fingerprint: fingerprint,
+  keyword: keyword,
 });
 
 const getSourceSchema = Joi.object({

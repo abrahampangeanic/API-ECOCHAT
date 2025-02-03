@@ -47,8 +47,8 @@ router.get('/',
     } catch (error) {
       next(error);
     }
-  }); 
-  
+  });
+
 // STATUS CODE 1 INDEX SUCCESS
 // STATUS CODE 2 INPROGRESS 
 // STATUS CODE 3 INDEX FAILED
@@ -103,10 +103,15 @@ router.post('/file',
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if (relationships.length === 0) throw boom.unauthorized();
       }
-
       const body = req.body;
       body.instanceId = instanceId;
       body.sourcetype = "FILE";
+      let totalSizeKB = files.reduce((total, file) => total + file.size, 0) / 1024;  //files in KB   
+      if (totalSizeKB < 0.01) {
+        totalSizeKB = 0.01;
+      }
+
+      body.storage_size = totalSizeKB.toFixed(2);
       const source = await service.create(body);
 
       files.forEach((file) => {
@@ -244,13 +249,19 @@ router.post('/status/:id',
       }
 
       if (processor === 'eco-pipeline-index') {
-        if (status === "SUCCESS") indexstatus = 4 // DONE
-        else if (status === "INPROGRESS") indexstatus = 3 // INPROGRESS
-        else if (status === "FAILED") indexstatus = -3
-
-        await service.update({ id: id, indexstatus: indexstatus });
+        if (status === "SUCCESS") {
+          indexstatus = 4 // DONE
+          const { tokens = null, chunks = null, vector_size = null } = req.body;
+          const completed_at = new Date().toISOString();
+          await service.update({ id: id, indexstatus: indexstatus, tokens: tokens, chunks: chunks, vector_size: vector_size, completed_at: completed_at });
+        } else if (status === "INPROGRESS") {
+          indexstatus = 3 // INPROGRESS
+          await service.update({ id: id, indexstatus: indexstatus });
+        } else if (status === "FAILED") {
+          indexstatus = -3
+          await service.update({ id: id, indexstatus: indexstatus });
+        }
       }
-
       res.status(201).json({ message: 'Callback successful' });
     } catch (error) {
       next(error);
