@@ -103,27 +103,23 @@ router.post('/file',
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if (relationships.length === 0) throw boom.unauthorized();
       }
-      const body = req.body;
-      body.instanceId = instanceId;
-      body.sourcetype = "FILE";
-      let totalSizeKB = files.reduce((total, file) => total + file.size, 0) / 1024;  //files in KB   
-      if (totalSizeKB < 0.01) {
-        totalSizeKB = 0.01;
-      }
 
-      body.storage_size = totalSizeKB.toFixed(2);
-      const source = await service.create(body);
+      for (const file of files) {
+        const body = { ...req.body }; // Clone body object
+        body.instanceId = instanceId;
+        body.sourcetype = "FILE";
+        let totalSizeKB = files.reduce((total, file) => total + file.size, 0) / 1024;  //files in KB   
+        if (totalSizeKB < 1) totalSizeKB = 1;
+        body.storage_size = totalSizeKB;
+        const source = await service.create(body);
 
-      files.forEach((file) => {
         const filePath = `uploads/${instanceId}/${file.filename}`;
         const new_name = file.filename;
         const old_name = new_name.substr(14)
 
         fs.rename(file.path, filePath, async (err) => {
-          if (err) {
-            return res.status(500).json({ error: 'Failed to store the file' });
-          }
-
+          if (err) return res.status(500).json({ error: 'Failed to store the file' });
+          
           const documentInfo = {
             url: filePath,
             newname: new_name,
@@ -148,22 +144,20 @@ router.post('/file',
           const urlExtractor = `${config.moduleExtractor}/process`;
 
           try {
+              const response = await axios.post(urlExtractor, form, {
+                headers: {
+                  ...form.getHeaders() // Es necesario incluir los encabezados de 'multipart/form-data'
+                }
+              });
 
-            const response = await axios.post(urlExtractor, form, {
-              headers: {
-                ...form.getHeaders() // Es necesario incluir los encabezados de 'multipart/form-data'
-              }
-            });
-
-            console.log('Response data:', response.data);
-
+              console.log('Response data:', response.data);
           } catch (error) {
             console.error('Error al enviar el archivo al Extractor:', error.response ? error.response.data : error.message);
           }
         });
-      });
+      };
 
-      res.status(201).json(source);
+      res.status(201).json({message: "Source created successfully"});
     } catch (error) {
       next(error);
     }
@@ -231,19 +225,17 @@ router.post('/status/:id',
   async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { status, processor, pages, message } = req.body;
+      const { status, processor, pages } = req.body;
       console.log("Status: ", req.body)
       let indexstatus = 0
 
       if (processor === 'text-extractor' || processor === "web-scraper") {
         if (status === "SUCCESS") {
-          indexstatus = 1
           const response = await pipelineServ.index(id, processor);
-
           if (response.success === false) indexstatus = -2;
-          else indexstatus = 2; // TODO INDEX
+          else indexstatus = 2; // TO DO INDEX
         }
-        else if (status === "FAILED") indexstatus = -1
+        else if (status === "FAILED") indexstatus = -1;
 
         await service.update({ id: id, indexstatus: indexstatus, pages: pages });
       }
@@ -253,7 +245,14 @@ router.post('/status/:id',
           indexstatus = 4 // DONE
           const { tokens = null, chunks = null, vector_size = null } = req.body;
           const completed_at = new Date().toISOString();
-          await service.update({ id: id, indexstatus: indexstatus, tokens: tokens, chunks: chunks, vector_size: vector_size, completed_at: completed_at });
+          await service.update({ 
+            id: id, 
+            indexstatus: indexstatus, 
+            tokens: tokens, 
+            chunks: chunks, 
+            vector_size: vector_size, 
+            completed_at: completed_at 
+          });
         } else if (status === "INPROGRESS") {
           indexstatus = 3 // INPROGRESS
           await service.update({ id: id, indexstatus: indexstatus });

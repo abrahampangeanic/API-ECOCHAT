@@ -3,6 +3,8 @@ const axios = require('axios');
 const { config } = require('../config/config');
 const SessionService = require('../services/session.service');
 const sessionServ = new SessionService();
+const SourceService = require('../services/source.service');
+const sourceServ = new SourceService();
 const QueryService = require('../services/query.service');
 const queyServ = new QueryService();
 
@@ -13,6 +15,7 @@ class PipelineService {
     const endpoint = `${config.modulePipeline}/index`;
     const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${id}`;
     const module_url = modules === 'text-extractor' ? config.moduleExtractor : config.moduleScraping;
+    const source = await sourceServ.findOne(id);
     
     const indexData = {
       source_id: id,
@@ -21,7 +24,11 @@ class PipelineService {
       collections: [],
       module_name: modules,
       module_url: module_url,
-      callback_url: callback
+      callback_url: callback,
+      publicationDate: source.publicationDate,
+      owner: source.owner,
+      fingerprint: source.fingerprint,
+      keyword: source.keyword,
     }
 
     console.log(endpoint);
