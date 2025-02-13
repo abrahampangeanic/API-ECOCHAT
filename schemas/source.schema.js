@@ -19,7 +19,7 @@ const keyword = Joi.string();
 const tokens = Joi.number().integer();
 const chunks = Joi.number().integer();
 const vector_size = Joi.number().integer();
-const indexing_time = Joi.number().integer();
+const indexing_time = Joi.number();
 
 const files = Joi.object({
   file: Joi.object({

@@ -104,7 +104,7 @@ const SourceSchema = {
   },
   indexing_time: {
     allowNull: true,
-    type: DataTypes.INTEGER,
+    type: DataTypes.FLOAT,
   },
   completed_at: {
     allowNull: true,
