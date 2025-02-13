@@ -16,6 +16,10 @@ const publicationDate = Joi.date();
 const owner = Joi.string();
 const fingerprint = Joi.string();
 const keyword = Joi.string();
+const tokens = Joi.number().integer();
+const chunks = Joi.number().integer();
+const vector_size = Joi.number().integer();
+const indexing_time = Joi.number().integer();
 
 const files = Joi.object({
   file: Joi.object({
@@ -78,7 +82,11 @@ const updateStatusSourceSchema = Joi.object({
   processor: processor,
   status: status,
   pages: pages,
-  message: message
+  message: message,
+  tokens: tokens,
+  chunks: chunks,
+  vector_size: vector_size,
+  indexing_time: indexing_time,
 });
 
 // STATUS CODE 1 INDEX SUCCESS

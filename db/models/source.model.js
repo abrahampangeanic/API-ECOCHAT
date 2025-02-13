@@ -102,6 +102,10 @@ const SourceSchema = {
     allowNull: true,
     type: DataTypes.INTEGER,
   },
+  indexing_time: {
+    allowNull: true,
+    type: DataTypes.INTEGER,
+  },
   completed_at: {
     allowNull: true,
     type: DataTypes.DATE,
