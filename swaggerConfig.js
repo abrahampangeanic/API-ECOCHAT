@@ -5,7 +5,7 @@ const options = {
     openapi: '3.0.0',
     info: {
       title: 'API Documentation',
-      version: '1.0.15',
+      version: '1.0.17',
       description: 'Pangeanic Project ECOCHAT API Documentation',
     },
     servers: [

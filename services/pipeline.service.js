@@ -6,6 +6,7 @@ const sessionServ = new SessionService();
 const SourceService = require('../services/source.service');
 const sourceServ = new SourceService();
 const QueryService = require('../services/query.service');
+const { object } = require('joi');
 const queyServ = new QueryService();
 
 class PipelineService {
@@ -345,6 +346,46 @@ class PipelineService {
     return false;
   }
 
+  async getLanguage(data) {
+    const endpoint = config.moduleDetector;
+    const body = {
+      texts: [data],
+    }
+    try {
+      const response = await axios.post(endpoint, body );
+      if (response.status === 200 && response.data.detected_languages[0]) 
+        return response.data.detected_languages[0].language;
+
+    } catch (error) {
+      console.error('Error al language detect:', error.response ? error.response.data : error.message);
+    }
+
+    return false;
+  }
+
+  async translate(data) {
+    const endpoint = config.moduleTranslator;
+    const body = {
+      source_language: data.source_language,
+      target_language: data.target_language,
+      texts: [data.text],
+      apikey: "ecochataccess",
+      pe: false,
+      engine_type: "LLM"
+    }
+
+    console.log("body: " , body)
+
+    try {
+      const response = await axios.post(endpoint, body );
+      if (response.status === 200) return response.data.translation_list[0];
+
+    } catch (error) {
+      console.error('Error al translate:', error.response ? error.response.data : error.message);
+    }
+
+    return false;
+  }
 }
 
 module.exports = PipelineService;

@@ -7,6 +7,8 @@ const config = {
   modulePipeline:  process.env.MODULE_PIPELINE,
   moduleExtractor:  process.env.MODULE_EXTRACTOR,
   moduleScraping:  process.env.MODULE_SCRAPING,
+  moduleDetector: process.env.MODULE_LANGUAGE_DETECTOR,
+  moduleTranslator: process.env.MODULE_TRANSLATOR,
   apiKey: process.env.API_KEY,
   jwtSecret: process.env.JWT_SECRET,
   dbUrl: process.env.DATABASE_URL,

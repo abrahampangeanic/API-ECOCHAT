@@ -65,6 +65,8 @@ router.post('/',
         console.log("Pipeline: " + pipeline)
         const pipelineProcess = pipelineMap[pipeline] || 'qa';
         
+        const languageIn = await pipelineServ.getLanguage(question);
+        console.log("LanguageIn: " , languageIn)
 
         const history = [
           {
@@ -117,6 +119,18 @@ router.post('/',
             if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
   
             const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+            const languageOut = await pipelineServ.getLanguage(msg_out);
+            console.log("LanguageOut: " , languageOut)
+
+            if ( languageIn !== languageOut ) {
+              const translated = await pipelineServ.translate({
+                text: msg_out,
+                source_language: languageOut,
+                target_language: languageIn
+              });
+              msg_out = translated;
+            }
             
             const queryData = {
               message_in: question,
@@ -205,6 +219,9 @@ router.post('/public',
         FR: 'French',
         DE: 'German',
       }
+
+      const languageIn = await pipelineServ.getLanguage(question);
+      console.log("LanguageIn: " , languageIn)
      
       const languageProcess = languageMap[instance.lang] || 'English';
 
@@ -259,6 +276,18 @@ router.post('/public',
           if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
 
           const now2 = new Date().toISOString().replace('T', ' ').slice(0, 19);
+
+          const languageOut = await pipelineServ.getLanguage(msg_out);
+          console.log("LanguageOut: " , languageOut)
+
+          if ( languageIn !== languageOut ) {
+            const translated = await pipelineServ.translate({
+              text: msg_out,
+              source_language: languageOut,
+              target_language: languageIn
+            });
+            msg_out = translated;
+          }
           
           const queryData = {
             message_in: question,
