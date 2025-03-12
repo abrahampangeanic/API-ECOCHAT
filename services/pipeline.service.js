@@ -384,7 +384,28 @@ class PipelineService {
       console.error('Error al translate:', error.response ? error.response.data : error.message);
     }
 
-    return false;
+    return data.text;
+  }
+
+  async translateRelay(data) {
+    const endpoint = 'https://prod.pangeamt.com:8443/NexRelay/v1/translate';
+    const body = {
+      src: data.source_language,
+      tgt: data.target_language,
+      text: [data.text],
+      username: "admin@pangeanic.mt",
+      service: "21"
+    }
+
+    try {
+      const response = await axios.post(endpoint, body );
+      if (response.status === 200) return response.data[0][0].tgt;
+
+    } catch (error) {
+      console.error('Error al translate:', error.response ? error.response.data : error.message);
+    }
+
+    return data.text;
   }
 }
 

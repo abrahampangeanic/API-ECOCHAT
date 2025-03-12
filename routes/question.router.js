@@ -124,7 +124,7 @@ router.post('/',
             console.log("LanguageOut: " , languageOut)
 
             if ( languageIn !== languageOut ) {
-              const translated = await pipelineServ.translate({
+              const translated = await pipelineServ.translateRelay({
                 text: msg_out,
                 source_language: languageOut,
                 target_language: languageIn
@@ -281,7 +281,7 @@ router.post('/public',
           console.log("LanguageOut: " , languageOut)
 
           if ( languageIn !== languageOut ) {
-            const translated = await pipelineServ.translate({
+            const translated = await pipelineServ.translateRelay({
               text: msg_out,
               source_language: languageOut,
               target_language: languageIn
