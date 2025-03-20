@@ -20,6 +20,7 @@ const tokens = Joi.number().integer();
 const chunks = Joi.number().integer();
 const vector_size = Joi.number().integer();
 const indexing_time = Joi.number();
+const language = Joi.string();
 
 const files = Joi.object({
   file: Joi.object({
@@ -87,6 +88,7 @@ const updateStatusSourceSchema = Joi.object({
   chunks: chunks,
   vector_size: vector_size,
   indexing_time: indexing_time,
+  language: language,
 });
 
 // STATUS CODE 1 INDEX SUCCESS

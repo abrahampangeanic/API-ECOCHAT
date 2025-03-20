@@ -109,6 +109,10 @@ const SourceSchema = {
   completed_at: {
     allowNull: true,
     type: DataTypes.DATE,
+  },
+  language: {
+    allowNull: true,
+    type: DataTypes.STRING,
   }
 }
 
