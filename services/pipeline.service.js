@@ -239,7 +239,8 @@ class PipelineService {
         include_title: false,
         include_web_search: false,
         search_type: "HYBRID"
-      }
+      },
+      alternative_messages: data.alternative_messages
     }
 
     console.log(dataPipeline)
@@ -406,6 +407,23 @@ class PipelineService {
     }
 
     return data.text;
+  }
+
+  async getAlternativeMessages(data) {
+    if (!data.languages || data.languages.length === 0) return [];
+
+    const promises = data.languages.map(tgt => 
+      this.translateRelay({
+        text: data.text,
+        source_language: data.source_language,
+        target_language: tgt
+      })
+    );
+  
+    // Esperar a que todas las promesas se resuelvan
+    const alternativeMessages = await Promise.all(promises);
+
+    return alternativeMessages;
   }
 }
 

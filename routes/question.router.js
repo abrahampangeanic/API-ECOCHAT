@@ -18,9 +18,18 @@ const SessionService = require('../services/session.service');
 const sessionServ = new SessionService();
 const QuestionService = require('../services/question.service');
 const questionServ = new QuestionService();
+const sourcesService = require('../services/source.service');
+const sourceServ = new sourcesService();
 
 const { createQuestionSchema } = require('../schemas/question.schema');
 const router = express.Router({ mergeParams: true });
+
+const delay = (date1, text) => {
+  const now = new Date().toISOString();
+  const date = new Date(now);
+  const diffMs3 = date.getTime() - date1.getTime();
+  console.log(`Tiempo de proceso ${text}: `, diffMs3); // puede ser, por ejemplo, 10 ms
+}
 
 router.post('/',
   passport.authenticate('jwt', {session: false}),
@@ -29,7 +38,9 @@ router.post('/',
   async (req, res, next) => {
     try {
         const { assistantId, question, sessionId, skill } = req.body;
-        const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
+        const time1 = new Date().toISOString()
+        const now = time1.replace('T', ' ').slice(0, 19);
+        const date1 = new Date(now);
         const userId = req.user.sub;
 
         const tracer = trace.getTracer('/question');
@@ -41,8 +52,8 @@ router.post('/',
           "skill": skill,
           "userId": userId,
         })
-
-
+        
+        delay(date1, 1)
         const assistant = await assistantServ.findOneFull(assistantId)
         const instance = await instanceServ.findOne(assistant.instanceId);
         const collections = assistant.collections.map(collection => collection.id);
@@ -77,10 +88,12 @@ router.post('/',
         
         if(pipeline === "QA") pipeline = "Q&A"
 
+        delay(date1, 2)
         const checkAsistantAccessDenied = questionServ.isAssistantAccessDenied(groups, assistant.id, pipeline);
         const checkAsistantAccessRestricted = questionServ.isAssistantAccessRESTRICTED(groups, assistant.id, pipeline);
         const collectionsAllowed = questionServ.getCollectionsAllowed(groups, collections, pipeline);
         const checkSkillAccess = questionServ.isSkillAccess(skills, pipeline);
+        delay(date1, 21)
 
         console.log("checkSkillAccess", checkSkillAccess)
         console.log("checkAsistantAccessDenied", checkAsistantAccessDenied)
@@ -89,9 +102,24 @@ router.post('/',
 
         if(checkSkillAccess && !checkAsistantAccessDenied && collectionsAllowed ){
           console.log("Estoy en el pipeline")
+          delay(date1, 3)
+          
           const system_prompt = assistant.prompts.find( item => item.type === "SYSTEM") || { prompt: "" };
           const task_prompt = assistant.prompts.find( item => item.type === "TASK") || { prompt: "" };
           const rephrase_prompt = assistant.prompts.find( item => item.type === "REPHRASE") || { prompt: "" };
+          delay(date1, 4)
+
+          const languages = await sourceServ.findDistinctLanguagesByInstanceId(assistant.instanceId);
+          console.log("Languages: ", languages)
+          delay(date1, 5)
+          
+          const alternative_messages = await pipelineServ.getAlternativeMessages({
+            text: question,
+            source_language: languageIn,
+            languages: languages
+          });
+          console.log("Alternative Messages: ", alternative_messages)
+          delay(date1, 6)
   
           const dataPipeline = {
             question: question,
@@ -102,11 +130,13 @@ router.post('/',
               task_prompt: task_prompt.prompt,
               rephrase_prompt: rephrase_prompt.prompt , 
             },
-            language: languageProcess
+            language: languageProcess,
+            alternative_messages: alternative_messages
           }
   
           const rta = await pipelineServ.processPipeline(pipelineProcess, dataPipeline)
-        
+          delay(date1, 7)
+
           const poor_message = assistant.messages.find( item => item.type === "POOR")
           const references = questionServ.getReferenceAllowed(groups, rta.answer.citations, pipeline)
 
@@ -202,7 +232,6 @@ router.post('/public',
         "skill": skill,
       })
 
-
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await assistantServ.findOneFull(assistantId)
       if(assistant.access_type !== "PUBLIC") throw boom.unauthorized();
@@ -252,6 +281,16 @@ router.post('/public',
         const task_prompt = assistant.prompts.find( item => item.type === "TASK") || { prompt: "" };
         const rephrase_prompt = assistant.prompts.find( item => item.type === "REPHRASE") || { prompt: "" };
 
+        const languages = await sourceServ.findDistinctLanguagesByInstanceId(assistant.instanceId);
+        console.log("Languages: ", languages)
+        const alternative_messages = await pipelineServ.getAlternativeMessages({
+          text: question,
+          language: languageProcess,
+          prompt: system_prompt.prompt,
+          history: history
+        });
+        console.log("Alternative Messages: ", alternative_messages)
+
         const dataPipeline = {
           question: question,
           collections: collections,
@@ -261,7 +300,8 @@ router.post('/public',
             task_prompt: task_prompt.prompt,
             rephrase_prompt: rephrase_prompt.prompt , 
           },
-          language: languageProcess
+          language: languageProcess,
+          alternative_messages: alternative_messages
         }
 
         const rta = await pipelineServ.processPipeline(pipelineProcess, dataPipeline)

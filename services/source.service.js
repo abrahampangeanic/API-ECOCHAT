@@ -1,5 +1,7 @@
 const boom = require('@hapi/boom');
-const { models } = require('../libs/sequelize');
+const { models, sequelize } = require('../libs/sequelize');
+const { Op, QueryTypes } = require('sequelize');
+
 
 class SourceService {
 
@@ -79,6 +81,25 @@ class SourceService {
     return { rta: true };
   }
 
+  async findDistinctLanguagesByInstanceId(instanceId) {
+    const rows  = await sequelize.query(
+      `
+        SELECT DISTINCT language
+        FROM sources
+        WHERE instanceId = :instanceId
+          AND language IS NOT NULL
+      `,
+      {
+        replacements: { instanceId },
+        type: QueryTypes.SELECT
+      }
+    );
+  
+    const response = rows.map(row => row.language);
+
+    return response
+  }
 }
+
 
 module.exports = SourceService;

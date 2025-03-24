@@ -243,7 +243,7 @@ router.post('/status/:id',
       if (processor === 'eco-pipeline-index') {
         if (status === "SUCCESS") {
           indexstatus = 4 // DONE
-          const { tokens = null, chunks = null, vector_size = null, indexing_time = null } = req.body;
+          const { tokens = null, chunks = null, vector_size = null, indexing_time = null, language = null } = req.body;
           const completed_at = new Date().toISOString();
           await service.update({ 
             id: id, 
@@ -252,7 +252,8 @@ router.post('/status/:id',
             chunks: chunks, 
             vector_size: vector_size, 
             indexing_time: indexing_time,
-            completed_at: completed_at
+            completed_at: completed_at,
+            language: language
           });
         } else if (status === "INPROGRESS") {
           indexstatus = 3 // INPROGRESS
