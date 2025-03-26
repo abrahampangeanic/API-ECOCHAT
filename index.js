@@ -3,9 +3,11 @@ const cors = require('cors');
 const routerApi = require('./routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
-//const { checkApiKey } = require('./middlewares/auth.handler');
-require('./tracing');
-const { trace } = require('@opentelemetry/api');
+// const { checkApiKey } = require('./middlewares/auth.handler');
+// require('./tracing');
+// const { trace } = require('@opentelemetry/api');
+require("./instrument.js");
+const Sentry = require("@sentry/node");
 
 const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
 
@@ -57,11 +59,6 @@ app.use(cors(options));
 require('./utils/auth');
 
 app.get('/', (req, res) => {
-  console.log('hola index')
-  const tracer = trace.getTracer('root');
-  const span = tracer.startSpan('root-span');
-  span.setStatus({code: 200});
-  span.end();
   res.send('Welcome to ECOChat');
 });
 
@@ -80,6 +77,17 @@ app.get('/service/ecochat/healthcheck', (req, res) => {
 
 
 routerApi(app);
+
+// The error handler must be registered before any other error middleware and after all controllers
+Sentry.setupExpressErrorHandler(app);
+
+// Optional fallthrough error handler
+app.use(function onError(err, req, res, next) {
+  // The error id is attached to `res.sentry` to be returned
+  // and optionally displayed to the user for support.
+  res.statusCode = 500;
+  res.end(res.sentry + "\n");
+});
 
 app.use(logErrors);
 app.use(ormErrorHandler);
