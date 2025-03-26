@@ -59,6 +59,9 @@ app.use(cors(options));
 
 require('./utils/auth');
 
+// app.use(Sentry.Handlers.requestHandler());
+// app.use(Sentry.Handlers.tracingHandler());
+
 app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
@@ -79,8 +82,7 @@ app.get('/service/ecochat/healthcheck', (req, res) => {
   res.send({"message": "It's working!"});
 });
 
-// app.use(Sentry.Handlers.requestHandler());
-// app.use(Sentry.Handlers.tracingHandler());
+
 
 routerApi(app);
 

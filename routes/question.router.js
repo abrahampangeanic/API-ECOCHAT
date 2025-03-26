@@ -3,7 +3,6 @@ const boom = require('@hapi/boom');
 const passport = require('passport');
 const validatorHandler = require('../middlewares/validator.handler');
 const Sentry = require('@sentry/node');
-const Tracing = require('@sentry/tracing');
 
 const InstanceService = require('../services/instance.service');
 const instanceServ = new InstanceService();
@@ -39,6 +38,16 @@ router.post('/',
   async (req, res, next) => {
     try {
         const { assistantId, question, sessionId, skill } = req.body;
+        
+        const span = Sentry.getActiveSpan();
+        if (span) {
+          // Add individual metrics
+          span.setAttribute("assistantId", assistantId);
+          span.setAttribute("question", question);
+          span.setAttribute("sessionId", sessionId);
+          span.setAttribute("skill", skill);
+        }
+
         const time1 = new Date().toISOString()
         const now = time1.replace('T', ' ').slice(0, 19);
         const date1 = new Date(now);
