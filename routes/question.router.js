@@ -2,7 +2,8 @@ const express = require('express');
 const boom = require('@hapi/boom');
 const passport = require('passport');
 const validatorHandler = require('../middlewares/validator.handler');
-const { trace } = require('@opentelemetry/api');
+const Sentry = require('@sentry/node');
+const Tracing = require('@sentry/tracing');
 
 const InstanceService = require('../services/instance.service');
 const instanceServ = new InstanceService();
@@ -42,16 +43,6 @@ router.post('/',
         const now = time1.replace('T', ' ').slice(0, 19);
         const date1 = new Date(now);
         const userId = req.user.sub;
-
-        const tracer = trace.getTracer('/question');
-        const span = tracer.startSpan('/question');
-        span.setAttributes({
-          "assistantId": assistantId,
-          "question": question,
-          "sessionId": sessionId,
-          "skill": skill,
-          "userId": userId,
-        })
         
         delay(date1, 1)
         const assistant = await assistantServ.findOneFull(assistantId)
@@ -196,19 +187,16 @@ router.post('/',
 
             if(checkAsistantAccessRestricted ) query.refs = []
             else query.refs = JSON.parse(query.refs)
-            span.end()
             res.status(200).json({ query: query  });
           }
           else {
             const message_out = `The skill system is not responding`
-            span.end()
             res.status(200).json({ query: { message_out: message_out } });
           }
         }
         else
         {
           console.log("No estoy en el pipeline")
-          span.end()
           res.status(200).json({ query: { message_out: message_out_denied }});
         }
     } catch (error) {
@@ -222,15 +210,15 @@ router.post('/public',
   async (req, res, next) => {
     try {
       const { assistantId, question, sessionId, skill } = req.body;
+      const span = Sentry.getActiveSpan();
+      if (span) {
+        // Add individual metrics
+        span.setAttribute("assistantId", assistantId);
+        span.setAttribute("question", question);
+        span.setAttribute("sessionId", sessionId);
+        span.setAttribute("skill", skill);
+      }
 
-      const tracer = trace.getTracer('/question/public');
-      const span = tracer.startSpan('/question/public');
-      span.setAttributes({
-        "assistantId": assistantId,
-        "question": question,
-        "sessionId": sessionId,
-        "skill": skill,
-      })
 
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await assistantServ.findOneFull(assistantId)
@@ -349,7 +337,6 @@ router.post('/public',
           const query = await queryServ.create(queryData);
 
           query.refs = JSON.parse(query.refs)
-          span.end()
           res.status(200).json({ query: query  });
         }
       }
@@ -358,7 +345,6 @@ router.post('/public',
         console.log("No estoy en el pipeline")
         const denied_message = assistant.messages.find( item => item.type === "DENIED")
         const message_out = denied_message || `You do not have access to that skill`
-        span.end()
         res.status(200).json({ query: { message_out: message_out } });
       }
     } catch (error) {

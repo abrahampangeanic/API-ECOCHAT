@@ -6,8 +6,9 @@ const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
 // const { checkApiKey } = require('./middlewares/auth.handler');
 // require('./tracing');
 // const { trace } = require('@opentelemetry/api');
-require("./instrument.js");
-const Sentry = require("@sentry/node");
+require("./instrument");
+const Sentry = require('@sentry/node');
+
 
 const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
 
@@ -68,6 +69,9 @@ app.get('/service/ecochat', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
+app.get("/debug-sentry", function mainHandler(req, res) {
+  throw new Error("My first Sentry error!");
+});
 
 
 app.get('/service/ecochat/healthcheck', (req, res) => {
@@ -75,19 +79,22 @@ app.get('/service/ecochat/healthcheck', (req, res) => {
   res.send({"message": "It's working!"});
 });
 
+// app.use(Sentry.Handlers.requestHandler());
+// app.use(Sentry.Handlers.tracingHandler());
 
 routerApi(app);
 
-// The error handler must be registered before any other error middleware and after all controllers
-Sentry.setupExpressErrorHandler(app);
 
+Sentry.setupExpressErrorHandler(app);
 // Optional fallthrough error handler
-app.use(function onError(err, req, res, next) {
-  // The error id is attached to `res.sentry` to be returned
-  // and optionally displayed to the user for support.
-  res.statusCode = 500;
-  res.end(res.sentry + "\n");
-});
+// app.use(function onError(err, req, res, next) {
+//   // The error id is attached to `res.sentry` to be returned
+//   // and optionally displayed to the user for support.
+//   res.statusCode = 500;
+//   res.end(res.sentry + "\n");
+// });
+
+
 
 app.use(logErrors);
 app.use(ormErrorHandler);
