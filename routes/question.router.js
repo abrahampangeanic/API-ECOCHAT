@@ -261,7 +261,7 @@ router.post('/public',
           let msg_out = rta.answer.answer
           const refs = JSON.stringify(rta.answer.citations) || ""
 
-          if(pipeline === "SEARCH" && references.length == 0 && !msg_out )   msg_out = "I can't answer that question based on the provided information"
+          if(pipeline === "SEARCH" && !msg_out )   msg_out = "I can't answer that question based on the provided information"
           if(poor_message && msg_out === "I can't answer that question based on the provided information")  msg_out = poor_message.message
 
           const languageOut = await pipelineServ.getLanguage(msg_out);
