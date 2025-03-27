@@ -1,3 +1,4 @@
+require("./instrument");
 const express = require('express');
 const cors = require('cors');
 const routerApi = require('./routes');
@@ -5,10 +6,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
 // const { checkApiKey } = require('./middlewares/auth.handler');
 // require('./tracing');
-// const { trace } = require('@opentelemetry/api');
-require("./instrument");
+const { trace } = require('@opentelemetry/api');
 const Sentry = require('@sentry/node');
-
 
 const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
 
@@ -57,13 +56,35 @@ const options = {
 
 app.use(cors(options));
 
-require('./utils/auth');
+let otelApiSafe;
+try {
+  otelApiSafe = require('@opentelemetry/api');
+} catch (e) {
+  console.warn('OpenTelemetry API no está disponible');
+}
 
-// app.use(Sentry.Handlers.requestHandler());
-// app.use(Sentry.Handlers.tracingHandler());
+if (otelApiSafe) {
+  app.use((req, res, next) => {
+    try {
+      const span = otelApiSafe.trace.getSpan(otelApiSafe.context.active());
+      if (span) {
+        span.updateName(`${req.method} ${req.path}`);
+      }
+    } catch (err) {
+      console.warn('Error al renombrar la transacción con OpenTelemetry:', err.message);
+    }
+    next();
+  });
+}
+
+require('./utils/auth');
 
 app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
+});
+
+app.get("/debug-sentry", function mainHandler(req, res) {
+  throw new Error("My first Sentry error!");
 });
 
 app.use('/service/ecochat/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -72,31 +93,14 @@ app.get('/service/ecochat', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
-app.get("/debug-sentry", function mainHandler(req, res) {
-  throw new Error("My first Sentry error!");
-});
-
-
 app.get('/service/ecochat/healthcheck', (req, res) => {
   console.log('healthcheck');
   res.send({"message": "It's working!"});
 });
 
-
-
 routerApi(app);
 
-
 Sentry.setupExpressErrorHandler(app);
-// Optional fallthrough error handler
-// app.use(function onError(err, req, res, next) {
-//   // The error id is attached to `res.sentry` to be returned
-//   // and optionally displayed to the user for support.
-//   res.statusCode = 500;
-//   res.end(res.sentry + "\n");
-// });
-
-
 
 app.use(logErrors);
 app.use(ormErrorHandler);
