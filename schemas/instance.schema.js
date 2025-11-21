@@ -12,28 +12,32 @@ const logo = Joi.string().allow(null);
 const instanceId = Joi.string();
 
 const createInstanceSchema = Joi.object({
-    name: name.required(),    
-    client_name: client_name.required(),
-    base_url: base_url,
-    description: description.required(),
-    type: type.required(),
-    lang: lang.required(),
-    logo: logo || '',
+  name: name.required(),
+  client_name: client_name.required(),
+  base_url: base_url,
+  description: description.required(),
+  type: type.required(),
+  lang: lang.required(),
+  logo: logo || '',
 });
 
 const updateInstanceSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),    
-    client_name: client_name.required(),
-    base_url: base_url,
-    description: description.required(),
-    type: type.required(),
-    lang: lang.required(),
-    logo: logo || '',
+  id: id.required(),
+  name: name.required(),
+  client_name: client_name.required(),
+  base_url: base_url,
+  description: description.required(),
+  type: type.required(),
+  lang: lang.required(),
+  logo: logo || '',
 });
 
 const getInstanceSchema = Joi.object({
   instanceId: instanceId.required(),
 });
 
-module.exports = { createInstanceSchema, updateInstanceSchema, getInstanceSchema }
+module.exports = {
+  createInstanceSchema,
+  updateInstanceSchema,
+  getInstanceSchema,
+};

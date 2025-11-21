@@ -4,7 +4,7 @@ const id = Joi.string();
 const email = Joi.string().email();
 const password = Joi.string().min(8);
 const name = Joi.string();
-const lastName = Joi.string()
+const lastName = Joi.string();
 const language = Joi.string();
 const role = Joi.string();
 const instanceId = Joi.string();
@@ -15,7 +15,7 @@ const createUserSchema = Joi.object({
   name: name.required(),
   lastName: lastName.required(),
   language: language.required(),
-  role: role.required()
+  role: role.required(),
 });
 
 const updateUserSchema = Joi.object({
@@ -33,4 +33,9 @@ const getUserSchema = Joi.object({
   instanceId: instanceId.required(),
 });
 
-module.exports = { createUserSchema, updateUserSchema, getUserSchema, changePasswordSchema }
+module.exports = {
+  createUserSchema,
+  updateUserSchema,
+  getUserSchema,
+  changePasswordSchema,
+};

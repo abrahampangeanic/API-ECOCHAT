@@ -6,14 +6,14 @@ const description = Joi.string();
 const instanceId = Joi.string();
 
 const createGroupSchema = Joi.object({
-    name: name.required(),
-    description: description.required(),
+  name: name.required(),
+  description: description.required(),
 });
 
 const updateGroupSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),
-    description: description.required(),
+  id: id.required(),
+  name: name.required(),
+  description: description.required(),
 });
 
 const getGroupSchema = Joi.object({
@@ -21,4 +21,4 @@ const getGroupSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createGroupSchema, updateGroupSchema, getGroupSchema }
+module.exports = { createGroupSchema, updateGroupSchema, getGroupSchema };

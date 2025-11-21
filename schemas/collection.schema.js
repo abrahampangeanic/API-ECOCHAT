@@ -3,18 +3,18 @@ const Joi = require('joi');
 const id = Joi.string();
 const name = Joi.string();
 const description = Joi.string();
-const access_type = Joi.string();
+// const access_type = Joi.string();
 const instanceId = Joi.string();
 
 const createCollectionSchema = Joi.object({
-    name: name.required(),    
-    description: description.required(),
+  name: name.required(),
+  description: description.required(),
 });
 
 const updateCollectionSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),    
-    description: description.required(),
+  id: id.required(),
+  name: name.required(),
+  description: description.required(),
 });
 
 const getCollectionSchema = Joi.object({
@@ -22,4 +22,8 @@ const getCollectionSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createCollectionSchema, updateCollectionSchema, getCollectionSchema }
+module.exports = {
+  createCollectionSchema,
+  updateCollectionSchema,
+  getCollectionSchema,
+};

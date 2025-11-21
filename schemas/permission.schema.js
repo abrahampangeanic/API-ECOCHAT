@@ -6,14 +6,14 @@ const skill = Joi.string();
 const resource = Joi.string();
 const accessMode = Joi.string();
 const groupId = Joi.string();
-const collectionId = Joi.string().allow("");
-const assistantId = Joi.string().allow("");
+const collectionId = Joi.string().allow('');
+const assistantId = Joi.string().allow('');
 const instanceId = Joi.string();
 
 const createPermissionSchema = Joi.object({
   name: name.required(),
-  skill: skill.required(),    
-  resource: resource.required(),  
+  skill: skill.required(),
+  resource: resource.required(),
   accessMode: accessMode.required(),
   groupId: groupId.required(),
   collectionId: collectionId,
@@ -21,14 +21,14 @@ const createPermissionSchema = Joi.object({
 });
 
 const updatePermissionSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),
-    skill: skill.required(),    
-    resource: resource.required(),
-    accessMode: accessMode.required(),
-    groupId: groupId.required(),
-    collectionId: collectionId,
-    assistantId: assistantId,
+  id: id.required(),
+  name: name.required(),
+  skill: skill.required(),
+  resource: resource.required(),
+  accessMode: accessMode.required(),
+  groupId: groupId.required(),
+  collectionId: collectionId,
+  assistantId: assistantId,
 });
 
 const getPermissionSchema = Joi.object({
@@ -36,4 +36,8 @@ const getPermissionSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createPermissionSchema, updatePermissionSchema, getPermissionSchema }
+module.exports = {
+  createPermissionSchema,
+  updatePermissionSchema,
+  getPermissionSchema,
+};

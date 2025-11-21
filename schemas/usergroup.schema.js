@@ -6,14 +6,14 @@ const groupId = Joi.string();
 const instanceId = Joi.string();
 
 const createUserGroupSchema = Joi.object({
-    userId: userId.required(),
-    groupId: groupId.required(),
+  userId: userId.required(),
+  groupId: groupId.required(),
 });
 
 const updateUserGroupSchema = Joi.object({
-    id: id.required(),
-    userId: userId.required(),
-    groupId: groupId.required(),
+  id: id.required(),
+  userId: userId.required(),
+  groupId: groupId.required(),
 });
 
 const getUserGroupSchema = Joi.object({
@@ -21,4 +21,8 @@ const getUserGroupSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createUserGroupSchema, updateUserGroupSchema, getUserGroupSchema }
+module.exports = {
+  createUserGroupSchema,
+  updateUserGroupSchema,
+  getUserGroupSchema,
+};

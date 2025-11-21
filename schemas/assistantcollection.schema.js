@@ -7,16 +7,16 @@ const instanceId = Joi.string();
 const accessMode = Joi.string();
 
 const createAssistantCollectionSchema = Joi.object({
-    assistantId: assistantId.required(),
-    collectionId: collectionId.required(),
-    accessMode: accessMode.required(),
+  assistantId: assistantId.required(),
+  collectionId: collectionId.required(),
+  accessMode: accessMode.required(),
 });
 
 const updateAssistantCollectionSchema = Joi.object({
-    id: id.required(),
-    assistantId: assistantId,
-    collectionId: collectionId,
-    accessMode: accessMode
+  id: id.required(),
+  assistantId: assistantId,
+  collectionId: collectionId,
+  accessMode: accessMode,
 });
 
 const getAssistantCollectionSchema = Joi.object({
@@ -24,4 +24,8 @@ const getAssistantCollectionSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createAssistantCollectionSchema, updateAssistantCollectionSchema, getAssistantCollectionSchema }
+module.exports = {
+  createAssistantCollectionSchema,
+  updateAssistantCollectionSchema,
+  getAssistantCollectionSchema,
+};

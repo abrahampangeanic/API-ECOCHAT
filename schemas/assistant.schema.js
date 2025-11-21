@@ -13,23 +13,23 @@ const poor_answer_message = Joi.string().allow(null);
 const instanceId = Joi.string();
 
 const createAssistantSchema = Joi.object({
-    name: name.required(),    
-    description: description.required(),
-    type: type.required(),
-    access_type: access_type.required(),
+  name: name.required(),
+  description: description.required(),
+  type: type.required(),
+  access_type: access_type.required(),
 });
 
 const updateAssistantSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),    
-    description: description.required(),
-    type: type.required(),
-    access_type: access_type.required(),
-    chunks: chunks,
-    llm_relevance_filter: llm_relevance_filter,
-    llm_filter_extraction: llm_filter_extraction,
-    starter_message: starter_message,
-    poor_answer_message: poor_answer_message,
+  id: id.required(),
+  name: name.required(),
+  description: description.required(),
+  type: type.required(),
+  access_type: access_type.required(),
+  chunks: chunks,
+  llm_relevance_filter: llm_relevance_filter,
+  llm_filter_extraction: llm_filter_extraction,
+  starter_message: starter_message,
+  poor_answer_message: poor_answer_message,
 });
 
 const getAssistantSchema = Joi.object({
@@ -37,4 +37,8 @@ const getAssistantSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createAssistantSchema, updateAssistantSchema, getAssistantSchema }
+module.exports = {
+  createAssistantSchema,
+  updateAssistantSchema,
+  getAssistantSchema,
+};

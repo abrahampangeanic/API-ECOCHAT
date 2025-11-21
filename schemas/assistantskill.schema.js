@@ -6,14 +6,14 @@ const skillId = Joi.number();
 const instanceId = Joi.string();
 
 const createAssistantSkillSchema = Joi.object({
-    assistantId: assistantId.required(),
-    skillId: skillId.required(),
+  assistantId: assistantId.required(),
+  skillId: skillId.required(),
 });
 
 const updateAssistantSkillSchema = Joi.object({
-    id: id.required(),
-    assistantId: assistantId.required(),
-    skillId: skillId.required(),
+  id: id.required(),
+  assistantId: assistantId.required(),
+  skillId: skillId.required(),
 });
 
 const getAssistantSkillSchema = Joi.object({
@@ -21,4 +21,8 @@ const getAssistantSkillSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createAssistantSkillSchema, updateAssistantSkillSchema, getAssistantSkillSchema }
+module.exports = {
+  createAssistantSkillSchema,
+  updateAssistantSkillSchema,
+  getAssistantSkillSchema,
+};

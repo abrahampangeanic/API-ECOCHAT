@@ -22,13 +22,14 @@ const vector_size = Joi.number().integer();
 const indexing_time = Joi.number();
 const language = Joi.string();
 
-const files = Joi.object({
-  file: Joi.object({
-    originalname: Joi.string().required(),  // nombre original del archivo
-    mimetype: Joi.string().valid('image/jpeg', 'image/png', 'application/pdf').required(),  // tipos permitidos
-    size: Joi.number().max(50 * 1024 * 1024).required()  // tamaño máximo permitido (5MB en este caso)
-  })
-});
+// const files = Joi.object({
+//   file: Joi.object({
+//     originalname: Joi.string().required(),  // nombre original del archivo
+//     mimetype: Joi.string().valid('image/jpeg', 'image/png', 'application/pdf').required(),  // tipos permitidos
+//     size: Joi.number().max(50 * 1024 * 1024).required()  // tamaño máximo permitido (5MB en este caso)
+//   })
+// });
+
 const status = Joi.string();
 const processor = Joi.string();
 const message = Joi.string().allow(null, '');
@@ -92,11 +93,19 @@ const updateStatusSourceSchema = Joi.object({
 });
 
 // STATUS CODE 1 INDEX SUCCESS
-// STATUS CODE 2 INPROGRESS 
+// STATUS CODE 2 INPROGRESS
 // STATUS CODE 3 INDEX FAILED
-// STATUS CODE UNDEFINE ALL 
+// STATUS CODE UNDEFINE ALL
 const getSourceStatusIndex = Joi.object({
   status: Joi.number().valid(1, 2, 3).optional().empty(''),
 });
 
-module.exports = { createSourceSchema, updateSourceSchema, getSourceSchema, getSourceIdSchema, updateStatusSourceSchema, createSourceFileSchema, getSourceStatusIndex }
+module.exports = {
+  createSourceSchema,
+  updateSourceSchema,
+  getSourceSchema,
+  getSourceIdSchema,
+  updateStatusSourceSchema,
+  createSourceFileSchema,
+  getSourceStatusIndex,
+};

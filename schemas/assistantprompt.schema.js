@@ -6,14 +6,14 @@ const promptId = Joi.string();
 const instanceId = Joi.string();
 
 const createAssistantPromptSchema = Joi.object({
-    assistantId: assistantId.required(),
-    promptId: promptId.required(),
+  assistantId: assistantId.required(),
+  promptId: promptId.required(),
 });
 
 const updateAssistantPromptSchema = Joi.object({
-    id: id.required(),
-    assistantId: assistantId.required(),
-    promptId: promptId.required(),
+  id: id.required(),
+  assistantId: assistantId.required(),
+  promptId: promptId.required(),
 });
 
 const getAssistantPromptSchema = Joi.object({
@@ -21,4 +21,8 @@ const getAssistantPromptSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createAssistantPromptSchema, updateAssistantPromptSchema, getAssistantPromptSchema }
+module.exports = {
+  createAssistantPromptSchema,
+  updateAssistantPromptSchema,
+  getAssistantPromptSchema,
+};

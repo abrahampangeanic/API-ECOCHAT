@@ -6,14 +6,14 @@ const sourceId = Joi.string();
 const instanceId = Joi.string();
 
 const createCollectionSourceSchema = Joi.object({
-    collectionId: collectionId.required(),
-    sourceId: sourceId.required(),
+  collectionId: collectionId.required(),
+  sourceId: sourceId.required(),
 });
 
 const updateCollectionSourceSchema = Joi.object({
-    id: id.required(),
-    collectionId: collectionId.required(),
-    sourceId: sourceId.required(),
+  id: id.required(),
+  collectionId: collectionId.required(),
+  sourceId: sourceId.required(),
 });
 
 const getCollectionSourceSchema = Joi.object({
@@ -21,4 +21,8 @@ const getCollectionSourceSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createCollectionSourceSchema, updateCollectionSourceSchema, getCollectionSourceSchema }
+module.exports = {
+  createCollectionSourceSchema,
+  updateCollectionSourceSchema,
+  getCollectionSourceSchema,
+};

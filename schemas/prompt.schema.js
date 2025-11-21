@@ -11,24 +11,24 @@ const shared = Joi.number().integer().allow(null);
 const instanceId = Joi.string();
 
 const createPromptSchema = Joi.object({
-    name: name.required(),    
-    description: description.required(),
-    prompt: prompt.required(),
-    type: type.required(),
-    skill: skill.required(),
-    lang: lang.required(),
-    shared: shared.required(),
+  name: name.required(),
+  description: description.required(),
+  prompt: prompt.required(),
+  type: type.required(),
+  skill: skill.required(),
+  lang: lang.required(),
+  shared: shared.required(),
 });
 
 const updatePromptSchema = Joi.object({
-    id: id.required(),
-    name: name.required(),    
-    description: description.required(),
-    prompt: prompt.required(),
-    type: type,
-    skill: skill,
-    lang: lang,
-    shared: shared
+  id: id.required(),
+  name: name.required(),
+  description: description.required(),
+  prompt: prompt.required(),
+  type: type,
+  skill: skill,
+  lang: lang,
+  shared: shared,
 });
 
 const getPromptSchema = Joi.object({
@@ -36,4 +36,4 @@ const getPromptSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createPromptSchema, updatePromptSchema, getPromptSchema }
+module.exports = { createPromptSchema, updatePromptSchema, getPromptSchema };

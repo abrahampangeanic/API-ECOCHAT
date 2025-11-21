@@ -14,5 +14,4 @@ const getDocumentSchema = Joi.object({
   id: id.required(),
 });
 
-
-module.exports = {  updateStatusDocumentSchema, getDocumentSchema }
+module.exports = { updateStatusDocumentSchema, getDocumentSchema };

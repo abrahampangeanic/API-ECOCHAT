@@ -15,11 +15,11 @@ const createAssistantMessageSchema = Joi.object({
 });
 
 const updateAssistantMessageSchema = Joi.object({
-    id: id.required(),
-    message: message.required(),
-    type: type.required(),
-    lang: lang.required(),
-    assistantId: assistantId.required(),
+  id: id.required(),
+  message: message.required(),
+  type: type.required(),
+  lang: lang.required(),
+  assistantId: assistantId.required(),
 });
 
 const getAssistantMessageSchema = Joi.object({
@@ -27,4 +27,8 @@ const getAssistantMessageSchema = Joi.object({
   id: id.required(),
 });
 
-module.exports = { createAssistantMessageSchema, updateAssistantMessageSchema, getAssistantMessageSchema }
+module.exports = {
+  createAssistantMessageSchema,
+  updateAssistantMessageSchema,
+  getAssistantMessageSchema,
+};
