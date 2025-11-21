@@ -52,6 +52,10 @@ const AssistantSchema = {
     allowNull: false,
     type: DataTypes.STRING,
   },
+  openai_id: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
   createdAt: {
     allowNull: false,
     type: DataTypes.DATE,

@@ -113,7 +113,11 @@ const SourceSchema = {
   language: {
     allowNull: true,
     type: DataTypes.STRING,
-  }
+  },
+  openai_id: {
+    allowNull: true,
+    type: DataTypes.STRING,
+  },
 }
 
 class Source extends Model {
