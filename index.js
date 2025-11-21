@@ -1,15 +1,17 @@
-require("./instrument");
+require('./instrument');
 const express = require('express');
 const cors = require('cors');
 const routerApi = require('./routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
-// const { checkApiKey } = require('./middlewares/auth.handler');
-// require('./tracing');
-const { trace } = require('@opentelemetry/api');
 const Sentry = require('@sentry/node');
 
-const { logErrors, errorHandler, boomErrorHandler, ormErrorHandler } = require('./middlewares/error.handler');
+const {
+  logErrors,
+  errorHandler,
+  boomErrorHandler,
+  ormErrorHandler,
+} = require('./middlewares/error.handler');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -18,7 +20,7 @@ app.use((req, res, next) => {
   if (req.originalUrl === '/api/v1/suscription/webhook') {
     next(); // Do nothing with the body because I need it in a raw state.
   } else {
-    express.json()(req, res, next);  // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
+    express.json()(req, res, next); // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
   }
 });
 
@@ -26,11 +28,11 @@ app.use(express.urlencoded({ extended: true }));
 
 const whitelist = [
   'http://localhost:8080',
-  'http://localhost:3000', 
-  'https://myapp.co', 
-  'http://localhost:5173', 
-  'https://gest-client.onrender.com', 
-  'https://app.taxrepo.com', 
+  'http://localhost:3000',
+  'https://myapp.co',
+  'http://localhost:5173',
+  'https://gest-client.onrender.com',
+  'https://app.taxrepo.com',
   'http://192.168.100.143:3000',
   'http://192.168.100.143:3001',
   'http://192.168.100.143:3016',
@@ -40,7 +42,7 @@ const whitelist = [
   'https://ecochat.pangeanic.com',
   'http://admin.local.com',
   'https://api.pangeanic.com',
-  'https://ecochat2.pangeanic.com'
+  'https://ecochat2.pangeanic.com',
 ];
 
 const options = {
@@ -51,8 +53,8 @@ const options = {
       console.log('Origin not allowed by CORS', origin);
       callback(new Error('no permitido'));
     }
-  }
-}
+  },
+};
 
 app.use(cors(options));
 
@@ -71,7 +73,10 @@ if (otelApiSafe) {
         span.updateName(`${req.method} ${req.path}`);
       }
     } catch (err) {
-      console.warn('Error al renombrar la transacción con OpenTelemetry:', err.message);
+      console.warn(
+        'Error al renombrar la transacción con OpenTelemetry:',
+        err.message
+      );
     }
     next();
   });
@@ -83,8 +88,8 @@ app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
-app.get("/debug-sentry", function mainHandler(req, res) {
-  throw new Error("My first Sentry error!");
+app.get('/debug-sentry', function mainHandler() {
+  throw new Error('My first Sentry error!');
 });
 
 app.use('/service/ecochat/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -95,7 +100,7 @@ app.get('/service/ecochat', (req, res) => {
 
 app.get('/service/ecochat/healthcheck', (req, res) => {
   console.log('healthcheck');
-  res.send({"message": "It's working!"});
+  res.send({ message: "It's working!" });
 });
 
 routerApi(app);
@@ -106,7 +111,6 @@ app.use(logErrors);
 app.use(ormErrorHandler);
 app.use(boomErrorHandler);
 app.use(errorHandler);
-
 
 app.listen(port, () => {
   console.log(`Mi port ${port}`);

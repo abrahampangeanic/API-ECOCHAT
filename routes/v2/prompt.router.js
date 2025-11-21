@@ -2,14 +2,14 @@ const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
 
-const GroupService = require('../services/group.service');
-const service = new GroupService();
-const InstanceService = require('../services/instance.service');
+const PromptService = require('../../services/prompt.service');
+const service = new PromptService();
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 
-const validatorHandler = require('../middlewares/validator.handler');
-const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getGroupSchema, updateGroupSchema, createGroupSchema } = require('../schemas/group.schema');
+const validatorHandler = require('../../middlewares/validator.handler');
+const { getInstanceSchema} = require('../../schemas/instance.schema');
+const { getPromptSchema, updatePromptSchema, createPromptSchema } = require('../../schemas/prompt.schema');
 
 const router = express.Router({ mergeParams: true });
 
@@ -20,13 +20,14 @@ router.get('/',
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
+
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();
       }
 
-      const group = await service.findByInstance(instanceId);
-      res.json(group);
+      const prompt = await service.findByInstance(instanceId);
+      res.json(prompt);
     } catch (error) {
       next(error);
     }
@@ -34,7 +35,7 @@ router.get('/',
 
 router.get('/:id',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getGroupSchema, 'params'),
+  validatorHandler(getPromptSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId, id } = req.params;
@@ -56,21 +57,21 @@ router.get('/:id',
 router.post('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(createGroupSchema, 'body'),
+  validatorHandler(createPromptSchema, 'body'),
   async (req, res, next) => {
     try {
         const { instanceId  } = req.params;
         const userId = req.user.sub;
 
-        if(req.user.role !== 'SUPER') {
-          const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-          if(relationships.length === 0) throw boom.unauthorized();
-        }
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
         const body = req.body;
         body.instanceId = instanceId;
-        const group = await service.create(body);
-        res.status(201).json(group);
+        const prompt = await service.create(body);
+        res.status(201).json(prompt);
     } catch (error) {
       next(error);
     }
@@ -80,12 +81,11 @@ router.post('/',
 router.patch('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(updateGroupSchema, 'body'),
+  validatorHandler(updatePromptSchema, 'body'),
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();
@@ -94,8 +94,8 @@ router.patch('/',
       const body = req.body;
       body.instanceId = instanceId;
 
-      const group = await service.update(body);
-      res.json(group);
+      const prompt = await service.update(body);
+      res.json(prompt);
     } catch (error) {
       next(error);
     }
@@ -104,12 +104,11 @@ router.patch('/',
 
 router.delete('/:id',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getGroupSchema, 'params'),
+  validatorHandler(getPromptSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId, id } = req.params;
       const userId = req.user.sub;
-      
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();

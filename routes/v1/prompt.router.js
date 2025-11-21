@@ -2,14 +2,14 @@ const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
 
-const CollectionService = require('../services/collection.service');
-const service = new CollectionService();
-const InstanceService = require('../services/instance.service');
+const PromptService = require('../../services/prompt.service');
+const service = new PromptService();
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 
-const validatorHandler = require('../middlewares/validator.handler');
-const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getCollectionSchema, updateCollectionSchema, createCollectionSchema } = require('../schemas/collection.schema');
+const validatorHandler = require('../../middlewares/validator.handler');
+const { getInstanceSchema} = require('../../schemas/instance.schema');
+const { getPromptSchema, updatePromptSchema, createPromptSchema } = require('../../schemas/prompt.schema');
 
 const router = express.Router({ mergeParams: true });
 
@@ -26,8 +26,8 @@ router.get('/',
         if(relationships.length === 0) throw boom.unauthorized();
       }
 
-      const collection = await service.findByInstance(instanceId);
-      res.json(collection);
+      const prompt = await service.findByInstance(instanceId);
+      res.json(prompt);
     } catch (error) {
       next(error);
     }
@@ -35,7 +35,7 @@ router.get('/',
 
 router.get('/:id',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getCollectionSchema, 'params'),
+  validatorHandler(getPromptSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId, id } = req.params;
@@ -57,21 +57,21 @@ router.get('/:id',
 router.post('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(createCollectionSchema, 'body'),
+  validatorHandler(createPromptSchema, 'body'),
   async (req, res, next) => {
     try {
         const { instanceId  } = req.params;
         const userId = req.user.sub;
 
-        if(req.user.role !== 'SUPER') {
-          const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
-          if(relationships.length === 0) throw boom.unauthorized();
-        }
+      if(req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        if(relationships.length === 0) throw boom.unauthorized();
+      }
 
         const body = req.body;
         body.instanceId = instanceId;
-        const collection = await service.create(body);
-        res.status(201).json(collection);
+        const prompt = await service.create(body);
+        res.status(201).json(prompt);
     } catch (error) {
       next(error);
     }
@@ -81,12 +81,11 @@ router.post('/',
 router.patch('/',
   passport.authenticate('jwt', {session: false}),
   validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(updateCollectionSchema, 'body'),
+  validatorHandler(updatePromptSchema, 'body'),
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
-
       if(req.user.role !== 'SUPER') {
         const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
         if(relationships.length === 0) throw boom.unauthorized();
@@ -95,8 +94,8 @@ router.patch('/',
       const body = req.body;
       body.instanceId = instanceId;
 
-      const collection = await service.update(body);
-      res.json(collection);
+      const prompt = await service.update(body);
+      res.json(prompt);
     } catch (error) {
       next(error);
     }
@@ -105,7 +104,7 @@ router.patch('/',
 
 router.delete('/:id',
   passport.authenticate('jwt', {session: false}),
-  validatorHandler(getCollectionSchema, 'params'),
+  validatorHandler(getPromptSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId, id } = req.params;

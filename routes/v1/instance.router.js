@@ -2,10 +2,10 @@ const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
 
-const instanceService = require('../services/instance.service');
-const { checkRoles } = require('../middlewares/auth.handler');
-const validatorHandler = require('../middlewares/validator.handler');
-const { createInstanceSchema, getInstanceSchema, updateInstanceSchema,  } = require('../schemas/instance.schema');
+const instanceService = require('../../services/instance.service');
+const { checkRoles } = require('../../middlewares/auth.handler');
+const validatorHandler = require('../../middlewares/validator.handler');
+const { createInstanceSchema, getInstanceSchema, updateInstanceSchema,  } = require('../../schemas/instance.schema');
 
 const assistantRouter = require('./assistant.router');
 const assistantCollectionRouter = require('./assistantcollection.router');

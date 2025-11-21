@@ -2,15 +2,15 @@ const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
 
-const QueryService = require('../services/query.service');
+const QueryService = require('../../services/query.service');
 const service = new QueryService();
 
-const InstanceService = require('../services/instance.service');
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 
-const validatorHandler = require('../middlewares/validator.handler');
-const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getQuerySchema, updateQuerySchema } = require('../schemas/query.schema');
+const validatorHandler = require('../../middlewares/validator.handler');
+const { getInstanceSchema} = require('../../schemas/instance.schema');
+const { getQuerySchema, updateQuerySchema } = require('../../schemas/query.schema');
 
 const router = express.Router({ mergeParams: true });
 

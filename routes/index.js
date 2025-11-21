@@ -1,36 +1,14 @@
 const express = require('express');
 
-const authRouter = require('./auth.router');
-const profileRouter = require('./profile.router');
-
-const instanceRouter = require('./instance.router');
-const documentRouter = require('./document.router');
-const sessionRouter = require('./session.router');
-const queryRouter = require('./query.router');
-const questionRouter = require('./question.router');
-
-// const productsRouter = require('./products.router');
-// const categoriesRouter = require('./categories.router');
-// const usersRouter = require('./users.router');
-// const orderRouter = require('./orders.router');
-
-// const suscriptionRouter = require('./suscription.router');
-// const reportRouter = require('./report.router');
-
+const v1Router = require('./v1');
+const v2Router = require('./v2');
 
 function routerApi(app) {
   const router = express.Router();
 
-  app.use('/service/ecochat/api/v1', router);
-  router.use('/auth', authRouter);
-  // router.use('/customers', profileRouter);
-  router.use('/register', profileRouter);
-  router.use('/profile', profileRouter);
-  router.use('/instances', instanceRouter);
-  router.use('/documents', documentRouter);
-  router.use('/sessions', sessionRouter);
-  router.use('/queries', queryRouter);
-  router.use('/questions', questionRouter);
+  app.use('/service/ecochat/api', router);
+  router.use('/v1', v1Router);
+  router.use('/v2', v2Router);
 }
 
 module.exports = routerApi;

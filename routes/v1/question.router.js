@@ -2,31 +2,31 @@ const { v4: uuidv4 } = require('uuid');
 const express = require('express');
 const boom = require('@hapi/boom');
 const passport = require('passport');
-const validatorHandler = require('../middlewares/validator.handler');
+const validatorHandler = require('../../middlewares/validator.handler');
 const Sentry = require('@sentry/node');
 
-const InstanceService = require('../services/instance.service');
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
-const AssistantService = require('../services/assistant.service');
+const AssistantService = require('../../services/assistant.service');
 const assistantServ = new AssistantService();
-const PipelineService = require('../services/pipeline.service');
+const PipelineService = require('../../services/pipeline.service');
 const pipelineServ = new PipelineService();
-const UserService = require('../services/user.service');
+const UserService = require('../../services/user.service');
 const userServ = new UserService();
-const QueryService = require('../services/query.service');
+const QueryService = require('../../services/query.service');
 const queryServ = new QueryService();
-const SessionService = require('../services/session.service');
+const SessionService = require('../../services/session.service');
 const sessionServ = new SessionService();
-const QuestionService = require('../services/question.service');
+const QuestionService = require('../../services/question.service');
 const questionServ = new QuestionService();
-const sourcesService = require('../services/source.service');
+const sourcesService = require('../../services/source.service');
 const sourceServ = new sourcesService();
-const { getLanguagesWithCache } = require('../cache/source.cache');
-const { getUserWithCache } = require('../cache/user.cache');
-const { getInstanceWithCache } = require('../cache/instance.cache');
-const { getAssistantWithCache } = require('../cache/assistant.cache');
+const { getLanguagesWithCache } = require('../../cache/source.cache');
+const { getUserWithCache } = require('../../cache/user.cache');
+const { getInstanceWithCache } = require('../../cache/instance.cache');
+const { getAssistantWithCache } = require('../../cache/assistant.cache');
 
-const { createQuestionSchema } = require('../schemas/question.schema');
+const { createQuestionSchema } = require('../../schemas/question.schema');
 const router = express.Router({ mergeParams: true });
 
 

@@ -2,14 +2,14 @@ const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
 
-const AssistantSkillService = require('../services/assistantskill.service');
+const AssistantSkillService = require('../../services/assistantskill.service');
 const service = new AssistantSkillService();
-const InstanceService = require('../services/instance.service');
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 
-const validatorHandler = require('../middlewares/validator.handler');
-const { getInstanceSchema} = require('../schemas/instance.schema');
-const { getAssistantSkillSchema, createAssistantSkillSchema } = require('../schemas/assistantskill.schema');
+const validatorHandler = require('../../middlewares/validator.handler');
+const { getInstanceSchema} = require('../../schemas/instance.schema');
+const { getAssistantSkillSchema, createAssistantSkillSchema } = require('../../schemas/assistantskill.schema');
 
 const router = express.Router({ mergeParams: true });
 

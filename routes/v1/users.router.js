@@ -1,13 +1,13 @@
 const express = require('express');
 const passport = require('passport');
-const UserService = require('./../services/user.service');
-const { checkRoles } = require('./../middlewares/auth.handler');
-const validatorHandler = require('./../middlewares/validator.handler');
-const { getInstanceSchema} = require('../schemas/instance.schema');
-const { updateUserSchema, createUserSchema, getUserSchema } = require('./../schemas/user.schema');
+const UserService = require('../../services/user.service');
+const { checkRoles } = require('../../middlewares/auth.handler');
+const validatorHandler = require('../../middlewares/validator.handler');
+const { getInstanceSchema} = require('../../schemas/instance.schema');
+const { updateUserSchema, createUserSchema, getUserSchema } = require('../../schemas/user.schema');
 
 const service = new UserService();
-const InstanceService = require('../services/instance.service');
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 
 const router = express.Router({ mergeParams: true });

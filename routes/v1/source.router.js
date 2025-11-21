@@ -4,21 +4,21 @@ const boom = require('@hapi/boom');
 const FormData = require('form-data');
 const fs = require('fs');
 const axios = require('axios');
-const { config } = require('../config/config');
-const { checkRoles } = require('../middlewares/auth.handler');
+const { config } = require('../../config/config');
+const { checkRoles } = require('../../middlewares/auth.handler');
 
-const SourceService = require('../services/source.service');
+const SourceService = require('../../services/source.service');
 const service = new SourceService();
-const InstanceService = require('../services/instance.service');
+const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
-const DocumentService = require('../services/document.service');
+const DocumentService = require('../../services/document.service');
 const documentServ = new DocumentService();
-const PipelineService = require('../services/pipeline.service');
+const PipelineService = require('../../services/pipeline.service');
 const pipelineServ = new PipelineService();
 
-const validatorHandler = require('../middlewares/validator.handler');
-const uploadhandler = require('../middlewares/upload.handler');
-const { getInstanceSchema } = require('../schemas/instance.schema');
+const validatorHandler = require('../../middlewares/validator.handler');
+const uploadhandler = require('../../middlewares/upload.handler');
+const { getInstanceSchema } = require('../../schemas/instance.schema');
 const {
   getSourceSchema,
   updateSourceSchema,
@@ -26,7 +26,7 @@ const {
   getSourceIdSchema,
   updateStatusSourceSchema,
   getSourceStatusIndex,
-  createSourceFileSchema } = require('../schemas/source.schema');
+  createSourceFileSchema } = require('../../schemas/source.schema');
 
 const router = express.Router({ mergeParams: true });
 

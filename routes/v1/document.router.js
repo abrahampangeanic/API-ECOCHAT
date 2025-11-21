@@ -3,14 +3,14 @@ const passport = require('passport');
 const fs = require('fs');
 const boom = require('@hapi/boom');
 
-const DocumentService = require('../services/document.service');
-const InstanceService = require('../services/instance.service');
+const DocumentService = require('../../services/document.service');
+const InstanceService = require('../../services/instance.service');
 
 
-const validatorHandler = require('../middlewares/validator.handler');
-const uploadhandler = require('../middlewares/upload.handler');
-const { getInstanceYearSchema } = require('../schemas/instance.schema');
-const { getDocumentSchema, updateStatusDocumentSchema } = require('../schemas/document.schema');
+const validatorHandler = require('../../middlewares/validator.handler');
+const uploadhandler = require('../../middlewares/upload.handler');
+const { getInstanceYearSchema } = require('../../schemas/instance.schema');
+const { getDocumentSchema, updateStatusDocumentSchema } = require('../../schemas/document.schema');
 
 const router = express.Router({ mergeParams: true });
 const service = new DocumentService();

@@ -1,12 +1,12 @@
 const express = require('express');
 const passport = require('passport');
 
-const AuthService = require('../services/auth.service');
-const ProfileService = require('../services/profile.service');
+const AuthService = require('../../services/auth.service');
+const ProfileService = require('../../services/profile.service');
 
-const validationHandler = require('../middlewares/validator.handler');
-const { checkAdminRole } = require('../middlewares/auth.handler');
-const { createProfileSchema, getProfileSchema, updateProfileSchema} = require('../schemas/profile.schema');
+const validationHandler = require('../../middlewares/validator.handler');
+const { checkAdminRole } = require('../../middlewares/auth.handler');
+const { createProfileSchema, getProfileSchema, updateProfileSchema} = require('../../schemas/profile.schema');
 
 const router = express.Router({ mergeParams: true });
 const service = new ProfileService();
