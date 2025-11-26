@@ -1,5 +1,5 @@
 const { Model, DataTypes, Sequelize } = require('sequelize');
-const { v4: uuidv4 } = require('uuid'); 
+const { v4: uuidv4 } = require('uuid');
 
 const SESSION_TABLE = 'sessions';
 
@@ -8,7 +8,7 @@ const SessionSchema = {
     allowNull: false,
     primaryKey: true,
     defaultValue: uuidv4,
-    type: DataTypes.UUID,  
+    type: DataTypes.UUID,
   },
   name: {
     type: DataTypes.STRING,
@@ -32,13 +32,13 @@ const SessionSchema = {
     field: 'created_at',
     defaultValue: Sequelize.NOW,
   },
-}
+};
 
 class Session extends Model {
   static associate(models) {
-    this.belongsTo(models.Assistant, {  as: 'assistant'});
-    this.belongsTo(models.User, {  as: 'user'});
-    this.hasMany(models.Query, { as: 'query',  foreignKey: 'sessionId' });
+    this.belongsTo(models.Assistant, { as: 'assistant' });
+    this.belongsTo(models.User, { as: 'user' });
+    this.hasMany(models.Query, { as: 'query', foreignKey: 'sessionId' });
   }
 
   static config(sequelize) {
@@ -46,8 +46,8 @@ class Session extends Model {
       sequelize,
       tableName: SESSION_TABLE,
       modelName: 'Session',
-      timestamps: false
-    }
+      timestamps: false,
+    };
   }
 }
 

@@ -4,9 +4,10 @@ const config = {
   env: process.env.NODE_ENV || 'dev',
   isProd: process.env.NODE_ENV === 'production',
   apiUrl: process.env.API_URL,
-  modulePipeline:  process.env.MODULE_PIPELINE,
-  moduleExtractor:  process.env.MODULE_EXTRACTOR,
-  moduleScraping:  process.env.MODULE_SCRAPING,
+  openaiApiKey: process.env.OPENAI_API_KEY,
+  modulePipeline: process.env.MODULE_PIPELINE,
+  moduleExtractor: process.env.MODULE_EXTRACTOR,
+  moduleScraping: process.env.MODULE_SCRAPING,
   moduleDetector: process.env.MODULE_LANGUAGE_DETECTOR,
   moduleTranslator: process.env.MODULE_TRANSLATOR,
   apiKey: process.env.API_KEY,
@@ -23,8 +24,8 @@ const config = {
       max: 5,
       min: 0,
       acquire: 30000,
-      idle: 10000
-    }
+      idle: 10000,
+    },
   },
   production: {
     username: process.env.DB_USER,
@@ -37,8 +38,8 @@ const config = {
       max: 10,
       min: 2,
       acquire: 30000,
-      idle: 10000
-    }
+      idle: 10000,
+    },
   },
 
   // smtpEmail: process.env.SMTP_EMAIL,
@@ -51,6 +52,6 @@ const config = {
   // stripeBasic: process.env.STRIPE_BASIC,
   // stripeExpert: process.env.STRIPE_EXPERT,
   // stripePremium: process.env.STRIPE_PREMIUM
-}
+};
 
 module.exports = { config };

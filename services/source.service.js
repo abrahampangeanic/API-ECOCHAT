@@ -1,11 +1,11 @@
 const boom = require('@hapi/boom');
 const { models, sequelize } = require('../libs/sequelize');
-const { Op, QueryTypes } = require('sequelize');
-
+const {
+  Op: { QueryTypes },
+} = require('sequelize');
 
 class SourceService {
-
-  constructor() { }
+  constructor() {}
 
   async create(data) {
     const source = await models.Source.create(data);
@@ -14,11 +14,9 @@ class SourceService {
 
   async findByInstance(instanceId) {
     const source = await models.Source.findAll({
-      where: { '$instanceId$': instanceId },
+      where: { $instanceId$: instanceId },
       include: ['documents'],
-      order: [
-        ['createdAt', 'ASC']
-      ]
+      order: [['createdAt', 'ASC']],
     });
 
     return { sources: [...source] };
@@ -26,7 +24,7 @@ class SourceService {
 
   async findByInstanceAndId(instanceId, id) {
     const source = await models.Source.findOne({
-      where: { '$instanceId$': instanceId, '$id$': id }
+      where: { $instanceId$: instanceId, $id$: id },
     });
 
     return { sources: [...source] };
@@ -34,29 +32,27 @@ class SourceService {
 
   async find() {
     const source = await models.Source.findAll({
-      order: [
-        ['id', 'ASC']
-      ]
+      order: [['id', 'ASC']],
     });
     return { sources: [...source] };
   }
 
-// STATUS CODE 1 INDEX SUCCESS
-// STATUS CODE 2 INPROGRESS 
-// STATUS CODE 3 INDEX FAILED
-// STATUS CODE UNDEFINE ALL 
+  // STATUS CODE 1 INDEX SUCCESS
+  // STATUS CODE 2 INPROGRESS
+  // STATUS CODE 3 INDEX FAILED
+  // STATUS CODE UNDEFINE ALL
   async findAllByStatus(status) {
     let whereClause = {};
-    if (status === 1) whereClause = { indexstatus: 4 }
-    else if (status === 2) whereClause = { indexstatus: [0, 1, 2, 3] }
-    else if (status === 3) { whereClause = { indexstatus: [-1, -2] } }
+    if (status === 1) whereClause = { indexstatus: 4 };
+    else if (status === 2) whereClause = { indexstatus: [0, 1, 2, 3] };
+    else if (status === 3) {
+      whereClause = { indexstatus: [-1, -2] };
+    }
 
     const source = await models.Source.findAll({
       where: whereClause,
       include: ['instance'],
-      order: [
-        ['id', 'ASC']
-      ]
+      order: [['id', 'ASC']],
     });
     return { sources: [...source] };
   }
@@ -82,7 +78,7 @@ class SourceService {
   }
 
   async findDistinctLanguagesByInstanceId(instanceId) {
-    const rows  = await sequelize.query(
+    const rows = await sequelize.query(
       `
         SELECT DISTINCT language
         FROM sources
@@ -91,15 +87,14 @@ class SourceService {
       `,
       {
         replacements: { instanceId },
-        type: QueryTypes.SELECT
+        type: QueryTypes.SELECT,
       }
     );
-  
-    const response = rows.map(row => row.language);
 
-    return response
+    const response = rows.map((row) => row.language);
+
+    return response;
   }
 }
-
 
 module.exports = SourceService;

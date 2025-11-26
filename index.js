@@ -1,10 +1,10 @@
-require('./instrument');
+// require('./instrument');
 const express = require('express');
 const cors = require('cors');
 const routerApi = require('./routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swaggerConfig'); // Importa tu configuración
-const Sentry = require('@sentry/node');
+// const Sentry = require('@sentry/node');
 
 const {
   logErrors,
@@ -105,7 +105,7 @@ app.get('/service/ecochat/healthcheck', (req, res) => {
 
 routerApi(app);
 
-Sentry.setupExpressErrorHandler(app);
+// Sentry.setupExpressErrorHandler(app);
 
 app.use(logErrors);
 app.use(ormErrorHandler);

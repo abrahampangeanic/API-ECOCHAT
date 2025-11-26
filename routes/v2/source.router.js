@@ -23,14 +23,17 @@ const {
   getSourceSchema,
   updateSourceSchema,
   createSourceSchema,
-  getSourceIdSchema,
   updateStatusSourceSchema,
   getSourceStatusIndex,
-  createSourceFileSchema } = require('../../schemas/source.schema');
+  createSourceFileSchema,
+} = require('../../schemas/source.schema');
+const { OpenAIManager } = require('../../libs/openai');
+const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
 
-router.get('/',
+router.get(
+  '/',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
@@ -38,7 +41,10 @@ router.get('/',
       const { instanceId } = req.params;
       const userId = req.user.sub;
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
@@ -47,13 +53,15 @@ router.get('/',
     } catch (error) {
       next(error);
     }
-  });
+  }
+);
 
 // STATUS CODE 1 INDEX SUCCESS
-// STATUS CODE 2 INPROGRESS 
+// STATUS CODE 2 INPROGRESS
 // STATUS CODE 3 INDEX FAILED
-// STATUS CODE UNDEFINE ALL 
-router.post('/all',
+// STATUS CODE UNDEFINE ALL
+router.post(
+  '/all',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getSourceStatusIndex, 'body'),
   checkRoles('SUPER'),
@@ -65,9 +73,11 @@ router.post('/all',
     } catch (error) {
       next(error);
     }
-  });
+  }
+);
 
-router.get('/:id',
+router.get(
+  '/:id',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getSourceSchema, 'params'),
   async (req, res, next) => {
@@ -76,7 +86,10 @@ router.get('/:id',
       const userId = req.user.sub;
 
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
@@ -88,8 +101,8 @@ router.get('/:id',
   }
 );
 
-
-router.post('/file',
+router.post(
+  '/file',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   uploadhandler,
@@ -100,26 +113,36 @@ router.post('/file',
       const userId = req.user.sub;
       const files = req.files;
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
       for (const file of files) {
         const body = { ...req.body }; // Clone body object
         body.instanceId = instanceId;
-        body.sourcetype = "FILE";
-        let totalSizeKB = files.reduce((total, file) => total + file.size, 0) / 1024;  //files in KB   
+        body.sourcetype = 'FILE';
+        let totalSizeKB =
+          files.reduce((total, file) => total + file.size, 0) / 1024; //files in KB
         if (totalSizeKB < 1) totalSizeKB = 1;
         body.storage_size = totalSizeKB;
-        const source = await service.create(body);
 
         const filePath = `uploads/${instanceId}/${file.filename}`;
         const new_name = file.filename;
-        const old_name = new_name.substr(14)
+        const old_name = new_name.substr(14);
 
         fs.rename(file.path, filePath, async (err) => {
-          if (err) return res.status(500).json({ error: 'Failed to store the file' });
-          
+          if (err)
+            return res.status(500).json({ error: 'Failed to store the file' });
+
+          const fileInfo = await openaiManager.uploadFile(filePath);
+
+          body.openai_id = fileInfo.fileId;
+          body.indexstatus = 4; // INDEX SUCCESS
+          const source = await service.create(body);
+
           const documentInfo = {
             url: filePath,
             newname: new_name,
@@ -129,43 +152,18 @@ router.post('/file',
           };
 
           await documentServ.create(documentInfo);
-
-          const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${source.id}`;
-          console.log('Callback Extractor URL:', callback);
-
-          const form = new FormData();
-          form.append('id', source.id);
-          form.append('file', fs.createReadStream(filePath)); // El primer argumento es el nombre del campo en la API de destino
-          // form.append('include_page_breaks', 'true'); // quitar para reindex
-          form.append('limit', -1);
-          form.append('path', "");
-          form.append('callback_url', callback);
-
-          const urlExtractor = `${config.moduleExtractor}/process`;
-
-          try {
-              const response = await axios.post(urlExtractor, form, {
-                headers: {
-                  ...form.getHeaders() // Es necesario incluir los encabezados de 'multipart/form-data'
-                }
-              });
-
-              console.log('Response data:', response.data);
-          } catch (error) {
-            console.error('Error al enviar el archivo al Extractor:', error.response ? error.response.data : error.message);
-          }
         });
-      };
+      }
 
-      res.status(201).json({message: "Source created successfully"});
+      res.status(201).json({ message: 'Source created successfully' });
     } catch (error) {
       next(error);
     }
   }
 );
 
-
-router.post('/web',
+router.post(
+  '/web',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   validatorHandler(createSourceSchema, 'body'),
@@ -174,7 +172,10 @@ router.post('/web',
       const { instanceId } = req.params;
       const userId = req.user.sub;
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
@@ -192,17 +193,19 @@ router.post('/web',
         limit: 500,
         mode: source.web_connector_type,
         extract_documents: false,
-        extract_multimedia: false
-      }
+        extract_multimedia: false,
+      };
 
       const urlScraper = `${config.moduleScraping}/process`;
 
       try {
         const response = await axios.post(urlScraper, data);
         console.log('Response data:', response.data);
-
       } catch (error) {
-        console.error('Error al enviar el archivo al Scraping:', error.response ? error.response.data : error.message);
+        console.error(
+          'Error al enviar el archivo al Scraping:',
+          error.response ? error.response.data : error.message
+        );
       }
 
       res.status(201).json(source);
@@ -214,52 +217,62 @@ router.post('/web',
 
 // STATUS CODE 4 INDEX SUCCESS
 // STATUS CODE 3 INDEX INPROGRESS
-// STATUS CODE 2 INDEX 
+// STATUS CODE 2 INDEX
 // STATUS CODE 1 EXTRACTION SUCCESS
 // STATUS CODE 0 INPROGRESS
 // STATUS CODE -1 EXTRACTION FAILED
 // STATUS CODE -2 EXTRACTION FAILED
-router.post('/status/:id',
+router.post(
+  '/status/:id',
   validatorHandler(getSourceSchema, 'params'),
   validatorHandler(updateStatusSourceSchema, 'body'),
   async (req, res, next) => {
     try {
       const { id } = req.params;
       const { status, processor, pages } = req.body;
-      console.log("Status: ", req.body)
-      let indexstatus = 0
+      console.log('Status: ', req.body);
+      let indexstatus = 0;
 
-      if (processor === 'text-extractor' || processor === "web-scraper") {
-        if (status === "SUCCESS") {
+      if (processor === 'text-extractor' || processor === 'web-scraper') {
+        if (status === 'SUCCESS') {
           const response = await pipelineServ.index(id, processor);
           if (response.success === false) indexstatus = -2;
           else indexstatus = 2; // TO DO INDEX
-        }
-        else if (status === "FAILED") indexstatus = -1;
+        } else if (status === 'FAILED') indexstatus = -1;
 
-        await service.update({ id: id, indexstatus: indexstatus, pages: pages });
+        await service.update({
+          id: id,
+          indexstatus: indexstatus,
+          pages: pages,
+        });
       }
 
       if (processor === 'eco-pipeline-index') {
-        if (status === "SUCCESS") {
-          indexstatus = 4 // DONE
-          const { tokens = null, chunks = null, vector_size = null, indexing_time = null, language = null } = req.body;
+        if (status === 'SUCCESS') {
+          indexstatus = 4; // DONE
+          const {
+            tokens = null,
+            chunks = null,
+            vector_size = null,
+            indexing_time = null,
+            language = null,
+          } = req.body;
           const completed_at = new Date().toISOString();
-          await service.update({ 
-            id: id, 
-            indexstatus: indexstatus, 
-            tokens: tokens, 
-            chunks: chunks, 
-            vector_size: vector_size, 
+          await service.update({
+            id: id,
+            indexstatus: indexstatus,
+            tokens: tokens,
+            chunks: chunks,
+            vector_size: vector_size,
             indexing_time: indexing_time,
             completed_at: completed_at,
-            language: language
+            language: language,
           });
-        } else if (status === "INPROGRESS") {
-          indexstatus = 3 // INPROGRESS
+        } else if (status === 'INPROGRESS') {
+          indexstatus = 3; // INPROGRESS
           await service.update({ id: id, indexstatus: indexstatus });
-        } else if (status === "FAILED") {
-          indexstatus = -3
+        } else if (status === 'FAILED') {
+          indexstatus = -3;
           await service.update({ id: id, indexstatus: indexstatus });
         }
       }
@@ -270,7 +283,8 @@ router.post('/status/:id',
   }
 );
 
-router.post('/reindex',
+router.post(
+  '/reindex',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   validatorHandler(updateSourceSchema, 'body'),
@@ -281,7 +295,10 @@ router.post('/reindex',
       const body = req.body;
 
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
@@ -293,18 +310,21 @@ router.post('/reindex',
         const form = new FormData();
         // form.append('id', body.id);
         // form.append('file', fs.createReadStream(document.url)); // El primer argumento es el nombre del campo en la API de destino
-        // form.append('limit', -1); 
-        // form.append('path', ""); 
+        // form.append('limit', -1);
+        // form.append('path', "");
         // form.append('callback_url', callback);
 
         try {
           const response = await axios.post(urlExtractor, form, {
-            headers: { ...form.getHeaders() }
+            headers: { ...form.getHeaders() },
           });
 
           console.log('Response data:', response.data);
         } catch (error) {
-          console.error('Error al reindexar el archivo al Extractor:', error.response ? error.response.data : error.message);
+          console.error(
+            'Error al reindexar el archivo al Extractor:',
+            error.response ? error.response.data : error.message
+          );
         }
       }
 
@@ -324,9 +344,11 @@ router.post('/reindex',
         try {
           const response = await axios.post(urlScraper);
           console.log('Response data:', response.data);
-
         } catch (error) {
-          console.error('Error al enviar el archivo al Scraping:', error.response ? error.response.data : error.message);
+          console.error(
+            'Error al enviar el archivo al Scraping:',
+            error.response ? error.response.data : error.message
+          );
         }
       }
 
@@ -339,7 +361,8 @@ router.post('/reindex',
   }
 );
 
-router.patch('/',
+router.patch(
+  '/',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   validatorHandler(updateSourceSchema, 'body'),
@@ -348,7 +371,10 @@ router.patch('/',
       const { instanceId } = req.params;
       const userId = req.user.sub;
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
@@ -363,7 +389,8 @@ router.patch('/',
   }
 );
 
-router.delete('/:id',
+router.delete(
+  '/:id',
   passport.authenticate('jwt', { session: false }),
   validatorHandler(getSourceSchema, 'params'),
   async (req, res, next) => {
@@ -372,11 +399,14 @@ router.delete('/:id',
       const userId = req.user.sub;
 
       if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(instanceId, userId);
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      console.log("Eliminating source", id)
+      console.log('Eliminating source', id);
       await service.delete(id);
 
       const indexUrl = `${config.modulePipeline}/index/${id}`;
@@ -384,7 +414,10 @@ router.delete('/:id',
         const response = await axios.delete(indexUrl);
         console.log('Eliminado de INDEX', response.data);
       } catch (error) {
-        console.error('Error al eliminar de INDEX:', error.response ? error.response.data : error.message);
+        console.error(
+          'Error al eliminar de INDEX:',
+          error.response ? error.response.data : error.message
+        );
       }
 
       res.status(201).json({ id });
@@ -395,4 +428,3 @@ router.delete('/:id',
 );
 
 module.exports = router;
-

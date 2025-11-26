@@ -1,11 +1,10 @@
-const { v4: uuidv4 } = require('uuid');
+// const { v4: uuidv4 } = require('uuid');
 const boom = require('@hapi/boom');
-const { models } = require('../libs/sequelize');  
+const { models } = require('../libs/sequelize');
 
 class SessionService {
-
   async create(data) {
-    const newSession = await  models.Session.create(data);
+    const newSession = await models.Session.create(data);
     return newSession;
   }
 
@@ -16,41 +15,41 @@ class SessionService {
 
   async findOne(id) {
     const session = await models.Session.findByPk(id);
-    if (!session)  throw boom.notFound('Session not found');
+    if (!session) throw boom.notFound('Session not found');
     return session;
   }
 
   async findByUser(userId) {
     const sessions = await models.Session.findAll({
-      where: { 'userId': userId }
+      where: { userId: userId },
     });
 
-    if (!sessions)  throw boom.notFound('Session not found');
-    
+    if (!sessions) throw boom.notFound('Session not found');
+
     return sessions;
   }
 
-  async findByAssistant( assistantId) {
+  async findByAssistant(assistantId) {
     const sessions = await models.Session.findAll({
-      where: { 'assistantId': assistantId }
+      where: { assistantId: assistantId },
     });
 
-    if (!sessions)  throw boom.notFound('Session not found');
-    
+    if (!sessions) throw boom.notFound('Session not found');
+
     return sessions;
   }
 
   async findByUserAssistant(userId, assistantId) {
     const sessions = await models.Session.findAll({
-      where: { 'userId': userId , 'assistantId': assistantId }
+      where: { userId: userId, assistantId: assistantId },
     });
 
-    if (!sessions)  throw boom.notFound('Session not found');
-    
+    if (!sessions) throw boom.notFound('Session not found');
+
     return sessions;
   }
 
-  async update( changes) {
+  async update(changes) {
     const model = await this.findOne(changes.id);
     const rta = await model.update(changes);
     return rta;
@@ -61,7 +60,6 @@ class SessionService {
     await model.destroy();
     return { rta: true };
   }
-
 }
 
 module.exports = SessionService;
