@@ -109,7 +109,7 @@ class OpenAIManager {
       }
 
       const stats = fs.statSync(file);
-      console.log(
+    console.log(
         `📄 Subiendo archivo: ${file} (${this.formatFileSize(stats.size)})`
       );
       fileStream = fs.createReadStream(file);
@@ -682,7 +682,7 @@ class OpenAIManager {
     });
 
     const lastMessage = messages.data[0];
-    const content =
+        const content =
       lastMessage.content &&
       lastMessage.content[0] &&
       lastMessage.content[0].text
@@ -1206,7 +1206,225 @@ class OpenAIManager {
 
     console.log('🏃 Iniciando run con streaming...');
 
-    const stream = await this.openai.beta.threads.runs.stream(
+    const stream = this.openai.beta.threads.runs.stream(
+      currentThreadId,
+      runData
+    );
+
+    let fullText = '';
+    let lastMessageId = null;
+    let runId = null;
+    let streamError = null;
+    let runStatus = 'starting';
+
+    // Evento: Thread creado o run iniciado
+    stream.on('threadCreated', (thread) => {
+      console.log('🧵 Thread creado por OpenAI:', thread.id);
+    });
+
+    stream.on('runCreated', (run) => {
+      runStatus = 'created';
+      console.log('🏃 Run creado por OpenAI:', run.id, '- Status:', run.status);
+    });
+
+    // Evento: Cambios en el run
+    stream.on('runInProgress', (run) => {
+      runStatus = 'in_progress';
+      console.log('⏳ Run en progreso:', run.id);
+    });
+
+    stream.on('runCompleted', (run) => {
+      runStatus = 'completed';
+      console.log('✅ Run completado por OpenAI:', run.id);
+    });
+
+    stream.on('runFailed', (run) => {
+      runStatus = 'failed';
+      console.log('❌ Run falló en OpenAI:', run.id);
+      console.log('   Razón:', run.last_error?.message || 'Desconocida');
+      streamError = new Error(`OpenAI Run Failed: ${run.last_error?.message || 'Unknown'}`);
+    });
+
+    stream.on('runCancelled', (run) => {
+      runStatus = 'cancelled';
+      console.log('⏹️  Run cancelado en OpenAI:', run.id);
+    });
+
+    stream.on('runExpired', (run) => {
+      runStatus = 'expired';
+      console.log('⏱️  Run expirado en OpenAI:', run.id);
+    });
+
+    // Manejar eventos del stream
+    stream.on('textDelta', (textDelta) => {
+      const chunk = textDelta.value;
+      fullText += chunk;
+      if (onChunk) {
+        try {
+          onChunk(chunk);
+        } catch (err) {
+          console.error('Error en onChunk callback:', err.message);
+        }
+      }
+    });
+
+    stream.on('messageDone', (message) => {
+      lastMessageId = message.id;
+      console.log('💬 Mensaje completado:', message.id);
+    });
+
+    stream.on('runStepDone', (runStep) => {
+      runId = runStep.run_id;
+      console.log('📝 Run step completado:', runStep.type);
+    });
+
+    // Eventos de herramientas (file_search, etc)
+    stream.on('toolCallCreated', (toolCall) => {
+      console.log('🔧 Herramienta activada:', toolCall.type);
+    });
+
+    stream.on('toolCallDone', (toolCall) => {
+      console.log('✅ Herramienta completada:', toolCall.type);
+    });
+
+    // Manejar errores del stream
+    stream.on('error', (error) => {
+      streamError = error;
+      
+      console.log('\n🚨 ======= ERROR EN STREAM =======');
+      console.log('Tipo de error:', error.constructor.name);
+      console.log('Mensaje:', error.message);
+      console.log('Código:', error.code || 'N/A');
+      
+      // Categorizar el tipo de error
+      if (error.message && error.message.includes('terminated')) {
+        console.log('📍 Origen: CONEXIÓN - Cliente cerró la conexión o timeout de red');
+      } else if (error.status) {
+        console.log(`📍 Origen: OPENAI API - HTTP ${error.status}`);
+        console.log('Detalle:', error.error || error.message);
+      } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        console.log('📍 Origen: RED - No se puede conectar a OpenAI');
+      } else if (error.type === 'invalid_request_error') {
+        console.log('📍 Origen: OPENAI - Solicitud inválida');
+      } else if (error.type === 'authentication_error') {
+        console.log('📍 Origen: OPENAI - Error de autenticación (API Key inválida)');
+      } else if (error.type === 'rate_limit_error') {
+        console.log('📍 Origen: OPENAI - Rate limit excedido');
+      } else if (error.type === 'server_error' || error.type === 'service_unavailable') {
+        console.log('📍 Origen: OPENAI - Servidor no disponible');
+      } else {
+        console.log('📍 Origen: DESCONOCIDO');
+      }
+      
+      console.log('================================\n');
+    });
+
+    // Esperar a que el stream complete usando done()
+    try {
+      await stream.done();
+      console.log('✅ ======= STREAMING COMPLETADO EXITOSAMENTE =======');
+      console.log(`   Caracteres recibidos: ${fullText.length}`);
+      console.log(`   Thread ID: ${currentThreadId}`);
+      console.log(`   Message ID: ${lastMessageId}`);
+      console.log(`   Run ID: ${runId}`);
+      console.log('====================================================\n');
+    } catch (error) {
+      console.log('\n⚠️  ======= STREAM TERMINADO CON ERROR =======');
+      console.log('Tipo:', error.constructor.name);
+      console.log('Mensaje:', error.message);
+      
+      // Categorizar el error
+      if (error.message && error.message.includes('terminated')) {
+        console.log('📍 Causa: CONEXIÓN - Stream terminado prematuramente');
+        console.log('   Posibles razones:');
+        console.log('   - Cliente cerró la conexión');
+        console.log('   - Timeout de red');
+        console.log('   - Proxy/firewall interrumpió la conexión');
+        streamError = error;
+      } else if (error.status) {
+        console.log(`📍 Causa: OPENAI API ERROR - HTTP ${error.status}`);
+        console.log('   Error de OpenAI:', error.error || error.message);
+        streamError = error;
+        throw error;
+      } else {
+        console.log('📍 Causa: ERROR DESCONOCIDO');
+        console.log('   Stack:', error.stack);
+        streamError = error;
+        throw error;
+      }
+      
+      console.log('============================================\n');
+    }
+
+    // Ejecutar onComplete siempre
+    console.log('\n📊 ======= RESUMEN DEL STREAM =======');
+    console.log('Run Status Final:', runStatus);
+    console.log('Texto recibido:', fullText.length, 'caracteres');
+    console.log('Error presente:', streamError ? 'SÍ' : 'NO');
+    if (streamError) {
+      console.log('Tipo de error:', streamError.constructor.name);
+      console.log('Mensaje:', streamError.message);
+    }
+    console.log('=====================================\n');
+
+    if (onComplete) {
+      try {
+        console.log(`🎯 Ejecutando onComplete con ${fullText.length} caracteres`);
+        onComplete(fullText);
+      } catch (err) {
+        console.error('Error en onComplete callback:', err.message);
+      }
+    } else {
+      console.log('⚠️  No hay callback onComplete definido');
+    }
+
+    return {
+      threadId: currentThreadId,
+      fullAnswer: fullText,
+      messageId: lastMessageId,
+      runId: runId,
+      runStatus: runStatus,
+      error: streamError,
+      errorType: streamError ? streamError.type || streamError.constructor.name : null,
+    };
+  }
+
+  /**
+   * Hacer pregunta al asistente con streaming (async iterator)
+   * @param {string} assistantId - ID del asistente
+   * @param {string} question - Pregunta a realizar
+   * @param {string} threadId - ID del thread existente (opcional)
+   * @param {object} options - Opciones adicionales
+   * @returns {AsyncGenerator} - Async iterator que yield cada chunk
+   */
+  async *askAssistantStreamIterator(assistantId, question, threadId = null, options = {}) {
+    console.log(`💬 Pregunta (streaming iterator): ${question}`);
+
+    // Crear o usar thread existente
+    let currentThreadId = threadId;
+    if (!currentThreadId) {
+      const thread = await this.createThread(options.metadata || null);
+      currentThreadId = thread.id;
+      console.log(`   Nuevo Thread ID: ${currentThreadId}`);
+    } else {
+      console.log(`   Usando thread existente: ${currentThreadId}`);
+    }
+
+    // Añadir mensaje del usuario
+    await this.createMessage(currentThreadId, question, 'user');
+
+    // Crear run con streaming
+    const runData = {
+      assistant_id: assistantId,
+    };
+
+    if (options.instructions) {
+      runData.instructions = options.instructions;
+    }
+
+    console.log('🏃 Iniciando run con streaming iterator...');
+
+    const stream = this.openai.beta.threads.runs.stream(
       currentThreadId,
       runData
     );
@@ -1215,12 +1433,20 @@ class OpenAIManager {
     let lastMessageId = null;
     let runId = null;
 
-    // Manejar eventos del stream
+    // Crear promesa para cada evento
+    const chunks = [];
+    let resolveNext = null;
+    let streamEnded = false;
+
     stream.on('textDelta', (textDelta) => {
       const chunk = textDelta.value;
       fullText += chunk;
-      if (onChunk) {
-        onChunk(chunk);
+      
+      if (resolveNext) {
+        resolveNext({ value: chunk, done: false });
+        resolveNext = null;
+      } else {
+        chunks.push(chunk);
       }
     });
 
@@ -1232,15 +1458,42 @@ class OpenAIManager {
       runId = runStep.run_id;
     });
 
-    // Esperar a que el stream complete
-    await stream.finalMessage();
+    stream.on('end', () => {
+      streamEnded = true;
+      if (resolveNext) {
+        resolveNext({ done: true });
+        resolveNext = null;
+      }
+    });
 
-    console.log('✅ Streaming completado');
+    // Esperar el stream en background
+    stream.done().catch((err) => {
+      console.error('Error en stream:', err);
+    });
 
-    if (onComplete) {
-      onComplete(fullText);
+    // Yield cada chunk
+    while (!streamEnded || chunks.length > 0) {
+      if (chunks.length > 0) {
+        yield chunks.shift();
+      } else if (!streamEnded) {
+        const nextChunk = await new Promise((resolve) => {
+          resolveNext = resolve;
+          setTimeout(() => {
+            if (resolveNext === resolve) {
+              resolve({ value: null, done: streamEnded });
+              resolveNext = null;
+            }
+          }, 100);
+        });
+
+        if (nextChunk.done) break;
+        if (nextChunk.value) yield nextChunk.value;
+      }
     }
 
+    console.log('✅ Streaming iterator completado');
+
+    // Retornar metadata final
     return {
       threadId: currentThreadId,
       fullAnswer: fullText,
@@ -1250,8 +1503,7 @@ class OpenAIManager {
   }
 
   /**
-   /**
-    * Chat completion con streaming (sin asistente, directo).
+   * Chat completion con streaming (sin asistente, directo).
     * Permite añadir varios vectorStoreIds utilizando options.vectorStoreIds (si el modelo/endpoint lo soporta).
     * @param {string} prompt - Pregunta o prompt
     * @param {function} onChunk - Callback para cada chunk: (text) => {}
@@ -1365,7 +1617,7 @@ class OpenAIManager {
 
     console.log('🏃 Iniciando run con event handlers...');
 
-    const stream = await this.openai.beta.threads.runs.stream(
+    const stream = this.openai.beta.threads.runs.stream(
       threadId,
       runData
     );
@@ -1449,8 +1701,8 @@ class OpenAIManager {
       stream.on('error', onError);
     }
 
-    // Esperar a que complete
-    await stream.finalMessage();
+    // Esperar a que complete usando done()
+    await stream.done();
 
     console.log('✅ Run con eventos completado');
 

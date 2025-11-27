@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
+const { instructions } = require('../../libs/openai-instruction');
 
 const AssistantService = require('../../services/assistant.service');
 const service = new AssistantService();
@@ -108,8 +109,7 @@ router.post(
 
       const assistantOpenAI = await openaiManager.createAssistant({
         name,
-        instructions:
-          'Eres un asistente de IA que responde preguntas sobre los documentos de la instancia.',
+        instructions: instructions,
         tools: [{ type: 'file_search' }],
       });
 
