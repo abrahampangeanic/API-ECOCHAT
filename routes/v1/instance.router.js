@@ -5,7 +5,11 @@ const boom = require('@hapi/boom');
 const instanceService = require('../../services/instance.service');
 const { checkRoles } = require('../../middlewares/auth.handler');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { createInstanceSchema, getInstanceSchema, updateInstanceSchema,  } = require('../../schemas/instance.schema');
+const {
+  createInstanceSchema,
+  getInstanceSchema,
+  updateInstanceSchema,
+} = require('../../schemas/instance.schema');
 
 const assistantRouter = require('./assistant.router');
 const assistantCollectionRouter = require('./assistantcollection.router');
@@ -23,9 +27,8 @@ const permissionsRouter = require('./permission.router');
 const statsRouter = require('./stats.router');
 const queryRouter = require('./query.router');
 
-
 const router = express.Router();
-const service = new instanceService();
+const instanceServ = new instanceService();
 
 router.use('/:instanceId/users', userRouter);
 router.use('/:instanceId/assistants', assistantRouter);
@@ -44,44 +47,52 @@ router.use('/:instanceId/permissions', permissionsRouter);
 router.use('/:instanceId/stats', statsRouter);
 router.use('/:instanceId/queries', queryRouter);
 
-router.get('/', 
-  passport.authenticate('jwt', {session: false}),
+router.get(
+  '/',
+  passport.authenticate('jwt', { session: false }),
   async (req, res, next) => {
     try {
       const userId = req.user.sub;
-      const instances = await service.findByUserBasic(userId);
+      const instances = await instanceServ.findByUserBasic(userId);
       res.json(instances);
     } catch (error) {
       next(error);
     }
-});
+  }
+);
 
-router.get('/all', 
-  passport.authenticate('jwt', {session: false}),
+router.get(
+  '/all',
+  passport.authenticate('jwt', { session: false }),
   checkRoles('SUPER'),
   async (req, res, next) => {
     try {
-      const instances = await service.find();
+      const instances = await instanceServ.find();
       res.json(instances);
     } catch (error) {
       next(error);
     }
-});
+  }
+);
 
-router.get('/:instanceId',
-  passport.authenticate('jwt', {session: false}),
+router.get(
+  '/:instanceId',
+  passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;
       const userId = req.user.sub;
 
-      if(req.user.role !== 'SUPER') {
-        const relationships = await service.checkInstancesByUser(instanceId, userId);
-        if(relationships.length === 0) throw boom.unauthorized();
+      if (req.user.role !== 'SUPER') {
+        const relationships = await instanceServ.checkInstancesByUser(
+          instanceId,
+          userId
+        );
+        if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const instance = await service.findOneFULL(instanceId);
+      const instance = await instanceServ.findOneFULL(instanceId);
       res.json(instance);
     } catch (error) {
       next(error);
@@ -89,30 +100,32 @@ router.get('/:instanceId',
   }
 );
 
-router.post('/',
-  passport.authenticate('jwt', {session: false}),
+router.post(
+  '/',
+  passport.authenticate('jwt', { session: false }),
   validatorHandler(createInstanceSchema, 'body'),
   async (req, res, next) => {
     try {
-        const userId = req.user.sub;
-        const body = req.body;
-        body.userId = userId;
-        const newinstance = await service.create(body);
-        res.status(201).json(newinstance);
+      const userId = req.user.sub;
+      const body = req.body;
+      body.userId = userId;
+      const newinstance = await instanceServ.create(body);
+      res.status(201).json(newinstance);
     } catch (error) {
       next(error);
     }
   }
 );
 
-router.patch('/',
-  passport.authenticate('jwt', {session: false}),
+router.patch(
+  '/',
+  passport.authenticate('jwt', { session: false }),
   validatorHandler(updateInstanceSchema, 'body'),
   async (req, res, next) => {
     try {
-      if(req.user.role !== 'SUPER')  throw boom.unauthorized();
+      if (req.user.role !== 'SUPER') throw boom.unauthorized();
       const body = req.body;
-      const instance = await service.update(body);
+      const instance = await instanceServ.update(body);
       res.json(instance);
     } catch (error) {
       next(error);
@@ -120,15 +133,16 @@ router.patch('/',
   }
 );
 
-router.delete('/:instanceId',
-  passport.authenticate('jwt', {session: false}),
+router.delete(
+  '/:instanceId',
+  passport.authenticate('jwt', { session: false }),
   validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
     try {
-      if(req.user.role !== 'SUPER')  throw boom.unauthorized();
+      if (req.user.role !== 'SUPER') throw boom.unauthorized();
       const { instanceId } = req.params;
-      await service.delete(instanceId);
-      res.status(201).json({instanceId});
+      await instanceServ.delete(instanceId);
+      res.status(201).json({ instanceId });
     } catch (error) {
       next(error);
     }
@@ -136,4 +150,3 @@ router.delete('/:instanceId',
 );
 
 module.exports = router;
-

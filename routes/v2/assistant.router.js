@@ -1,13 +1,13 @@
 const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
-const { instructions } = require('../../libs/openai-instruction');
 
 const AssistantService = require('../../services/assistant.service');
-const service = new AssistantService();
+const assistantService = new AssistantService();
 const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
-
+const AssistantCollectionService = require('../../services/assistantcollection.service');
+const assistantCollectionServ = new AssistantCollectionService();
 const validatorHandler = require('../../middlewares/validator.handler');
 const { getInstanceSchema } = require('../../schemas/instance.schema');
 const {
@@ -15,11 +15,16 @@ const {
   updateAssistantSchema,
   createAssistantSchema,
 } = require('../../schemas/assistant.schema');
+const { getAssistantWithCache } = require('../../cache/assistant.cache');
+
+// OpenAI Manager
 const { OpenAIManager } = require('../../libs/openai');
 const openaiManager = new OpenAIManager();
+const { instructionAssistant } = require('../../libs/openai-instruction');
 
 const router = express.Router({ mergeParams: true });
 
+// GET ASSISTANTS
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -37,7 +42,7 @@ router.get(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const assistant = await service.findByInstance(instanceId);
+      const assistant = await assistantService.findByInstance(instanceId);
       res.json(assistant);
     } catch (error) {
       next(error);
@@ -45,13 +50,14 @@ router.get(
   }
 );
 
+// GET PUBLIC ASSISTANT
 router.get(
   '/public',
   validatorHandler(getInstanceSchema, 'params'),
   async (req, res, next) => {
     try {
       const { instanceId } = req.params;
-      const assistant = await service.findByInstancePublic(instanceId);
+      const assistant = await assistantService.findByInstancePublic(instanceId);
       res.json(assistant);
     } catch (error) {
       next(error);
@@ -59,6 +65,7 @@ router.get(
   }
 );
 
+// GET ASSISTANT
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -76,14 +83,16 @@ router.get(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const instance = await service.findOne(id);
-      res.json(instance);
+      const assistant = await getAssistantWithCache(id);
+      if (!assistant) throw boom.notFound('Assistant not found');
+      res.json(assistant);
     } catch (error) {
       next(error);
     }
   }
 );
 
+// CREATE ASSISTANT
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -105,17 +114,19 @@ router.post(
 
       const instance = await instanceServ.findOne(instanceId);
       if (!instance) throw boom.notFound('Instance not found');
-      const name = `${instance.name} - ${body.name}`;
 
+      // Crear asistente en OpenAI
+      const name = `${instance.name} - ${body.name}`;
       const assistantOpenAI = await openaiManager.createAssistant({
         name,
-        instructions: instructions,
+        instructions: instructionAssistant,
         tools: [{ type: 'file_search' }],
       });
+      body.openai_id = assistantOpenAI.id;
 
       body.instanceId = instanceId;
-      body.openai_id = assistantOpenAI.id;
-      const assistantObject = await service.create(body);
+
+      const assistantObject = await assistantService.create(body);
       res.status(201).json(assistantObject);
     } catch (error) {
       next(error);
@@ -123,6 +134,7 @@ router.post(
   }
 );
 
+// UPDATE ASSISTANT
 router.patch(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -141,7 +153,7 @@ router.patch(
 
       if (relationships.length === 0) throw boom.unauthorized();
 
-      const assistant = await service.update(body);
+      const assistant = await assistantService.update(body);
       res.json(assistant);
     } catch (error) {
       next(error);
@@ -149,6 +161,7 @@ router.patch(
   }
 );
 
+// DELETE ASSISTANT
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -165,7 +178,8 @@ router.delete(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      await service.delete(id);
+      await assistantService.delete(id);
+      await assistantCollectionServ.deleteByAssistant(id);
       res.status(201).json({ id });
     } catch (error) {
       next(error);

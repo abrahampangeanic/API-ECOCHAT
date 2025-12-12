@@ -1,6 +1,11 @@
 const { config } = require('../config/config');
 const OpenAI = require('openai');
 const fs = require('fs');
+const {
+  instructionsWebSearch,
+  instructionAssistant,
+  // instructions,
+} = require('./openai-instruction');
 
 // Instancia principal de OpenAI
 const openai = new OpenAI({
@@ -82,7 +87,7 @@ class OpenAIManager {
    * @returns {object} - { success, id }
    */
   async deleteVectorStore(vectorStoreId) {
-    await this.openai.vectorStores.del(vectorStoreId);
+    await this.openai.vectorStores.delete(vectorStoreId);
     console.log(`✅ Vector store eliminado: ${vectorStoreId}`);
     return { success: true, id: vectorStoreId };
   }
@@ -109,7 +114,7 @@ class OpenAIManager {
       }
 
       const stats = fs.statSync(file);
-    console.log(
+      console.log(
         `📄 Subiendo archivo: ${file} (${this.formatFileSize(stats.size)})`
       );
       fileStream = fs.createReadStream(file);
@@ -176,10 +181,9 @@ class OpenAIManager {
    * @returns {object} - Información del archivo
    */
   async getVectorStoreFile(vectorStoreId, fileId) {
-    const file = await this.openai.beta.vectorStores.files.retrieve(
-      vectorStoreId,
-      fileId
-    );
+    const file = await this.openai.vectorStores.files.retrieve(fileId, {
+      vector_store_id: vectorStoreId,
+    });
     return file;
   }
 
@@ -190,7 +194,19 @@ class OpenAIManager {
    * @returns {object} - { success, fileId }
    */
   async deleteVectorStoreFile(vectorStoreId, fileId) {
-    await this.openai.beta.vectorStores.files.del(vectorStoreId, fileId);
+    console.log(
+      `🔗 Eliminando archivo ${fileId} del vector store ${vectorStoreId}...`
+    );
+
+    const file = await this.getVectorStoreFile(vectorStoreId, fileId);
+    if (!file) {
+      console.log(`❌ Archivo no encontrado: ${fileId}`);
+      return { success: false, fileId };
+    }
+
+    await this.openai.vectorStores.files.delete(fileId, {
+      vector_store_id: vectorStoreId,
+    });
     console.log(`✅ Archivo removido del vector store: ${fileId}`);
     return { success: true, fileId };
   }
@@ -227,7 +243,7 @@ class OpenAIManager {
    * @returns {object} - { success, fileId }
    */
   async deleteFile(fileId) {
-    await this.openai.files.del(fileId);
+    await this.openai.files.delete(fileId);
     console.log(`✅ Archivo eliminado de OpenAI: ${fileId}`);
     return { success: true, fileId };
   }
@@ -489,7 +505,13 @@ class OpenAIManager {
    * @param {object} options.metadata - Metadata para el mensaje
    * @returns {object} - { threadId, answer, messageId, runId }
    */
-  async askAssistant(assistantId, question, threadId = null, options = {}) {
+  async askAssistant(
+    assistantId,
+    question,
+    threadId = null,
+    options = {},
+    allowedDomains = []
+  ) {
     console.log(`💬 Pregunta: ${question}`);
 
     // Crear o usar thread existente
@@ -502,25 +524,77 @@ class OpenAIManager {
       console.log(`   Usando thread existente: ${currentThreadId}`);
     }
 
-    // Añadir mensaje del usuario
+    if (allowedDomains.length > 0) {
+      // Realizar búsqueda web y agregar contexto
+      const summaryWebSearch = await this.runWebSearch(
+        question,
+        allowedDomains
+      );
+
+      // Formato mejorado para que el asistente reconozca el contexto
+      const contextMessage = `📋 **CONTEXTO DE BÚSQUEDA WEB VERIFICADO:**
+        ${summaryWebSearch}
+      -------------------------------------------------------------------------------------------- 
+      --------------------------------------------------------------------------------------------
+     ℹ️ Esta información proviene de una búsqueda web en dominios autorizados y es válida para responder al usuario. Úsala y cítala como "Según búsqueda web: [URLs]".`;
+
+      console.log(`🔍 Contexto web inyectado:`, contextMessage);
+      await this.createMessage(currentThreadId, contextMessage, 'user');
+    }
     await this.createMessage(currentThreadId, question, 'user');
 
     // Ejecutar asistente y esperar respuesta
     const result = await this.createAndWaitRun(
       currentThreadId,
       assistantId,
-      { instructions: options.instructions },
+      { instructions: instructionAssistant },
       true
     );
 
-    console.log(`✅ Respuesta obtenida`);
+    console.log(`✅ Respuesta obtenida`, result);
 
     return {
       threadId: currentThreadId,
       answer: result.answer,
       messageId: result.messageId,
       runId: result.runId,
+      input_tokens: result.input_tokens,
+      output_tokens: result.output_tokens,
     };
+  }
+
+  cleanDomains(allowedDomains = []) {
+    return allowedDomains.map((domain) => {
+      return domain
+        .replace(/^https?:\/\//, '') // Remover protocolo
+        .replace(/^www\./, '') // Remover www.
+        .replace(/\/$/, ''); // Remover trailing slash
+    });
+  }
+
+  async runWebSearch(question, allowedDomains = []) {
+    // Limpiar dominios: remover https://, http://, www., y trailing /
+
+    const resp = await this.openai.responses.create({
+      model: 'gpt-4.1',
+      input: [
+        {
+          role: 'system',
+          content: instructionsWebSearch,
+        },
+        { role: 'user', content: question },
+      ],
+      tools: [
+        {
+          type: 'web_search',
+          filters: {
+            allowed_domains: allowedDomains, // Usar dominios limpios
+          },
+        },
+      ],
+    });
+
+    return resp.output_text; // resumen listo para inyectar
   }
 
   /**
@@ -682,7 +756,7 @@ class OpenAIManager {
     });
 
     const lastMessage = messages.data[0];
-        const content =
+    const content =
       lastMessage.content &&
       lastMessage.content[0] &&
       lastMessage.content[0].text
@@ -1241,8 +1315,14 @@ class OpenAIManager {
     stream.on('runFailed', (run) => {
       runStatus = 'failed';
       console.log('❌ Run falló en OpenAI:', run.id);
-      console.log('   Razón:', run.last_error?.message || 'Desconocida');
-      streamError = new Error(`OpenAI Run Failed: ${run.last_error?.message || 'Unknown'}`);
+      console.log(
+        '   Razón:',
+        run.last_error.message || 'Desconocida',
+        run.last_error
+      );
+      streamError = new Error(
+        `OpenAI Run Failed: ${run.last_error.message || 'Unknown'}`
+      );
     });
 
     stream.on('runCancelled', (run) => {
@@ -1290,15 +1370,17 @@ class OpenAIManager {
     // Manejar errores del stream
     stream.on('error', (error) => {
       streamError = error;
-      
+
       console.log('\n🚨 ======= ERROR EN STREAM =======');
       console.log('Tipo de error:', error.constructor.name);
       console.log('Mensaje:', error.message);
       console.log('Código:', error.code || 'N/A');
-      
+
       // Categorizar el tipo de error
       if (error.message && error.message.includes('terminated')) {
-        console.log('📍 Origen: CONEXIÓN - Cliente cerró la conexión o timeout de red');
+        console.log(
+          '📍 Origen: CONEXIÓN - Cliente cerró la conexión o timeout de red'
+        );
       } else if (error.status) {
         console.log(`📍 Origen: OPENAI API - HTTP ${error.status}`);
         console.log('Detalle:', error.error || error.message);
@@ -1307,15 +1389,20 @@ class OpenAIManager {
       } else if (error.type === 'invalid_request_error') {
         console.log('📍 Origen: OPENAI - Solicitud inválida');
       } else if (error.type === 'authentication_error') {
-        console.log('📍 Origen: OPENAI - Error de autenticación (API Key inválida)');
+        console.log(
+          '📍 Origen: OPENAI - Error de autenticación (API Key inválida)'
+        );
       } else if (error.type === 'rate_limit_error') {
         console.log('📍 Origen: OPENAI - Rate limit excedido');
-      } else if (error.type === 'server_error' || error.type === 'service_unavailable') {
+      } else if (
+        error.type === 'server_error' ||
+        error.type === 'service_unavailable'
+      ) {
         console.log('📍 Origen: OPENAI - Servidor no disponible');
       } else {
         console.log('📍 Origen: DESCONOCIDO');
       }
-      
+
       console.log('================================\n');
     });
 
@@ -1332,7 +1419,7 @@ class OpenAIManager {
       console.log('\n⚠️  ======= STREAM TERMINADO CON ERROR =======');
       console.log('Tipo:', error.constructor.name);
       console.log('Mensaje:', error.message);
-      
+
       // Categorizar el error
       if (error.message && error.message.includes('terminated')) {
         console.log('📍 Causa: CONEXIÓN - Stream terminado prematuramente');
@@ -1352,7 +1439,7 @@ class OpenAIManager {
         streamError = error;
         throw error;
       }
-      
+
       console.log('============================================\n');
     }
 
@@ -1369,7 +1456,9 @@ class OpenAIManager {
 
     if (onComplete) {
       try {
-        console.log(`🎯 Ejecutando onComplete con ${fullText.length} caracteres`);
+        console.log(
+          `🎯 Ejecutando onComplete con ${fullText.length} caracteres`
+        );
         onComplete(fullText);
       } catch (err) {
         console.error('Error en onComplete callback:', err.message);
@@ -1385,7 +1474,9 @@ class OpenAIManager {
       runId: runId,
       runStatus: runStatus,
       error: streamError,
-      errorType: streamError ? streamError.type || streamError.constructor.name : null,
+      errorType: streamError
+        ? streamError.type || streamError.constructor.name
+        : null,
     };
   }
 
@@ -1397,7 +1488,12 @@ class OpenAIManager {
    * @param {object} options - Opciones adicionales
    * @returns {AsyncGenerator} - Async iterator que yield cada chunk
    */
-  async *askAssistantStreamIterator(assistantId, question, threadId = null, options = {}) {
+  async *askAssistantStreamIterator(
+    assistantId,
+    question,
+    threadId = null,
+    options = {}
+  ) {
     console.log(`💬 Pregunta (streaming iterator): ${question}`);
 
     // Crear o usar thread existente
@@ -1441,7 +1537,7 @@ class OpenAIManager {
     stream.on('textDelta', (textDelta) => {
       const chunk = textDelta.value;
       fullText += chunk;
-      
+
       if (resolveNext) {
         resolveNext({ value: chunk, done: false });
         resolveNext = null;
@@ -1504,14 +1600,14 @@ class OpenAIManager {
 
   /**
    * Chat completion con streaming (sin asistente, directo).
-    * Permite añadir varios vectorStoreIds utilizando options.vectorStoreIds (si el modelo/endpoint lo soporta).
-    * @param {string} prompt - Pregunta o prompt
-    * @param {function} onChunk - Callback para cada chunk: (text) => {}
-    * @param {function} onComplete - Callback al completar: (fullText) => {}
-    * @param {object} options - Opciones (model, temperature, max_tokens, vectorStoreIds, etc)
-    *    - options.vectorStoreIds: array de IDs de vector store para el contexto (si aplica)
-    * @returns {object} - { fullText, usage }
-    */
+   * Permite añadir varios vectorStoreIds utilizando options.vectorStoreIds (si el modelo/endpoint lo soporta).
+   * @param {string} prompt - Pregunta o prompt
+   * @param {function} onChunk - Callback para cada chunk: (text) => {}
+   * @param {function} onComplete - Callback al completar: (fullText) => {}
+   * @param {object} options - Opciones (model, temperature, max_tokens, vectorStoreIds, etc)
+   *    - options.vectorStoreIds: array de IDs de vector store para el contexto (si aplica)
+   * @returns {object} - { fullText, usage }
+   */
   async chatCompletionStream(
     prompt,
     onChunk = null,
@@ -1617,10 +1713,7 @@ class OpenAIManager {
 
     console.log('🏃 Iniciando run con event handlers...');
 
-    const stream = this.openai.beta.threads.runs.stream(
-      threadId,
-      runData
-    );
+    const stream = this.openai.beta.threads.runs.stream(threadId, runData);
 
     let fullText = '';
     let lastMessageId = null;
@@ -1773,13 +1866,13 @@ class OpenAIManager {
    */
   async createResponse(input, config = {}) {
     const {
-      model = 'gpt-4o-2024-11-20',
+      model = 'gpt-4.1',
       instructions = 'Eres un asistente útil.',
       vectorStoreIds = [],
       maxNumResults = 3,
-      includeSearchResults = false,
       metadata = null,
       temperature = 1,
+      allowedDomains = [],
     } = config;
 
     console.log('🚀 Creando respuesta con Responses API...');
@@ -1789,6 +1882,7 @@ class OpenAIManager {
       input,
       instructions,
       temperature,
+      tool_choice: 'auto',
     };
 
     // Configurar herramientas si hay vector stores
@@ -1802,20 +1896,28 @@ class OpenAIManager {
       ];
     }
 
-    // Incluir resultados de búsqueda si se solicita
-    if (includeSearchResults) {
-      requestData.include = ['output[0].file_search_call.search_results'];
+    if (allowedDomains.length > 0) {
+      requestData.tools.push({
+        type: 'web_search',
+        filters: {
+          allowed_domains: allowedDomains,
+        },
+      });
     }
+
+    // // Incluir resultados de búsqueda si se solicita
+    // if (includeSearchResults) {
+    //   requestData.include = [
+    //     'output[0].file_search_call.search_results',
+    //     'output[0].web_search_call.action.sources',
+    //   ];
+    // }
 
     if (metadata) {
       requestData.metadata = metadata;
     }
 
-    console.log('🔍 Request data:', requestData);
-
     const response = await this.openai.responses.create(requestData);
-
-    console.log('✅ Respuesta creada', response);
 
     // Extraer información de la respuesta
     const output =
@@ -1829,9 +1931,10 @@ class OpenAIManager {
         text = output.content[0].text || '';
       }
 
-      // Obtener resultados de búsqueda si están disponibles
-      if (output.file_search_call && output.file_search_call.search_results) {
-        searchResults = output.file_search_call.search_results;
+      const responseAssistant =
+        response.output.find((item) => item.role === 'assistant') || null;
+      if (responseAssistant) {
+        text = responseAssistant.content[0].text || '';
       }
     }
 

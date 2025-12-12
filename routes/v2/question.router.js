@@ -3,7 +3,7 @@ const express = require('express');
 // const boom = require('@hapi/boom');
 const passport = require('passport');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { instructions } = require('../../libs/openai-instruction');
+const { instructionAssistant } = require('../../libs/openai-instruction');
 
 const QueryService = require('../../services/query.service');
 const queryServ = new QueryService();
@@ -19,6 +19,7 @@ const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
 
+// PRIVATE QUESTION (Requires authentication)
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -74,7 +75,7 @@ router.post(
   }
 );
 
-// Response without context
+// PUBLIC QUESTION (Without context)
 router.post(
   '/public-ask-light',
   validatorHandler(createQuestionSchema, 'body'),
@@ -83,6 +84,19 @@ router.post(
       const { assistantId, question, sessionId } = req.body;
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await getAssistantWithCache(assistantId);
+      const allowedDomains = [];
+
+      if (assistant.collections) {
+        assistant.collections.map((collection) => {
+          collection.sources.map((source) => {
+            if (source.sourcetype === 'WEB') {
+              allowedDomains.push(source.reference);
+            }
+          });
+        });
+      }
+
+      const cleanAllowedDomains = openaiManager.cleanDomains(allowedDomains);
 
       const vectorStoreIds = assistant.collections.map(
         (collection) => collection.openai_id
@@ -92,7 +106,8 @@ router.post(
 
       const response = await openaiManager.createResponse(question, {
         vectorStoreIds: vectorStoreIds,
-        instructions: instructions,
+        instructions: instructionAssistant,
+        allowedDomains: cleanAllowedDomains,
       });
 
       const queryId = uuidv4();
@@ -128,7 +143,7 @@ router.post(
   }
 );
 
-// Response with context
+// PUBLIC QUESTION (With context)
 router.post(
   '/public-ask-context',
   validatorHandler(createQuestionSchema, 'body'),
@@ -137,13 +152,27 @@ router.post(
       const { assistantId, question, sessionId } = req.body;
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await getAssistantWithCache(assistantId);
+      const allowedDomains = [];
+
+      if (assistant.collections) {
+        assistant.collections.map((collection) => {
+          collection.sources.map((source) => {
+            if (source.sourcetype === 'WEB') {
+              allowedDomains.push(source.reference);
+            }
+          });
+        });
+      }
+
+      const cleanAllowedDomains = openaiManager.cleanDomains(allowedDomains);
 
       const queryOpenai = await openaiManager.askAssistant(
-        assistantId,
+        assistant.openai_id,
         question,
-        sessionId
+        sessionId,
+        { instructions: instructionAssistant },
+        cleanAllowedDomains
       );
-      const response = queryOpenai.answer;
 
       const queryId = uuidv4();
       const created = new Date();
@@ -152,9 +181,9 @@ router.post(
       const queryData = {
         id: queryId,
         message_in: question,
-        message_out: response.output_text,
-        input_tokens: response.input_tokens,
-        output_tokens: response.output_tokens,
+        message_out: queryOpenai.answer,
+        input_tokens: queryOpenai.input_tokens,
+        output_tokens: queryOpenai.output_tokens,
         feedback: 0,
         feedback_message: '',
         refs: null,
@@ -193,7 +222,7 @@ router.post(
 
       const options = {
         vectorStoreIds: vectorStoreIds,
-        instructions: instructions,
+        instructions: instructionAssistant,
       };
 
       // Set headers for streaming response

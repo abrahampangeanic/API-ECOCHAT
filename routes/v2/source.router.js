@@ -1,30 +1,26 @@
 const express = require('express');
 const passport = require('passport');
 const boom = require('@hapi/boom');
-const FormData = require('form-data');
 const fs = require('fs');
-const axios = require('axios');
-const { config } = require('../../config/config');
-const { checkRoles } = require('../../middlewares/auth.handler');
 
 const SourceService = require('../../services/source.service');
-const service = new SourceService();
+const sourceService = new SourceService();
 const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 const DocumentService = require('../../services/document.service');
 const documentServ = new DocumentService();
-const PipelineService = require('../../services/pipeline.service');
-const pipelineServ = new PipelineService();
+
+const CollectionSourceService = require('../../services/collectionsource.service');
+const collectionSourceServ = new CollectionSourceService();
+const CollectionService = require('../../services/collection.service');
+const collectionServ = new CollectionService();
 
 const validatorHandler = require('../../middlewares/validator.handler');
 const uploadhandler = require('../../middlewares/upload.handler');
 const { getInstanceSchema } = require('../../schemas/instance.schema');
 const {
   getSourceSchema,
-  updateSourceSchema,
   createSourceSchema,
-  updateStatusSourceSchema,
-  getSourceStatusIndex,
   createSourceFileSchema,
 } = require('../../schemas/source.schema');
 const { OpenAIManager } = require('../../libs/openai');
@@ -48,28 +44,8 @@ router.get(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const source = await service.findByInstance(instanceId);
+      const source = await sourceService.findByInstance(instanceId);
       res.json(source);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-// STATUS CODE 1 INDEX SUCCESS
-// STATUS CODE 2 INPROGRESS
-// STATUS CODE 3 INDEX FAILED
-// STATUS CODE UNDEFINE ALL
-router.post(
-  '/all',
-  passport.authenticate('jwt', { session: false }),
-  validatorHandler(getSourceStatusIndex, 'body'),
-  checkRoles('SUPER'),
-  async (req, res, next) => {
-    try {
-      const { status } = req.body;
-      const sources = await service.findAllByStatus(status);
-      res.json(sources);
     } catch (error) {
       next(error);
     }
@@ -93,7 +69,7 @@ router.get(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const instance = await service.findOne(id);
+      const instance = await sourceService.findOne(id);
       res.json(instance);
     } catch (error) {
       next(error);
@@ -101,6 +77,7 @@ router.get(
   }
 );
 
+// CREATE SOURCE FILE
 router.post(
   '/file',
   passport.authenticate('jwt', { session: false }),
@@ -141,7 +118,7 @@ router.post(
 
           body.openai_id = fileInfo.fileId;
           body.indexstatus = 4; // INDEX SUCCESS
-          const source = await service.create(body);
+          const source = await sourceService.create(body);
 
           const documentInfo = {
             url: filePath,
@@ -162,6 +139,7 @@ router.post(
   }
 );
 
+// CREATE SOURCE WEB
 router.post(
   '/web',
   passport.authenticate('jwt', { session: false }),
@@ -181,32 +159,8 @@ router.post(
 
       const body = req.body;
       body.instanceId = instanceId;
-      const source = await service.create(body);
-
-      const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${source.id}`;
-      console.log('Callback Extractor URL:', callback);
-
-      const data = {
-        id: source.id,
-        url: source.reference,
-        callback_url: callback,
-        limit: 500,
-        mode: source.web_connector_type,
-        extract_documents: false,
-        extract_multimedia: false,
-      };
-
-      const urlScraper = `${config.moduleScraping}/process`;
-
-      try {
-        const response = await axios.post(urlScraper, data);
-        console.log('Response data:', response.data);
-      } catch (error) {
-        console.error(
-          'Error al enviar el archivo al Scraping:',
-          error.response ? error.response.data : error.message
-        );
-      }
+      body.indexstatus = 4; // INDEX SUCCESS
+      const source = await sourceService.create(body);
 
       res.status(201).json(source);
     } catch (error) {
@@ -215,180 +169,7 @@ router.post(
   }
 );
 
-// STATUS CODE 4 INDEX SUCCESS
-// STATUS CODE 3 INDEX INPROGRESS
-// STATUS CODE 2 INDEX
-// STATUS CODE 1 EXTRACTION SUCCESS
-// STATUS CODE 0 INPROGRESS
-// STATUS CODE -1 EXTRACTION FAILED
-// STATUS CODE -2 EXTRACTION FAILED
-router.post(
-  '/status/:id',
-  validatorHandler(getSourceSchema, 'params'),
-  validatorHandler(updateStatusSourceSchema, 'body'),
-  async (req, res, next) => {
-    try {
-      const { id } = req.params;
-      const { status, processor, pages } = req.body;
-      console.log('Status: ', req.body);
-      let indexstatus = 0;
-
-      if (processor === 'text-extractor' || processor === 'web-scraper') {
-        if (status === 'SUCCESS') {
-          const response = await pipelineServ.index(id, processor);
-          if (response.success === false) indexstatus = -2;
-          else indexstatus = 2; // TO DO INDEX
-        } else if (status === 'FAILED') indexstatus = -1;
-
-        await service.update({
-          id: id,
-          indexstatus: indexstatus,
-          pages: pages,
-        });
-      }
-
-      if (processor === 'eco-pipeline-index') {
-        if (status === 'SUCCESS') {
-          indexstatus = 4; // DONE
-          const {
-            tokens = null,
-            chunks = null,
-            vector_size = null,
-            indexing_time = null,
-            language = null,
-          } = req.body;
-          const completed_at = new Date().toISOString();
-          await service.update({
-            id: id,
-            indexstatus: indexstatus,
-            tokens: tokens,
-            chunks: chunks,
-            vector_size: vector_size,
-            indexing_time: indexing_time,
-            completed_at: completed_at,
-            language: language,
-          });
-        } else if (status === 'INPROGRESS') {
-          indexstatus = 3; // INPROGRESS
-          await service.update({ id: id, indexstatus: indexstatus });
-        } else if (status === 'FAILED') {
-          indexstatus = -3;
-          await service.update({ id: id, indexstatus: indexstatus });
-        }
-      }
-      res.status(201).json({ message: 'Callback successful' });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.post(
-  '/reindex',
-  passport.authenticate('jwt', { session: false }),
-  validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(updateSourceSchema, 'body'),
-  async (req, res, next) => {
-    try {
-      const { instanceId } = req.params;
-      const userId = req.user.sub;
-      const body = req.body;
-
-      if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(
-          instanceId,
-          userId
-        );
-        if (relationships.length === 0) throw boom.unauthorized();
-      }
-
-      // const callback = `${config.apiUrl}/api/v1/instances/0/sources/status/${body.id}`;
-
-      if (body.sourcetype === 'FILE') {
-        // const document = await documentServ.findBySource(body.id);
-        const urlExtractor = `${config.moduleExtractor}/re-process/${body.id}`;
-        const form = new FormData();
-        // form.append('id', body.id);
-        // form.append('file', fs.createReadStream(document.url)); // El primer argumento es el nombre del campo en la API de destino
-        // form.append('limit', -1);
-        // form.append('path', "");
-        // form.append('callback_url', callback);
-
-        try {
-          const response = await axios.post(urlExtractor, form, {
-            headers: { ...form.getHeaders() },
-          });
-
-          console.log('Response data:', response.data);
-        } catch (error) {
-          console.error(
-            'Error al reindexar el archivo al Extractor:',
-            error.response ? error.response.data : error.message
-          );
-        }
-      }
-
-      if (body.sourcetype === 'WEB') {
-        // const data = {
-        //   id: body.id,
-        //   url: body.reference,
-        //   callback_url: callback,
-        //   limit: 500,
-        //   mode: body.web_connector_type,
-        //   extract_documents: false,
-        //   extract_multimedia: false
-        // }
-
-        const urlScraper = `${config.moduleScraping}/re-process/${body.id}`;
-
-        try {
-          const response = await axios.post(urlScraper);
-          console.log('Response data:', response.data);
-        } catch (error) {
-          console.error(
-            'Error al enviar el archivo al Scraping:',
-            error.response ? error.response.data : error.message
-          );
-        }
-      }
-
-      await service.update({ id: body.id, indexstatus: 0, pages: 0 });
-
-      res.status(201).json({ message: 'reindex successful' });
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
-router.patch(
-  '/',
-  passport.authenticate('jwt', { session: false }),
-  validatorHandler(getInstanceSchema, 'params'),
-  validatorHandler(updateSourceSchema, 'body'),
-  async (req, res, next) => {
-    try {
-      const { instanceId } = req.params;
-      const userId = req.user.sub;
-      if (req.user.role !== 'SUPER') {
-        const relationships = await instanceServ.checkInstancesByUser(
-          instanceId,
-          userId
-        );
-        if (relationships.length === 0) throw boom.unauthorized();
-      }
-
-      const body = req.body;
-      body.instanceId = instanceId;
-
-      const source = await service.update(body);
-      res.json(source);
-    } catch (error) {
-      next(error);
-    }
-  }
-);
-
+// DELETE SOURCE
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -406,19 +187,36 @@ router.delete(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      console.log('Eliminating source', id);
-      await service.delete(id);
+      const source = await sourceService.findOne(id);
+      if (!source) throw boom.notFound('Source not found');
 
-      const indexUrl = `${config.modulePipeline}/index/${id}`;
-      try {
-        const response = await axios.delete(indexUrl);
-        console.log('Eliminado de INDEX', response.data);
-      } catch (error) {
-        console.error(
-          'Error al eliminar de INDEX:',
-          error.response ? error.response.data : error.message
+      if (source.sourcetype === 'FILE') {
+        const collectionSources = await collectionSourceServ.findAllBySource(
+          id
         );
+        if (collectionSources.length > 0) {
+          for (const collectionSource of collectionSources) {
+            const collection = await collectionServ.findOne(
+              collectionSource.collectionId
+            );
+            if (!collection) throw boom.notFound('Collection not found');
+            const vectorStoreFile = await openaiManager.deleteVectorStoreFile(
+              collection.openai_id,
+              source.openai_id
+            );
+            if (!vectorStoreFile)
+              throw boom.notFound('Vector store file not deleted');
+          }
+        }
+        const vectorStoreFile = await openaiManager.deleteFile(
+          source.openai_id
+        );
+        if (!vectorStoreFile)
+          throw boom.notFound('Vector store file not deleted');
       }
+
+      console.log('Eliminating source', id);
+      await sourceService.delete(id);
 
       res.status(201).json({ id });
     } catch (error) {

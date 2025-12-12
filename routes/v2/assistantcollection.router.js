@@ -3,7 +3,7 @@ const passport = require('passport');
 const boom = require('@hapi/boom');
 
 const AssistantCollectionService = require('../../services/assistantcollection.service');
-const service = new AssistantCollectionService();
+const assistantCollectionServ = new AssistantCollectionService();
 const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 const CollectionService = require('../../services/collection.service');
@@ -17,11 +17,14 @@ const {
   createAssistantCollectionSchema,
   getAssistantCollectionSchema,
 } = require('../../schemas/assistantcollection.schema');
+
+// OpenAI Manager
 const { OpenAIManager } = require('../../libs/openai');
 const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
 
+// CREATE ASSISTANT COLLECTION
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -47,11 +50,13 @@ router.post(
       const collection = await collectionServ.findOne(body.collectionId);
       if (!collection) throw boom.notFound('Collection not found');
 
+      // // Agregar vector store al asistente en OpenAI
       await openaiManager.addVectorStoreToAssistant(
         assistant.openai_id,
         collection.openai_id
       );
-      const assistantCollection = await service.create(body);
+
+      const assistantCollection = await assistantCollectionServ.create(body);
       res.status(201).json(assistantCollection);
     } catch (error) {
       next(error);
@@ -59,6 +64,7 @@ router.post(
   }
 );
 
+// DELETE ASSISTANT COLLECTION
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -75,7 +81,7 @@ router.delete(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      await service.delete(id);
+      await assistantCollectionServ.delete(id);
       res.status(201).json({ id });
     } catch (error) {
       next(error);

@@ -3,9 +3,13 @@ const passport = require('passport');
 const boom = require('@hapi/boom');
 
 const CollectionService = require('../../services/collection.service');
-const service = new CollectionService();
+const collectionService = new CollectionService();
 const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
+const CollectionSourceService = require('../../services/collectionsource.service');
+const collectionSourceServ = new CollectionSourceService();
+const AssistantCollectionService = require('../../services/assistantcollection.service');
+const assistantCollectionServ = new AssistantCollectionService();
 
 const validatorHandler = require('../../middlewares/validator.handler');
 const { getInstanceSchema } = require('../../schemas/instance.schema');
@@ -19,6 +23,7 @@ const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
 
+// GET COLLECTIONS
 router.get(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -36,7 +41,7 @@ router.get(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const collection = await service.findByInstance(instanceId);
+      const collection = await collectionService.findByInstance(instanceId);
       res.json(collection);
     } catch (error) {
       next(error);
@@ -44,6 +49,7 @@ router.get(
   }
 );
 
+// GET COLLECTION
 router.get(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -61,7 +67,7 @@ router.get(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const instance = await service.findOne(id);
+      const instance = await collectionService.findOne(id);
       res.json(instance);
     } catch (error) {
       next(error);
@@ -69,6 +75,7 @@ router.get(
   }
 );
 
+// CREATE COLLECTION
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -99,7 +106,7 @@ router.post(
 
       body.instanceId = instanceId;
       body.openai_id = vectorStore.id;
-      const collection = await service.create(body);
+      const collection = await collectionService.create(body);
       res.status(201).json(collection);
     } catch (error) {
       next(error);
@@ -107,6 +114,7 @@ router.post(
   }
 );
 
+// UPDATE COLLECTION
 router.patch(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -128,7 +136,7 @@ router.patch(
       const body = req.body;
       body.instanceId = instanceId;
 
-      const collection = await service.update(body);
+      const collection = await collectionService.update(body);
       res.json(collection);
     } catch (error) {
       next(error);
@@ -136,6 +144,7 @@ router.patch(
   }
 );
 
+// DELETE COLLECTION
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -151,8 +160,16 @@ router.delete(
         );
         if (relationships.length === 0) throw boom.unauthorized();
       }
+      const collection = await collectionService.findOne(id);
+      if (!collection) throw boom.notFound('Collection not found');
 
-      await service.delete(id);
+      await openaiManager.deleteVectorStore(collection.openai_id);
+
+      await collectionSourceServ.deleteByCollection(id);
+
+      await assistantCollectionServ.deleteByCollection(id);
+
+      await collectionService.delete(id);
       res.status(201).json({ id });
     } catch (error) {
       next(error);

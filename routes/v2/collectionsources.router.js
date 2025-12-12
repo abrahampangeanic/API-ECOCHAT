@@ -13,9 +13,6 @@ const collectionServ = new CollectionService();
 const SourceService = require('../../services/source.service');
 const sourceServ = new SourceService();
 
-const PipelineService = require('../../services/pipeline.service');
-const pipelineServ = new PipelineService();
-
 const validatorHandler = require('../../middlewares/validator.handler');
 const { getInstanceSchema } = require('../../schemas/instance.schema');
 const {
@@ -28,6 +25,7 @@ const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
 
+// CREATE COLLECTION SOURCE
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
@@ -54,23 +52,24 @@ router.post(
       const sourceInfo = await sourceServ.findOne(body.sourceId);
       if (!sourceInfo) throw boom.notFound('Source not found');
 
-      const vectorStoreFile = await openaiManager.createVectorStoreFile(
-        collectionInfo.openai_id,
-        sourceInfo.openai_id,
-        false
-      );
-      if (!vectorStoreFile) throw boom.notFound('Vector store file not found');
+      if (sourceInfo.sourcetype === 'FILE') {
+        console.log(
+          'Creating vector store file: ',
+          collectionInfo.openai_id,
+          sourceInfo.openai_id
+        );
+        const vectorStoreFile = await openaiManager.createVectorStoreFile(
+          collectionInfo.openai_id,
+          sourceInfo.openai_id,
+          false
+        );
+        if (!vectorStoreFile)
+          throw boom.notFound('Vector store file not found');
 
-      body.openai_id = vectorStoreFile.id;
+        body.openai_id = vectorStoreFile.id;
+      }
+
       const collection = await service.create(body);
-
-      const collectionSourcePipiline = {
-        collection_id: body.collectionId,
-        document_ids: [body.sourceId],
-      };
-
-      await pipelineServ.addCollectionSource(collectionSourcePipiline);
-
       res.status(201).json(collection);
     } catch (error) {
       next(error);
@@ -78,6 +77,7 @@ router.post(
   }
 );
 
+// DELETE COLLECTION SOURCE
 router.delete(
   '/:id',
   passport.authenticate('jwt', { session: false }),
@@ -94,17 +94,37 @@ router.delete(
         if (relationships.length === 0) throw boom.unauthorized();
       }
 
-      const deleteCS = await service.delete(id);
+      const collectionSource = await service.findOne(id);
+      if (!collectionSource) throw boom.notFound('CollectionSource not found');
 
-      const collectionSourcePipiline = {
-        collection_id: deleteCS.collectionId,
-        document_ids: [deleteCS.sourceId],
-      };
-
-      const rta = await pipelineServ.deleteCollectionSource(
-        collectionSourcePipiline
+      const sourceInfo = await sourceServ.findOne(collectionSource.sourceId);
+      if (!sourceInfo) throw boom.notFound('Source not found');
+      const collectionInfo = await collectionServ.findOne(
+        collectionSource.collectionId
       );
-      console.log('res pipeline delete CollectionSource', rta);
+      if (!collectionInfo) throw boom.notFound('Collection not found');
+
+      console.log('CollectionSource: ', collectionSource.dataValues);
+      console.log('SourceInfo: ', sourceInfo.dataValues);
+      console.log('CollectionInfo: ', collectionInfo.dataValues);
+
+      if (sourceInfo.sourcetype === 'FILE') {
+        console.log(
+          'Deleting vector store file: ',
+          collectionInfo.openai_id,
+          sourceInfo.openai_id
+        );
+        const vectorStoreFile = await openaiManager.deleteVectorStoreFile(
+          collectionInfo.openai_id,
+          sourceInfo.openai_id
+        );
+        console.log('VectorStoreFile: ', vectorStoreFile);
+        if (!vectorStoreFile)
+          throw boom.notFound('Vector store file not deleted');
+      }
+
+      await service.delete(id);
+      console.log('CollectionSource deleted', id);
 
       res.status(201).json({ id });
     } catch (error) {

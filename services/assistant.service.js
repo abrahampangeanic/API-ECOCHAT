@@ -2,8 +2,7 @@ const boom = require('@hapi/boom');
 const { models } = require('../libs/sequelize');
 
 class AssistantService {
-
-  constructor(){}
+  constructor() {}
 
   async create(data) {
     const assistant = await models.Assistant.create(data);
@@ -12,8 +11,8 @@ class AssistantService {
 
   async findByInstance(instanceId) {
     const assistant = await models.Assistant.findAll({
-      where: {  'instanceId': instanceId  },
-      include: [ 'collections', 'skills', 'prompts', 'messages' ]
+      where: { instanceId: instanceId },
+      include: ['collections', 'skills', 'prompts', 'messages'],
     });
 
     return { assistants: [...assistant] };
@@ -21,8 +20,8 @@ class AssistantService {
 
   async findByInstancePublic(instanceId) {
     const assistant = await models.Assistant.findAll({
-      where: {  'instanceId': instanceId , 'access_type': 'public'  },
-      include: [ 'messages' ]
+      where: { instanceId: instanceId, access_type: 'public' },
+      include: ['messages'],
     });
 
     return { assistants: [...assistant] };
@@ -30,7 +29,7 @@ class AssistantService {
 
   async findByInstanceAndId(instanceId, id) {
     const assistant = await models.Assistant.findOne({
-      where: {  '$instanceId$': instanceId, '$id$': id  }
+      where: { $instanceId$: instanceId, $id$: id },
     });
 
     return { assistants: [...assistant] };
@@ -38,37 +37,50 @@ class AssistantService {
 
   async find() {
     const assistant = await models.Assistant.findAll({
-        order: [
-            ['id', 'ASC']
-          ]
+      order: [['id', 'ASC']],
     });
     return { assistants: [...assistant] };
   }
 
   async findOne(id) {
-    const assistant = await models.Assistant.findByPk(id );
-    if (!assistant)  throw boom.notFound('assistant not found');
+    const assistant = await models.Assistant.findByPk(id);
+    if (!assistant) throw boom.notFound('assistant not found');
     return assistant;
   }
 
   async findOneFull(id) {
-    const assistant = await models.Assistant.findByPk(id , 
-      { include: [ 'collections', 'skills', 'prompts', 'messages' ]});
-    if (!assistant)  throw boom.notFound('assistant not found');
+    const assistant = await models.Assistant.findByPk(id, {
+      include: ['collections', 'skills', 'prompts', 'messages'],
+    });
+    if (!assistant) throw boom.notFound('assistant not found');
+    return assistant;
+  }
+
+  async findOneWithCollectionsAndSources(id) {
+    const assistant = await models.Assistant.findByPk(id, {
+      include: [
+        {
+          association: 'collections',
+          include: ['sources'],
+        },
+      ],
+    });
+    if (!assistant) throw boom.notFound('assistant not found');
     return assistant;
   }
 
   async update(changes) {
     const model = await this.findOne(changes.id);
-    if (!model)   throw boom.notFound('assistant not found');
-    if (model.instanceId !== changes.instanceId) throw boom.unauthorized('Assitant not authorized');
+    if (!model) throw boom.notFound('assistant not found');
+    if (model.instanceId !== changes.instanceId)
+      throw boom.unauthorized('Assitant not authorized');
     const rta = await model.update(changes);
     return rta;
   }
 
   async delete(id) {
     const model = await this.findOne(id);
-    if (!model)   throw boom.notFound('assistant not found');
+    if (!model) throw boom.notFound('assistant not found');
 
     await models.AssistantCollection.destroy({ where: { assistantId: id } });
     await models.AssistantMessage.destroy({ where: { assistantId: id } });
@@ -78,7 +90,6 @@ class AssistantService {
     await model.destroy();
     return { rta: true };
   }
-
 }
 
 module.exports = AssistantService;

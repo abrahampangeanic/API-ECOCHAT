@@ -71,9 +71,19 @@ class SourceService {
   }
 
   async delete(id) {
-    const model = await this.findOne(id);
-    if (!model) throw boom.notFound('source not found');
-    await model.destroy();
+    const relationships = await models.CollectionSource.findAll({
+      where: { sourceId: id },
+    });
+    if (relationships.length > 0) {
+      await models.CollectionSource.destroy({ where: { sourceId: id } });
+    }
+    const documents = await models.Document.findAll({
+      where: { sourceId: id },
+    });
+    if (documents.length > 0) {
+      await models.Document.destroy({ where: { sourceId: id } });
+    }
+    await models.Source.destroy({ where: { id } });
     return { rta: true };
   }
 

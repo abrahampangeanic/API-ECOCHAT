@@ -88,9 +88,9 @@ app.get('/', (req, res) => {
   res.send('Welcome to ECOChat');
 });
 
-app.get('/debug-sentry', function mainHandler() {
-  throw new Error('My first Sentry error!');
-});
+// app.get('/debug-sentry', function mainHandler() {
+//   throw new Error('My first Sentry error!');
+// });
 
 app.use('/service/ecochat/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
