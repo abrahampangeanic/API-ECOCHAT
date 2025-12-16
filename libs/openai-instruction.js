@@ -1,5 +1,5 @@
 module.exports = {
-  instructions: `
+  instructionWithOutContext: `
 REGLAS:
 - Detecta automáticamente el idioma de la pregunta.
 - Responde SIEMPRE en el mismo idioma que la pregunta.
@@ -60,7 +60,7 @@ REGLAS:
 
 `,
 
-  instructionAssistant: `
+  instructionContext: `
 REGLAS:
 
 - Detecta automáticamente el idioma de la pregunta

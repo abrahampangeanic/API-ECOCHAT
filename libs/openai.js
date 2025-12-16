@@ -3,7 +3,7 @@ const OpenAI = require('openai');
 const fs = require('fs');
 const {
   instructionsWebSearch,
-  instructionAssistant,
+  instructionContext,
   // instructions,
 } = require('./openai-instruction');
 
@@ -547,7 +547,7 @@ class OpenAIManager {
     const result = await this.createAndWaitRun(
       currentThreadId,
       assistantId,
-      { instructions: instructionAssistant },
+      { instructions: instructionContext },
       true
     );
 

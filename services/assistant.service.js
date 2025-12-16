@@ -63,6 +63,9 @@ class AssistantService {
           association: 'collections',
           include: ['sources'],
         },
+        {
+          association: 'prompts',
+        },
       ],
     });
     if (!assistant) throw boom.notFound('assistant not found');

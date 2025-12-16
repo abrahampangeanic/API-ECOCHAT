@@ -8,6 +8,8 @@ const InstanceService = require('../../services/instance.service');
 const instanceServ = new InstanceService();
 const AssistantCollectionService = require('../../services/assistantcollection.service');
 const assistantCollectionServ = new AssistantCollectionService();
+const PromptService = require('../../services/prompt.service');
+const promptService = new PromptService();
 const validatorHandler = require('../../middlewares/validator.handler');
 const { getInstanceSchema } = require('../../schemas/instance.schema');
 const {
@@ -16,11 +18,16 @@ const {
   createAssistantSchema,
 } = require('../../schemas/assistant.schema');
 const { getAssistantWithCache } = require('../../cache/assistant.cache');
+const AssistantPromptService = require('../../services/assistantprompt.service');
+const assistantPromptService = new AssistantPromptService();
 
 // OpenAI Manager
 const { OpenAIManager } = require('../../libs/openai');
 const openaiManager = new OpenAIManager();
-const { instructionAssistant } = require('../../libs/openai-instruction');
+const {
+  instructionContext,
+  instructionWithOutContext,
+} = require('../../libs/openai-instruction');
 
 const router = express.Router({ mergeParams: true });
 
@@ -119,14 +126,48 @@ router.post(
       const name = `${instance.name} - ${body.name}`;
       const assistantOpenAI = await openaiManager.createAssistant({
         name,
-        instructions: instructionAssistant,
+        instructions: instructionContext,
         tools: [{ type: 'file_search' }],
       });
       body.openai_id = assistantOpenAI.id;
 
       body.instanceId = instanceId;
 
+      // Crear prompt por defecto
+      const prompt1 = await promptService.create({
+        name: body.name + ' - Context',
+        description: 'Prompt of default context',
+        prompt: instructionContext,
+        lang: 'es',
+        type: 'Context',
+        skill: 'general',
+        shared: 0,
+        instanceId: instanceId,
+      });
+
+      const prompt2 = await promptService.create({
+        name: body.name + ' - Without Context',
+        description: 'Prompt of default without context',
+        prompt: instructionWithOutContext,
+        lang: 'es',
+        type: 'Without Context',
+        skill: 'general',
+        shared: 0,
+        instanceId: instanceId,
+      });
+
       const assistantObject = await assistantService.create(body);
+
+      await assistantPromptService.create({
+        assistantId: assistantObject.id,
+        promptId: prompt1.id,
+      });
+
+      await assistantPromptService.create({
+        assistantId: assistantObject.id,
+        promptId: prompt2.id,
+      });
+
       res.status(201).json(assistantObject);
     } catch (error) {
       next(error);

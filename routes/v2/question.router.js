@@ -3,7 +3,10 @@ const express = require('express');
 // const boom = require('@hapi/boom');
 const passport = require('passport');
 const validatorHandler = require('../../middlewares/validator.handler');
-const { instructionAssistant } = require('../../libs/openai-instruction');
+const {
+  instructionContext,
+  instructionWithOutContext,
+} = require('../../libs/openai-instruction');
 
 const QueryService = require('../../services/query.service');
 const queryServ = new QueryService();
@@ -102,11 +105,12 @@ router.post(
         (collection) => collection.openai_id
       );
 
-      console.log('🔍 Vector stores:', vectorStoreIds);
+      const prompt = assistant.prompts.find((item) => item.type === 'Context');
+      const instructions = prompt ? prompt.prompt : instructionWithOutContext;
 
       const response = await openaiManager.createResponse(question, {
         vectorStoreIds: vectorStoreIds,
-        instructions: instructionAssistant,
+        instructions: instructions,
         allowedDomains: cleanAllowedDomains,
       });
 
@@ -166,11 +170,14 @@ router.post(
 
       const cleanAllowedDomains = openaiManager.cleanDomains(allowedDomains);
 
+      const prompt = assistant.prompts.find((item) => item.type === 'Context');
+      const instructions = prompt ? prompt.prompt : instructionContext;
+
       const queryOpenai = await openaiManager.askAssistant(
         assistant.openai_id,
         question,
         sessionId,
-        { instructions: instructionAssistant },
+        { instructions: instructions },
         cleanAllowedDomains
       );
 
@@ -222,7 +229,7 @@ router.post(
 
       const options = {
         vectorStoreIds: vectorStoreIds,
-        instructions: instructionAssistant,
+        instructions: instructionContext,
       };
 
       // Set headers for streaming response
