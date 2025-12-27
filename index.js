@@ -27,22 +27,15 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }));
 
 const whitelist = [
-  'http://localhost:8080',
-  'http://localhost:3000',
-  'https://myapp.co',
-  'http://localhost:5173',
-  'https://gest-client.onrender.com',
-  'https://app.taxrepo.com',
   'http://192.168.100.143:3000',
   'http://192.168.100.143:3001',
   'http://192.168.100.143:3016',
-  'https://test3.pangeanic.com',
-  'http://test3.pangeanic.com',
   'api.pangeanic.com',
   'https://ecochat.pangeanic.com',
   'http://admin.local.com',
   'https://api.pangeanic.com',
   'https://ecochat2.pangeanic.com',
+  'https://front.dev02.pangeanic.com',
 ];
 
 const options = {
