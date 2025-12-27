@@ -27,6 +27,9 @@ app.use((req, res, next) => {
 app.use(express.urlencoded({ extended: true }));
 
 const whitelist = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3016',
   'http://192.168.100.143:3000',
   'http://192.168.100.143:3001',
   'http://192.168.100.143:3016',
