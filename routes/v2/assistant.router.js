@@ -150,7 +150,7 @@ router.post(
         description: 'Prompt of default without context',
         prompt: instructionWithOutContext,
         lang: 'es',
-        type: 'Without Context',
+        type: 'WithoutContext',
         skill: 'general',
         shared: 0,
         instanceId: instanceId,

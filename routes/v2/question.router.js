@@ -100,12 +100,15 @@ router.post(
       }
 
       const cleanAllowedDomains = openaiManager.cleanDomains(allowedDomains);
+      console.log('🔍 Clean allowed domains:', cleanAllowedDomains);
 
       const vectorStoreIds = assistant.collections.map(
         (collection) => collection.openai_id
       );
 
-      const prompt = assistant.prompts.find((item) => item.type === 'Context');
+      const prompt = assistant.prompts.find(
+        (item) => item.type === 'WithoutContext'
+      );
       const instructions = prompt ? prompt.prompt : instructionWithOutContext;
 
       const response = await openaiManager.createResponse(question, {
