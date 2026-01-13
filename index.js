@@ -26,33 +26,33 @@ app.use((req, res, next) => {
 
 app.use(express.urlencoded({ extended: true }));
 
-// const whitelist = [
-//   'http://localhost:3000',
-//   'http://localhost:3001',
-//   'http://localhost:3016',
-//   'http://192.168.100.143:3000',
-//   'http://192.168.100.143:3001',
-//   'http://192.168.100.143:3016',
-//   'api.pangeanic.com',
-//   'https://ecochat.pangeanic.com',
-//   'http://admin.local.com',
-//   'https://api.pangeanic.com',
-//   'https://ecochat2.pangeanic.com',
-//   'https://front.dev02.pangeanic.com',
-// ];
+const whitelist = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3016',
+  'http://192.168.100.143:3000',
+  'http://192.168.100.143:3001',
+  'http://192.168.100.143:3016',
+  'api.pangeanic.com',
+  'https://ecochat.pangeanic.com',
+  'http://admin.local.com',
+  'https://api.pangeanic.com',
+  'https://ecochat2.pangeanic.com',
+  'https://front.dev02.pangeanic.com',
+];
 
-// const options = {
-//   origin: (origin, callback) => {
-//     if (whitelist.includes(origin) || !origin) {
-//       callback(null, true);
-//     } else {
-//       console.log('Origin not allowed by CORS', origin);
-//       callback(new Error('no permitido'));
-//     }
-//   },
-// };
+const options = {
+  origin: (origin, callback) => {
+    if (whitelist.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      console.log('Origin not allowed by CORS', origin);
+      callback(new Error('no permitido'));
+    }
+  },
+};
 
-// app.use(cors(options));
+app.use(cors(options));
 
 let otelApiSafe;
 try {
