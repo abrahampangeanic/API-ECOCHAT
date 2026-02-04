@@ -172,6 +172,7 @@ router.post(
       }
 
       const cleanAllowedDomains = openaiManager.cleanDomains(allowedDomains);
+      console.log('🔍 Clean allowed domains:', cleanAllowedDomains);
 
       const prompt = assistant.prompts.find((item) => item.type === 'Context');
       const instructions = prompt ? prompt.prompt : instructionContext;

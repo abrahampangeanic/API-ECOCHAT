@@ -564,12 +564,15 @@ class OpenAIManager {
   }
 
   cleanDomains(allowedDomains = []) {
-    return allowedDomains.map((domain) => {
-      return domain
+    const cleanedDomains = allowedDomains.map((domain) => {
+      const cleaned = domain
         .replace(/^https?:\/\//, '') // Remover protocolo
         .replace(/^www\./, '') // Remover www.
-        .replace(/\/$/, ''); // Remover trailing slash
+        .replace(/\/.*$/, ''); // Remover path y todo lo que viene después
+      return cleaned;
     });
+    // Eliminar duplicados y retornar array con valores únicos
+    return [...new Set(cleanedDomains)];
   }
 
   async runWebSearch(question, allowedDomains = []) {
