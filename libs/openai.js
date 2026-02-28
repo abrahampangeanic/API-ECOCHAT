@@ -4,7 +4,6 @@ const fs = require('fs');
 const {
   instructionsWebSearch,
   instructionContext,
-  // instructions,
 } = require('./openai-instruction');
 
 // Instancia principal de OpenAI
@@ -965,6 +964,8 @@ class OpenAIManager {
       threadId: run.thread_id,
       assistantId: run.assistant_id,
       createdAt: run.created_at,
+      input_tokens: run.input_tokens,
+      output_tokens: run.output_tokens,
     };
   }
 
@@ -1028,11 +1029,13 @@ class OpenAIManager {
 
     if (waitForCompletion) {
       console.log('   ⏳ Esperando completación...');
-      await this.waitForRunCompletion(threadId, run.id);
+      const completedRun = await this.waitForRunCompletion(threadId, run.id);
 
       // Obtener la última respuesta
       const messages = await this.listMessages(threadId, { limit: 1 });
       const lastMessage = messages[0];
+
+      console.log('🔍 Last message', lastMessage);
 
       const content =
         lastMessage.content &&
@@ -1040,6 +1043,22 @@ class OpenAIManager {
         lastMessage.content[0].text
           ? lastMessage.content[0].text.value
           : '';
+
+      const usage =
+        completedRun && completedRun.usage ? completedRun.usage : {};
+
+      console.log('🔍🔍🔍 Usage', usage);
+
+      const inputTokens =
+        usage.input_tokens ||
+        usage.prompt_tokens ||
+        completedRun.input_tokens ||
+        0;
+      const outputTokens =
+        usage.output_tokens ||
+        usage.completion_tokens ||
+        completedRun.output_tokens ||
+        0;
 
       console.log(`✅ Run completado exitosamente`);
 
@@ -1049,13 +1068,19 @@ class OpenAIManager {
         threadId,
         answer: content,
         messageId: lastMessage.id,
+        input_tokens: inputTokens,
+        output_tokens: outputTokens,
       };
     }
+
+    console.log('🔍 Run completado exitosamente', run);
 
     return {
       runId: run.id,
       status: run.status,
       threadId,
+      input_tokens: run.input_tokens,
+      output_tokens: run.output_tokens,
     };
   }
 
@@ -1886,6 +1911,37 @@ class OpenAIManager {
       instructions,
       temperature,
       tool_choice: 'auto',
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'response_schema',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              answer: {
+                type: 'string',
+                description: 'La respuesta principal al usuario.',
+              },
+              citations: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    text: { type: 'string' },
+                  },
+                  required: ['id', 'text'],
+                  additionalProperties: false,
+                },
+                description: 'Lista de citas de fuentes.',
+              },
+            },
+            required: ['answer', 'citations'],
+            additionalProperties: false,
+          },
+        },
+      },
     };
 
     // Configurar herramientas si hay vector stores
@@ -1900,6 +1956,9 @@ class OpenAIManager {
     }
 
     if (allowedDomains.length > 0) {
+      if (!requestData.tools) {
+        requestData.tools = [];
+      }
       requestData.tools.push({
         type: 'web_search',
         filters: {
@@ -1908,8 +1967,8 @@ class OpenAIManager {
       });
     }
 
-    // // Incluir resultados de búsqueda si se solicita
-    // if (includeSearchResults) {
+    // Incluir resultados de búsqueda si se solicita
+    // if (vectorStoreIds.length > 0) {
     //   requestData.include = [
     //     'output[0].file_search_call.search_results',
     //     'output[0].web_search_call.action.sources',
@@ -1923,10 +1982,11 @@ class OpenAIManager {
     const response = await this.openai.responses.create(requestData);
 
     // Extraer información de la respuesta
-    const output =
-      response.output && response.output[0] ? response.output[0] : null;
-    let text = '';
+    const output = response.output && response.output[0] ? response.output[0] : null;
+    let text = response.output_text || '';
     let searchResults = null;
+    let answer = '';
+    let citations = [];
 
     if (output) {
       // Obtener el texto de la respuesta
@@ -1941,10 +2001,23 @@ class OpenAIManager {
       }
     }
 
+    // Parsear salida estructurada: { answer, citations }
+    try {
+      const parsed = JSON.parse(text || '{}');
+      answer =
+        parsed && typeof parsed.answer === 'string' ? parsed.answer : text;
+      citations = parsed && Array.isArray(parsed.citations) ? parsed.citations : [];
+    } catch (e) {
+      answer = text;
+      citations = [];
+    }
+
     return {
       id: response.id,
-      output_text: response.output_text,
-      output: text,
+      output_text: answer, // compatibilidad con flujo existente en router
+      output: answer,
+      answer: answer,
+      citations: citations,
       searchResults: searchResults,
       usage: response.usage,
       model: response.model,
@@ -2081,6 +2154,16 @@ class OpenAIManager {
           }))
         : [],
     };
+  }
+
+  async getPrompt(promptId) {
+    const response = await this.openai.responses.create({
+      prompt: {
+        id: promptId,
+        version: '3',
+      },
+    });
+    return response;
   }
 }
 

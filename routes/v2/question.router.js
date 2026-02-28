@@ -6,6 +6,7 @@ const validatorHandler = require('../../middlewares/validator.handler');
 const {
   instructionContext,
   instructionWithOutContext,
+  instructionOutputFormat,
 } = require('../../libs/openai-instruction');
 
 const QueryService = require('../../services/query.service');
@@ -110,10 +111,11 @@ router.post(
         (item) => item.type === 'WithoutContext'
       );
       const instructions = prompt ? prompt.prompt : instructionWithOutContext;
+      const instructionsOutputFormat = `${instructions}\n\n${instructionOutputFormat}`;
 
       const response = await openaiManager.createResponse(question, {
         vectorStoreIds: vectorStoreIds,
-        instructions: instructions,
+        instructions: instructionsOutputFormat,
         allowedDomains: cleanAllowedDomains,
       });
 
@@ -121,21 +123,23 @@ router.post(
       const created = new Date();
       const now2 = created.toISOString().replace('T', ' ').slice(0, 19);
 
+      console.log('🔍 Response:', response);
+
       const queryData = {
         id: queryId,
         message_in: question,
-        message_out: response.output_text,
+        message_out: response.answer || response.output_text,
         input_tokens: response.input_tokens,
         output_tokens: response.output_tokens,
         feedback: 0,
         feedback_message: '',
-        refs: null,
+        refs: JSON.stringify(response.citations || []),
         ts_in: now,
         ts_out: now2,
-        tokens_in: 0,
-        tokens_out: 0,
+        tokens_in: response.input_tokens,
+        tokens_out: response.output_tokens,
         task_prompt: null,
-        skill: 'OPENAI',
+        skill: 'WithoutContext',
         sessionId: sessionId,
         assistantId: assistantId,
         instanceId: assistant.instanceId,
@@ -143,7 +147,11 @@ router.post(
       };
 
       queryServ.create(queryData);
-      res.status(200).json({ query: queryData });
+      res.status(200).json({
+        query: queryData,
+        respuesta: response.answer || response.output_text,
+        citaciones: response.citations || [],
+      });
     } catch (error) {
       next(error);
     }
@@ -176,12 +184,13 @@ router.post(
 
       const prompt = assistant.prompts.find((item) => item.type === 'Context');
       const instructions = prompt ? prompt.prompt : instructionContext;
+      const instructionsOutputFormat = `${instructions}\n\n${instructionOutputFormat}`;
 
       const queryOpenai = await openaiManager.askAssistant(
         assistant.openai_id,
         question,
         sessionId,
-        { instructions: instructions },
+        { instructions: instructionsOutputFormat },
         cleanAllowedDomains
       );
 
@@ -189,21 +198,21 @@ router.post(
       const created = new Date();
       const now2 = created.toISOString().replace('T', ' ').slice(0, 19);
 
+      console.log('🔍 Query OpenAI:', queryOpenai);
+
       const queryData = {
         id: queryId,
         message_in: question,
         message_out: queryOpenai.answer,
-        input_tokens: queryOpenai.input_tokens,
-        output_tokens: queryOpenai.output_tokens,
         feedback: 0,
         feedback_message: '',
         refs: null,
         ts_in: now,
         ts_out: now2,
-        tokens_in: 0,
-        tokens_out: 0,
+        tokens_in: queryOpenai.input_tokens || 0,
+        tokens_out: queryOpenai.output_tokens || 0,
         task_prompt: null,
-        skill: 'OPENAI',
+        skill: 'WithContext',
         sessionId: sessionId,
         assistantId: assistantId,
         instanceId: assistant.instanceId,

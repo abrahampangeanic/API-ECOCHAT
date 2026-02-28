@@ -51,7 +51,7 @@ FORMATO:
 
   instructionsWebSearch: `
 REGLAS:
-  Haz una búsqueda web breve y resume en 5–7 líneas, con 1–2 URLs reales como referencia.
+  Haz una búsqueda web breve y resume en 3–5 líneas, con 1–2 URLs reales como referencia.
   Usa solo información que provenga de los resultados de la búsqueda web.
   Si la web no contiene datos suficientes o claros, di explícitamente que no hay información suficiente y no intentes completar con suposiciones.
   No inventes URLs, nombres de webs ni fechas. Solo menciona sitios que aparezcan en los resultados de la búsqueda.
