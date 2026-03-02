@@ -1878,6 +1878,178 @@ class OpenAIManager {
     };
   }
 
+  /**
+   * Mejorar coherencia de una transcripción sin alterar su significado
+   * @param {string} transcriptionText - Texto transcrito
+   * @param {object} options - Opciones (model, language, previousContext)
+   * @returns {object} - { text, usage, model }
+   */
+  async improveTranscriptionCoherence(transcriptionText, options = {}) {
+    const {
+      model = 'gpt-4.1-mini',
+      language = 'es',
+      previousContext = '',
+      temperature = 0.1,
+    } = options;
+
+    if (!transcriptionText || !transcriptionText.trim()) {
+      return { text: '', usage: null, model };
+    }
+
+    const instructions =
+      'Eres un editor de transcripciones. Mejora puntuación, tildes, saltos de línea y cohesión del texto, manteniendo exactamente el significado original. No inventes datos. No resumas. No agregues contenido nuevo.';
+
+    const input = previousContext
+      ? `Contexto previo de la conversación (para mantener continuidad de términos y estilo):\n${previousContext}\n\nTranscripción a corregir:\n${transcriptionText}\n\nDevuelve solo el texto corregido en ${language}.`
+      : `Transcripción a corregir:\n${transcriptionText}\n\nDevuelve solo el texto corregido en ${language}.`;
+
+    const response = await this.openai.responses.create({
+      model,
+      instructions,
+      input,
+      temperature,
+    });
+
+    const improvedText = response && response.output_text ? response.output_text : transcriptionText;
+
+    return {
+      text: improvedText,
+      usage: response ? response.usage : null,
+      model: response ? response.model : model,
+    };
+  }
+
+  /**
+   * Detectar idioma de un texto corto en formato ISO 639-1
+   * @param {string} text - Texto a analizar
+   * @returns {string|null} - Código de idioma (ej: es, en, fr)
+   */
+  async detectLanguageFromText(text) {
+    if (!text || !text.trim()) {
+      return null;
+    }
+
+    const response = await this.openai.responses.create({
+      model: 'gpt-4.1-mini',
+      temperature: 0,
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'language_detection',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: {
+              language: {
+                type: 'string',
+                description: 'Código ISO 639-1 en minúsculas, ejemplo: es, en, fr',
+              },
+            },
+            required: ['language'],
+            additionalProperties: false,
+          },
+        },
+      },
+      input:
+        'Detecta el idioma principal del siguiente texto y devuelve solo el código ISO 639-1 en minúsculas.\n\n' +
+        text.substring(0, 1000),
+    });
+
+    const raw = response && response.output_text ? response.output_text : '{}';
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.language && typeof parsed.language === 'string') {
+        return parsed.language.toLowerCase();
+      }
+      return null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  /**
+   * Transcribir audio con Whisper y opcionalmente mejorar coherencia
+   * @param {string} filePath - Ruta local del archivo de audio
+   * @param {object} options - Opciones de transcripción
+   * @returns {object} - { text, raw_text, usage, transcription }
+   */
+  async transcribeAudio(filePath, options = {}) {
+    const {
+      model = 'whisper-1',
+      language = null, // null => autodetección
+      response_format = 'verbose_json',
+      maintainCoherence = true,
+      coherenceModel = 'gpt-4.1-mini',
+      previousContext = '',
+      detectLanguage = true,
+    } = options;
+
+    if (!filePath) {
+      throw new Error('filePath es obligatorio para transcribir audio');
+    }
+
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Archivo de audio no encontrado: ${filePath}`);
+    }
+
+    console.log(`🎙️ Transcribiendo audio: ${filePath}`);
+
+    const transcriptionPayload = {
+      file: fs.createReadStream(filePath),
+      model,
+      response_format,
+    };
+
+    // Si el caller fuerza idioma, se usa. Si no, Whisper autodetecta.
+    if (language) {
+      transcriptionPayload.language = language;
+    }
+
+    const transcription = await this.openai.audio.transcriptions.create(
+      transcriptionPayload
+    );
+
+    const rawText =
+      typeof transcription === 'string'
+        ? transcription
+        : transcription && transcription.text
+          ? transcription.text
+          : '';
+    let detectedLanguage =
+      transcription && transcription.language ? transcription.language : null;
+
+    if (!detectedLanguage && detectLanguage && rawText && rawText.trim()) {
+      detectedLanguage = await this.detectLanguageFromText(rawText);
+    }
+
+    let finalText = rawText;
+    let coherenceUsage = null;
+    const coherenceLanguage = detectedLanguage || language || 'es';
+
+    if (maintainCoherence && rawText && rawText.trim()) {
+      const coherence = await this.improveTranscriptionCoherence(rawText, {
+        model: coherenceModel,
+        language: coherenceLanguage,
+        previousContext,
+      });
+      finalText = coherence.text;
+      coherenceUsage = coherence.usage;
+    }
+
+    console.log('✅ Transcripción completada');
+
+    return {
+      text: finalText,
+      raw_text: rawText,
+      language: coherenceLanguage,
+      detected_language: detectedLanguage,
+      model,
+      coherence_applied: maintainCoherence,
+      coherence_usage: coherenceUsage,
+      transcription,
+    };
+  }
+
   // ==================== RESPONSES API (Nuevo sistema directo) ====================
 
   /**

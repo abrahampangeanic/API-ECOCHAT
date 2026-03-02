@@ -1,5 +1,8 @@
 const { v4: uuidv4 } = require('uuid');
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 // const boom = require('@hapi/boom');
 const passport = require('passport');
 const validatorHandler = require('../../middlewares/validator.handler');
@@ -22,6 +25,64 @@ const { OpenAIManager } = require('../../libs/openai');
 const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
+
+const transcriptionUploadDir = path.resolve(
+  process.cwd(),
+  'uploads/transcriptions'
+);
+
+if (!fs.existsSync(transcriptionUploadDir)) {
+  fs.mkdirSync(transcriptionUploadDir, { recursive: true });
+}
+
+const transcriptionUpload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, transcriptionUploadDir),
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname || '') || '.audio';
+      cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+    },
+  }),
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  fileFilter: (req, file, cb) => {
+    const allowedMimeTypes = [
+      'audio/mpeg',
+      'audio/mp3',
+      'audio/wav',
+      'audio/x-wav',
+      'audio/webm',
+      'audio/mp4',
+      'audio/x-m4a',
+      'audio/ogg',
+      'audio/flac',
+      'audio/aac',
+      'application/octet-stream',
+    ];
+    const allowedExtensions = [
+      '.mp3',
+      '.wav',
+      '.webm',
+      '.mp4',
+      '.m4a',
+      '.ogg',
+      '.flac',
+      '.aac',
+    ];
+    const fileExtension = path.extname(file.originalname || '').toLowerCase();
+
+    const isAllowedByMime =
+      allowedMimeTypes.includes(file.mimetype) ||
+      (file.mimetype && file.mimetype.startsWith('audio/'));
+    const isAllowedByExtension = allowedExtensions.includes(fileExtension);
+
+    if (isAllowedByMime || isAllowedByExtension) {
+      cb(null, true);
+      return;
+    }
+
+    cb(new Error('Tipo de archivo no permitido para transcripción.'));
+  },
+});
 
 // PRIVATE QUESTION (Requires authentication)
 router.post(
@@ -223,6 +284,57 @@ router.post(
       res.status(200).json({ query: queryData });
     } catch (error) {
       next(error);
+    }
+  }
+);
+
+// Public Transcription
+router.post(
+  '/public-transcription',
+  transcriptionUpload.single('file'),
+  async (req, res, next) => {
+    let uploadedFilePath = null;
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          message: 'Debes adjuntar un archivo de audio en el campo "file".',
+        });
+      }
+
+      uploadedFilePath = req.file.path;
+
+      const maintainCoherence =
+        req.body &&
+        (req.body.maintainCoherence === 'false' ||
+          req.body.maintainCoherence === false)
+          ? false
+          : true;
+      const previousContext =
+        req.body && req.body.previousContext ? req.body.previousContext : '';
+      const forcedLanguage =
+        req.body && req.body.language ? req.body.language : null;
+
+      const transcription = await openaiManager.transcribeAudio(
+        uploadedFilePath,
+        {
+          maintainCoherence,
+          previousContext,
+          language: forcedLanguage,
+        }
+      );
+
+      res.status(200).json({
+        text: transcription.text,
+        raw_text: transcription.raw_text,
+        language: transcription.language,
+        detected_language: transcription.detected_language,
+      });
+    } catch (error) {
+      next(error);
+    } finally {
+      if (uploadedFilePath && fs.existsSync(uploadedFilePath)) {
+        fs.unlink(uploadedFilePath, () => {});
+      }
     }
   }
 );
