@@ -52,7 +52,30 @@ const options = {
   },
 };
 
-app.use(cors(options));
+const corsOptionsDelegate = (req, callback) => {
+  const openCorsPaths = [
+    '/service/ecochat/api/v2/questions',
+    '/service/ecochat/api/v2/auth/login',
+  ];
+
+  const isOpenCorsPath = openCorsPaths.some((path) =>
+    req.path.startsWith(path)
+  );
+  const isGetInstance =
+    req.method === 'GET' && req.path.startsWith('/service/ecochat/api/v2/instances');
+  const isGetAssistant =
+    req.method === 'GET' &&
+    req.path.startsWith('/service/ecochat/api/v2/assistants');
+
+  if (isOpenCorsPath || isGetInstance || isGetAssistant) {
+    callback(null, { origin: true });
+    return;
+  }
+
+  callback(null, options);
+};
+
+app.use(cors(corsOptionsDelegate));
 
 let otelApiSafe;
 try {
