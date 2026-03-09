@@ -620,8 +620,23 @@ class OpenAIManager {
         },
       ],
     });
+    if (resp && typeof resp.output_text === 'string') {
+      return resp.output_text;
+    }
 
-    return resp.output_text; // resumen listo para inyectar
+    const assistantOutput =
+      resp &&
+      resp.output &&
+      resp.output.find((item) => item.role === 'assistant');
+    const fallbackText =
+      assistantOutput &&
+      assistantOutput.content &&
+      assistantOutput.content[0] &&
+      assistantOutput.content[0].text
+        ? assistantOutput.content[0].text
+        : '';
+
+    return typeof fallbackText === 'string' ? fallbackText : '';
   }
 
   /**
@@ -663,15 +678,23 @@ class OpenAIManager {
 
     // Obtener respuesta
     const messages = await this.openai.beta.threads.messages.list(threadId);
-    const lastMessage = messages.data[0];
-    const answer = lastMessage.content[0].text.value;
+    const lastMessage =
+      messages && messages.data && messages.data[0] ? messages.data[0] : null;
+    const answer =
+      lastMessage &&
+      lastMessage.content &&
+      lastMessage.content[0] &&
+      lastMessage.content[0].text &&
+      lastMessage.content[0].text.value
+        ? lastMessage.content[0].text.value
+        : '';
 
     console.log(`\n🤖 Respuesta: ${answer}\n`);
 
     return {
       threadId,
       answer,
-      messageId: lastMessage.id,
+      messageId: lastMessage ? lastMessage.id : null,
     };
   }
 
@@ -750,7 +773,14 @@ class OpenAIManager {
       messageId: message.id,
       threadId,
       role: message.role,
-      content: message.content[0].text.value,
+      content:
+        message &&
+        message.content &&
+        message.content[0] &&
+        message.content[0].text &&
+        message.content[0].text.value
+          ? message.content[0].text.value
+          : '',
       createdAt: message.created_at,
     };
   }
@@ -2236,7 +2266,11 @@ class OpenAIManager {
 
       const responseAssistant =
         response.output.find((item) => item.role === 'assistant') || null;
-      if (responseAssistant) {
+      if (
+        responseAssistant &&
+        responseAssistant.content &&
+        responseAssistant.content[0]
+      ) {
         text = responseAssistant.content[0].text || '';
       }
     }
@@ -2262,8 +2296,14 @@ class OpenAIManager {
       usage: response.usage,
       model: response.model,
       rawResponse: response,
-      input_tokens: response.usage.input_tokens,
-      output_tokens: response.usage.output_tokens,
+      input_tokens:
+        response && response.usage && response.usage.input_tokens
+          ? response.usage.input_tokens
+          : 0,
+      output_tokens:
+        response && response.usage && response.usage.output_tokens
+          ? response.usage.output_tokens
+          : 0,
     };
   }
 
