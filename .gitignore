@@ -201,4 +201,4 @@ uploads/
 
 # Sentry Config File
 .sentryclirc
-.package-lock.json
+package-lock.json

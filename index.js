@@ -33,7 +33,7 @@ const whitelist = [
   'http://192.168.100.143:3000',
   'http://192.168.100.143:3001',
   'http://192.168.100.143:3016',
-  'api.pangeanic.com',
+  'http://api.pangeanic.com',
   'https://ecochat.pangeanic.com',
   'http://admin.local.com',
   'https://api.pangeanic.com',

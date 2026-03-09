@@ -512,6 +512,7 @@ class OpenAIManager {
     allowedDomains = []
   ) {
     console.log(`💬 Pregunta: ${question}`);
+    let summaryWebSearch = null;
 
     // Crear o usar thread existente
     let currentThreadId = threadId;
@@ -525,10 +526,7 @@ class OpenAIManager {
 
     if (allowedDomains.length > 0) {
       // Realizar búsqueda web y agregar contexto
-      const summaryWebSearch = await this.runWebSearch(
-        question,
-        allowedDomains
-      );
+      summaryWebSearch = await this.runWebSearch(question, allowedDomains);
 
       // Formato mejorado para que el asistente reconozca el contexto
       const contextMessage = `📋 **CONTEXTO DE BÚSQUEDA WEB VERIFICADO:**
@@ -543,12 +541,39 @@ class OpenAIManager {
     await this.createMessage(currentThreadId, question, 'user');
 
     // Ejecutar asistente y esperar respuesta
-    const result = await this.createAndWaitRun(
-      currentThreadId,
-      assistantId,
-      { instructions: instructionContext },
-      true
-    );
+    const runInstructions = options.instructions || instructionContext;
+    let result;
+    try {
+      result = await this.createAndWaitRun(
+        currentThreadId,
+        assistantId,
+        { instructions: runInstructions },
+        true
+      );
+    } catch (error) {
+      const canFallbackToWeb =
+        error &&
+        error.runErrorCode === 'server_error' &&
+        allowedDomains.length > 0 &&
+        summaryWebSearch;
+
+      if (canFallbackToWeb) {
+        console.log(
+          '⚠️ Fallback activado: fallo vectorial/run. Se responde con búsqueda web.'
+        );
+        return {
+          threadId: currentThreadId,
+          answer: summaryWebSearch,
+          messageId: null,
+          runId: null,
+          input_tokens: 0,
+          output_tokens: 0,
+          fallback_source: 'web_search',
+        };
+      }
+
+      throw error;
+    }
 
     console.log(`✅ Respuesta obtenida`, result);
 
@@ -1025,11 +1050,35 @@ class OpenAIManager {
     options = {},
     waitForCompletion = true
   ) {
-    const run = await this.createRun(threadId, assistantId, options);
+    const maxServerErrorRetries =
+      options && typeof options.maxServerErrorRetries === 'number'
+        ? options.maxServerErrorRetries
+        : 2;
+    let run = await this.createRun(threadId, assistantId, options);
 
     if (waitForCompletion) {
-      console.log('   ⏳ Esperando completación...');
-      const completedRun = await this.waitForRunCompletion(threadId, run.id);
+      let completedRun = null;
+      let retries = 0;
+
+      while (retries <= maxServerErrorRetries) {
+        try {
+          console.log('   ⏳ Esperando completación...');
+          completedRun = await this.waitForRunCompletion(threadId, run.id);
+          break;
+        } catch (error) {
+          const isRetryableServerError = error && error.runErrorCode === 'server_error';
+          if (!isRetryableServerError || retries >= maxServerErrorRetries) {
+            throw error;
+          }
+
+          retries += 1;
+          console.log(
+            `⚠️ Run falló por server_error. Reintento ${retries}/${maxServerErrorRetries}...`
+          );
+          await this.sleep(800 * retries);
+          run = await this.createRun(threadId, assistantId, options);
+        }
+      }
 
       // Obtener la última respuesta
       const messages = await this.listMessages(threadId, { limit: 1 });
@@ -1162,7 +1211,26 @@ class OpenAIManager {
           run.last_error && run.last_error.message
             ? run.last_error.message
             : 'Unknown error';
-        throw new Error(`Run ${run.status}: ${errorMessage}`);
+        const errorCode =
+          run.last_error && run.last_error.code ? run.last_error.code : 'N/A';
+        const requiredAction =
+          run.required_action && run.required_action.type
+            ? run.required_action.type
+            : 'none';
+        const incompleteReason =
+          run.incomplete_details && run.incomplete_details.reason
+            ? run.incomplete_details.reason
+            : 'N/A';
+        const runError = new Error(
+          `Run ${run.status}: ${errorMessage} (code=${errorCode}, run_id=${runId}, thread_id=${threadId}, required_action=${requiredAction}, incomplete_reason=${incompleteReason})`
+        );
+        runError.runStatus = run.status;
+        runError.runErrorCode = errorCode;
+        runError.runId = runId;
+        runError.threadId = threadId;
+        runError.requiredAction = requiredAction;
+        runError.incompleteReason = incompleteReason;
+        throw runError;
       }
 
       await this.sleep(1000);
