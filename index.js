@@ -39,6 +39,7 @@ const whitelist = [
   'https://api.pangeanic.com',
   'https://ecochat2.pangeanic.com',
   'https://front.dev02.pangeanic.com',
+  'https://pgls.pangeanic.com',
 ];
 
 const options = {
@@ -62,7 +63,8 @@ const corsOptionsDelegate = (req, callback) => {
     req.path.startsWith(path)
   );
   const isGetInstance =
-    req.method === 'GET' && req.path.startsWith('/service/ecochat/api/v2/instances');
+    req.method === 'GET' &&
+    req.path.startsWith('/service/ecochat/api/v2/instances');
   const isGetAssistant =
     req.method === 'GET' &&
     req.path.startsWith('/service/ecochat/api/v2/assistants');
