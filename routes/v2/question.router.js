@@ -8,7 +8,7 @@ const passport = require('passport');
 const validatorHandler = require('../../middlewares/validator.handler');
 const {
   instructionContext,
-  instructionWithOutContext,
+  // instructionWithOutContext,
   instructionOutputFormat,
 } = require('../../libs/openai-instruction');
 
@@ -168,15 +168,20 @@ router.post(
         (collection) => collection.openai_id
       );
 
-      const prompt = assistant.prompts.find(
-        (item) => item.type === 'WithoutContext'
-      );
-      const instructions = prompt ? prompt.prompt : instructionWithOutContext;
-      const instructionsOutputFormat = `${instructions}\n\n${instructionOutputFormat}`;
+      // const prompt = assistant.prompts.find(
+      //   (item) => item.type === 'WithoutContext'
+      // );
+      // const instructions = prompt ? prompt.prompt : instructionWithOutContext;
+      // const instructionsOutputFormat = `${instructions}\n\n${instructionOutputFormat}`;
 
-      const response = await openaiManager.createResponse(question, {
+      // const response = await openaiManager.createResponse(question, {
+      //   vectorStoreIds: vectorStoreIds,
+      //   instructions: instructionsOutputFormat,
+      //   allowedDomains: cleanAllowedDomains,
+      // });
+
+      const response = await openaiManager.responsesWithTools(question, {
         vectorStoreIds: vectorStoreIds,
-        instructions: instructionsOutputFormat,
         allowedDomains: cleanAllowedDomains,
       });
 

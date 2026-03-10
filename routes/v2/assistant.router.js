@@ -26,7 +26,7 @@ const { OpenAIManager } = require('../../libs/openai');
 const openaiManager = new OpenAIManager();
 const {
   instructionContext,
-  instructionWithOutContext,
+  instructionPromptV1,
 } = require('../../libs/openai-instruction');
 
 const router = express.Router({ mergeParams: true });
@@ -148,7 +148,7 @@ router.post(
       const prompt2 = await promptService.create({
         name: body.name + ' - Without Context',
         description: 'Prompt of default without context',
-        prompt: instructionWithOutContext,
+        prompt: instructionPromptV1,
         lang: 'es',
         type: 'WithoutContext',
         skill: 'general',

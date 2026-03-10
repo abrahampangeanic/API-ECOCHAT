@@ -4,6 +4,7 @@ const fs = require('fs');
 const {
   instructionsWebSearch,
   instructionContext,
+  instructionPromptV1,
 } = require('./openai-instruction');
 
 // Instancia principal de OpenAI
@@ -1096,7 +1097,8 @@ class OpenAIManager {
           completedRun = await this.waitForRunCompletion(threadId, run.id);
           break;
         } catch (error) {
-          const isRetryableServerError = error && error.runErrorCode === 'server_error';
+          const isRetryableServerError =
+            error && error.runErrorCode === 'server_error';
           if (!isRetryableServerError || retries >= maxServerErrorRetries) {
             throw error;
           }
@@ -2008,7 +2010,10 @@ class OpenAIManager {
       temperature,
     });
 
-    const improvedText = response && response.output_text ? response.output_text : transcriptionText;
+    const improvedText =
+      response && response.output_text
+        ? response.output_text
+        : transcriptionText;
 
     return {
       text: improvedText,
@@ -2040,7 +2045,8 @@ class OpenAIManager {
             properties: {
               language: {
                 type: 'string',
-                description: 'Código ISO 639-1 en minúsculas, ejemplo: es, en, fr',
+                description:
+                  'Código ISO 639-1 en minúsculas, ejemplo: es, en, fr',
               },
             },
             required: ['language'],
@@ -2111,8 +2117,8 @@ class OpenAIManager {
       typeof transcription === 'string'
         ? transcription
         : transcription && transcription.text
-          ? transcription.text
-          : '';
+        ? transcription.text
+        : '';
     let detectedLanguage =
       transcription && transcription.language ? transcription.language : null;
 
@@ -2252,7 +2258,8 @@ class OpenAIManager {
     const response = await this.openai.responses.create(requestData);
 
     // Extraer información de la respuesta
-    const output = response.output && response.output[0] ? response.output[0] : null;
+    const output =
+      response.output && response.output[0] ? response.output[0] : null;
     let text = response.output_text || '';
     let searchResults = null;
     let answer = '';
@@ -2280,7 +2287,8 @@ class OpenAIManager {
       const parsed = JSON.parse(text || '{}');
       answer =
         parsed && typeof parsed.answer === 'string' ? parsed.answer : text;
-      citations = parsed && Array.isArray(parsed.citations) ? parsed.citations : [];
+      citations =
+        parsed && Array.isArray(parsed.citations) ? parsed.citations : [];
     } catch (e) {
       answer = text;
       citations = [];
@@ -2436,14 +2444,293 @@ class OpenAIManager {
     };
   }
 
-  async getPrompt(promptId) {
-    const response = await this.openai.responses.create({
+  async askWithPrompt(promptId, config = {}) {
+    const {
+      promptVersion = '4',
+      input = [],
+      vectorStoreIds = [],
+      maxNumResults = 3,
+      // Soporta ambos formatos: domain (string|null) y allowedDomains (array)
+      domain = null,
+      allowedDomains = [],
+      include = [
+        'reasoning.encrypted_content',
+        'web_search_call.action.sources',
+      ],
+      store = true,
+      metadata = null,
+      textFormat = { type: 'text' },
+    } = config;
+
+    const normalizedDomains = [];
+
+    if (Array.isArray(allowedDomains)) {
+      allowedDomains.forEach((item) => {
+        if (typeof item === 'string' && item.trim()) {
+          normalizedDomains.push(item.trim());
+        }
+      });
+    }
+
+    if (typeof domain === 'string' && domain.trim()) {
+      normalizedDomains.push(domain.trim());
+    }
+
+    const cleanAllowedDomains = [
+      ...new Set(this.cleanDomains(normalizedDomains)),
+    ];
+
+    const tools = [];
+
+    if (Array.isArray(vectorStoreIds) && vectorStoreIds.length > 0) {
+      tools.push({
+        type: 'file_search',
+        vector_store_ids: vectorStoreIds,
+        max_num_results: maxNumResults,
+      });
+    }
+
+    // Solo agrega web_search cuando haya dominios válidos
+    if (cleanAllowedDomains.length > 0) {
+      tools.push({
+        type: 'web_search',
+        filters: {
+          allowed_domains: cleanAllowedDomains,
+        },
+        search_context_size: 'medium',
+        user_location: {
+          type: 'approximate',
+          city: null,
+          country: null,
+          region: null,
+          timezone: null,
+        },
+      });
+    }
+
+    const requestData = {
       prompt: {
         id: promptId,
-        version: '3',
+        version: String(promptVersion),
       },
+      input,
+      text: {
+        format: textFormat,
+      },
+      reasoning: {
+        summary: 'auto',
+      },
+      store,
+      include,
+    };
+
+    if (tools.length > 0) {
+      requestData.tools = tools;
+    }
+
+    if (metadata) {
+      requestData.metadata = metadata;
+    }
+
+    const response = await this.openai.responses.create(requestData);
+
+    return {
+      id: response.id,
+      output_text: response.output_text || '',
+      usage: response.usage || null,
+      input_tokens:
+        response && response.usage && response.usage.input_tokens
+          ? response.usage.input_tokens
+          : 0,
+      output_tokens:
+        response && response.usage && response.usage.output_tokens
+          ? response.usage.output_tokens
+          : 0,
+      model: response.model,
+      rawResponse: response,
+      allowed_domains: cleanAllowedDomains,
+    };
+  }
+
+  async createPrompt(options = {}) {
+    const {
+      name = 'ECOChat Prompt',
+      model = 'gpt-5.3-chat-latest',
+      instructions = instructionPromptV1,
+      textFormat = { type: 'text' },
+      reasoning = { summary: 'auto' },
+      metadata = null,
+    } = options;
+
+    const promptPayload = {
+      name,
+      model,
+      instructions,
+      text: {
+        format: textFormat,
+      },
+      reasoning,
+    };
+
+    if (metadata) {
+      promptPayload.metadata = metadata;
+    }
+
+    if (!config.openaiApiKey) {
+      throw new Error(
+        'OPENAI_API_KEY no configurada. Es necesaria para crear promptId.'
+      );
+    }
+
+    const response = await fetch('https://api.openai.com/v1/prompts', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${config.openaiApiKey}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(promptPayload),
     });
-    return response;
+
+    const rawBody = await response.text();
+    let data = null;
+
+    if (rawBody) {
+      try {
+        data = JSON.parse(rawBody);
+      } catch (error) {
+        data = null;
+      }
+    }
+
+    if (!response.ok) {
+      const errorMessage =
+        data && data.error && data.error.message
+          ? data.error.message
+          : rawBody
+          ? `Error creando prompt (${response.status}): ${rawBody.substring(
+              0,
+              300
+            )}`
+          : `Error creando prompt (${response.status})`;
+      throw new Error(errorMessage);
+    }
+
+    if (!data || !data.id) {
+      throw new Error(
+        rawBody
+          ? `Respuesta inválida al crear prompt: ${rawBody.substring(0, 300)}`
+          : 'Respuesta vacía al crear prompt'
+      );
+    }
+
+    return {
+      id: data.id,
+      version: data.version ? String(data.version) : null,
+      rawResponse: data,
+    };
+  }
+
+  async responsesWithTools(input, config = {}) {
+    const {
+      vectorStoreIds = [],
+      maxNumResults = 3,
+      allowedDomains = [],
+    } = config;
+
+    const normalizedDomains = [];
+
+    if (Array.isArray(allowedDomains)) {
+      allowedDomains.forEach((item) => {
+        if (typeof item === 'string' && item.trim()) {
+          normalizedDomains.push(item.trim());
+        }
+      });
+    }
+
+    const cleanAllowedDomains = [
+      ...new Set(this.cleanDomains(normalizedDomains)),
+    ];
+
+    const tools = [];
+
+    if (Array.isArray(vectorStoreIds) && vectorStoreIds.length > 0) {
+      tools.push({
+        type: 'file_search',
+        vector_store_ids: vectorStoreIds,
+        max_num_results: maxNumResults,
+      });
+    }
+
+    // Solo agrega web_search cuando haya dominios válidos
+    if (cleanAllowedDomains.length > 0) {
+      tools.push({
+        type: 'web_search',
+        filters: {
+          allowed_domains: cleanAllowedDomains,
+        },
+        search_context_size: 'medium',
+        user_location: {
+          type: 'approximate',
+          city: null,
+          country: null,
+          region: null,
+          timezone: null,
+        },
+      });
+    }
+
+    const requestData = {
+      model: 'gpt-5.4',
+      input: [
+        {
+          role: 'system',
+          content: instructionPromptV1,
+        },
+        {
+          role: 'user',
+          content: input,
+        },
+      ],
+      text: {
+        format: {
+          type: 'text',
+        },
+      },
+      reasoning: {
+        summary: 'auto',
+      },
+      store: true,
+      temperature: 1,
+      include: [
+        'reasoning.encrypted_content',
+        'web_search_call.action.sources',
+      ],
+    };
+
+    if (tools.length > 0) {
+      requestData.tools = tools;
+    }
+
+    console.log('🔍 Request data:', requestData);
+
+    const response = await this.openai.responses.create(requestData);
+
+    return {
+      id: response.id,
+      output_text: response.output_text || '',
+      usage: response.usage || null,
+      input_tokens:
+        response && response.usage && response.usage.input_tokens
+          ? response.usage.input_tokens
+          : 0,
+      output_tokens:
+        response && response.usage && response.usage.output_tokens
+          ? response.usage.output_tokens
+          : 0,
+      model: response.model,
+      rawResponse: response,
+    };
   }
 }
 
