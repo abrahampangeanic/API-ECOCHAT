@@ -40,6 +40,7 @@ const whitelist = [
   'https://ecochat2.pangeanic.com',
   'https://front.dev02.pangeanic.com',
   'https://pgls.pangeanic.com',
+  'https://ecochat.pgls.pangeanic.com',
 ];
 
 const options = {
