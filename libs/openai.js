@@ -2633,12 +2633,25 @@ class OpenAIManager {
 
   async responsesWithTools(input, config = {}) {
     const {
+      history = [],
       vectorStoreIds = [],
       maxNumResults = 3,
       allowedDomains = [],
     } = config;
 
     const normalizedDomains = [];
+    const messages = [
+      {
+        role: 'system',
+        content: instructionPromptV1,
+      },
+      ...history,
+    ];
+
+    messages.push({
+      role: 'user',
+      content: input,
+    });
 
     if (Array.isArray(allowedDomains)) {
       allowedDomains.forEach((item) => {
@@ -2682,16 +2695,7 @@ class OpenAIManager {
 
     const requestData = {
       model: 'gpt-5.4',
-      input: [
-        {
-          role: 'system',
-          content: instructionPromptV1,
-        },
-        {
-          role: 'user',
-          content: input,
-        },
-      ],
+      input: messages,
       text: {
         format: {
           type: 'text',

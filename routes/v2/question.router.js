@@ -146,7 +146,7 @@ router.post(
   validatorHandler(createQuestionSchema, 'body'),
   async (req, res, next) => {
     try {
-      const { assistantId, question, sessionId } = req.body;
+      const { assistantId, question, sessionId, history } = req.body;
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await getAssistantWithCache(assistantId);
       const allowedDomains = [];
@@ -181,6 +181,7 @@ router.post(
       // });
 
       const response = await openaiManager.responsesWithTools(question, {
+        history: history || [],
         vectorStoreIds: vectorStoreIds,
         allowedDomains: cleanAllowedDomains,
       });

@@ -19,8 +19,8 @@ const {
 } = require('../../schemas/assistantcollection.schema');
 
 // OpenAI Manager
-const { OpenAIManager } = require('../../libs/openai');
-const openaiManager = new OpenAIManager();
+// const { OpenAIManager } = require('../../libs/openai');
+// const openaiManager = new OpenAIManager();
 
 const router = express.Router({ mergeParams: true });
 
@@ -51,10 +51,10 @@ router.post(
       if (!collection) throw boom.notFound('Collection not found');
 
       // // Agregar vector store al asistente en OpenAI
-      await openaiManager.addVectorStoreToAssistant(
-        assistant.openai_id,
-        collection.openai_id
-      );
+      // await openaiManager.addVectorStoreToAssistant(
+      //   assistant.openai_id,
+      //   collection.openai_id
+      // );
 
       const assistantCollection = await assistantCollectionServ.create(body);
       res.status(201).json(assistantCollection);
