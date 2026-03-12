@@ -3,8 +3,8 @@ const Joi = require('joi');
 const question = Joi.string();
 const assistantId = Joi.string();
 const sessionId = Joi.string();
-const message = Joi.string();
-const message_type = Joi.string();
+const content = Joi.string();
+const role = Joi.string();
 const skill = Joi.string();
 
 const createQuestionSchema = Joi.object({
@@ -12,12 +12,12 @@ const createQuestionSchema = Joi.object({
   question: question.required(),
   sessionId: sessionId.required(),
   skill: skill,
-  history: [
-    {
-      message: message,
-      message_type: message_type,
-    },
-  ],
+  history: Joi.array().items(
+    Joi.object({
+      content: content.required(),
+      role: role.required().valid('assistant', 'user'),
+    })
+  ),
 });
 
 module.exports = { createQuestionSchema };
