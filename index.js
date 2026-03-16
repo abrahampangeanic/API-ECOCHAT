@@ -16,13 +16,9 @@ const {
 const app = express();
 const port = process.env.PORT || 3050;
 
-// app.use((req, res, next) => {
-//   if (req.originalUrl === '/api/v1/suscription/webhook') {
-//     next(); // Do nothing with the body because I need it in a raw state.
-//   } else {
-//     express.json()(req, res, next); // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
-//   }
-// });
+app.use((req, res, next) => {
+  express.json()(req, res, next);
+});
 
 app.use(express.urlencoded({ extended: true }));
 
