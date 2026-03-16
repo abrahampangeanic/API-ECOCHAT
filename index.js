@@ -14,29 +14,21 @@ const {
 } = require('./middlewares/error.handler');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3050;
 
-app.use((req, res, next) => {
-  if (req.originalUrl === '/api/v1/suscription/webhook') {
-    next(); // Do nothing with the body because I need it in a raw state.
-  } else {
-    express.json()(req, res, next); // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
-  }
-});
+// app.use((req, res, next) => {
+//   if (req.originalUrl === '/api/v1/suscription/webhook') {
+//     next(); // Do nothing with the body because I need it in a raw state.
+//   } else {
+//     express.json()(req, res, next); // ONLY do express.json() if the received request is NOT a WebHook from Stripe.
+//   }
+// });
 
 app.use(express.urlencoded({ extended: true }));
 
 const whitelist = [
   'http://localhost:3000',
-  'http://localhost:3001',
-  'http://localhost:3016',
-  'http://192.168.100.143:3000',
-  'http://192.168.100.143:3001',
-  'http://192.168.100.143:3016',
-  'http://api.pangeanic.com',
-  'https://ecochat.pangeanic.com',
-  'http://admin.local.com',
-  'https://api.pangeanic.com',
+  'http://localhost:3050',
   'https://ecochat.pangeanic.com',
   'https://ecochat2.pangeanic.com',
   'https://front.dev02.pangeanic.com',
