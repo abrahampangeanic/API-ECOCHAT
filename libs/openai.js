@@ -2682,7 +2682,7 @@ class OpenAIManager {
         filters: {
           allowed_domains: cleanAllowedDomains,
         },
-        search_context_size: 'medium',
+        search_context_size: 'high',
         user_location: {
           type: 'approximate',
           city: null,
