@@ -34,7 +34,8 @@ const whitelist = [
 
 const options = {
   origin: (origin, callback) => {
-    if (whitelist.includes(origin) || !origin) {
+    const isMissingOrigin = !origin || origin === 'null';
+    if (whitelist.includes(origin) || isMissingOrigin) {
       callback(null, true);
     } else {
       console.log('Origin not allowed by CORS', origin);
