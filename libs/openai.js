@@ -1,6 +1,7 @@
 const { config } = require('../config/config');
 const OpenAI = require('openai');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 const {
   instructionsWebSearch,
   instructionContext,
@@ -734,21 +735,18 @@ class OpenAIManager {
   // ==================== GESTIÓN DE THREADS ====================
 
   /**
-   * Crear un nuevo thread (conversación)
+   * Crear un nuevo identificador de conversación.
+   * La Assistants API (threads) ya no existe en OpenAI: el historial lo envía
+   * el cliente en `history` y se responde con la Responses API.
    */
   async createThread(metadata = null) {
-    const options = {};
-    if (metadata) {
-      options.metadata = metadata;
-    }
-
-    const thread = await this.openai.beta.threads.create(options);
-    console.log(`🧵 Thread creado: ${thread.id}`);
+    const id = uuidv4();
+    console.log(`🧵 Conversación creada: ${id}`);
 
     return {
-      id: thread.id,
-      createdAt: thread.created_at,
-      metadata: thread.metadata,
+      id,
+      createdAt: Math.floor(Date.now() / 1000),
+      metadata,
     };
   }
 
@@ -2637,13 +2635,14 @@ class OpenAIManager {
       vectorStoreIds = [],
       maxNumResults = 3,
       allowedDomains = [],
+      instructions = instructionPromptV1,
     } = config;
 
     const normalizedDomains = [];
     const messages = [
       {
         role: 'system',
-        content: instructionPromptV1,
+        content: instructions,
       },
       ...history,
     ];
