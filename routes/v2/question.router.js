@@ -92,7 +92,7 @@ router.post(
   validatorHandler(createQuestionSchema, 'body'),
   async (req, res, next) => {
     try {
-      const { assistantId, question, sessionId } = req.body;
+      const { assistantId, question, sessionId, history } = req.body;
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await getAssistantWithCache(assistantId);
 
@@ -102,12 +102,12 @@ router.post(
 
       console.log('🔍 Vector stores:', vectorStoreIds);
 
-      const queryOpenai = await openaiManager.askAssistant(
-        assistantId,
-        question,
-        sessionId
-      );
-      const msg_out = queryOpenai.answer;
+      const response = await openaiManager.responsesWithTools(question, {
+        history: history || [],
+        vectorStoreIds: vectorStoreIds,
+        instructions: instructionContext,
+      });
+      const msg_out = response.output_text;
 
       const queryId = uuidv4();
       const created = new Date();
@@ -231,7 +231,7 @@ router.post(
   validatorHandler(createQuestionSchema, 'body'),
   async (req, res, next) => {
     try {
-      const { assistantId, question, sessionId } = req.body;
+      const { assistantId, question, sessionId, history } = req.body;
       const now = new Date().toISOString().replace('T', ' ').slice(0, 19);
       const assistant = await getAssistantWithCache(assistantId);
       const allowedDomains = [];
@@ -253,31 +253,34 @@ router.post(
       const instructions = prompt ? prompt.prompt : instructionContext;
       const instructionsOutputFormat = `${instructions}\n\n${instructionOutputFormat}`;
 
-      const queryOpenai = await openaiManager.askAssistant(
-        assistant.openai_id,
-        question,
-        sessionId,
-        { instructions: instructionsOutputFormat },
-        cleanAllowedDomains
+      const vectorStoreIds = assistant.collections.map(
+        (collection) => collection.openai_id
       );
+
+      const response = await openaiManager.responsesWithTools(question, {
+        history: history || [],
+        vectorStoreIds: vectorStoreIds,
+        allowedDomains: cleanAllowedDomains,
+        instructions: instructionsOutputFormat,
+      });
 
       const queryId = uuidv4();
       const created = new Date();
       const now2 = created.toISOString().replace('T', ' ').slice(0, 19);
 
-      console.log('🔍 Query OpenAI:', queryOpenai);
+      console.log('🔍 Response:', response);
 
       const queryData = {
         id: queryId,
         message_in: question,
-        message_out: queryOpenai.answer,
+        message_out: response.output_text,
         feedback: 0,
         feedback_message: '',
         refs: null,
         ts_in: now,
         ts_out: now2,
-        tokens_in: queryOpenai.input_tokens || 0,
-        tokens_out: queryOpenai.output_tokens || 0,
+        tokens_in: response.input_tokens || 0,
+        tokens_out: response.output_tokens || 0,
         task_prompt: null,
         skill: 'WithContext',
         sessionId: sessionId,
